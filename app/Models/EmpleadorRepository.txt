@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Collection;
+
+class EmpleadorRepository {
+  /** @var \Illuminate\Database\Eloquent\Collection */
+  private $repo;
+
+  function __construct()
+  {
+    // $empleador = new Empleador();
+    $this->repo = collect([
+      new Empleador([
+        "id" => 1,
+        "numero_patronal" => "111-01001",
+        "nombre" => "Empleador Falso 1"
+      ]),
+      new Empleador([
+        "id" => 2,
+        "numero_patronal" => "111-01002",
+        "nombre" => "Empleador Falso 2"
+      ])
+    ]);
+  }
+
+  function query(): Collection {
+
+    // $item = Arr::first($this->repo, function($item) use($numeroPatronal) {
+    //   return $item["numero_patronal"] == $numeroPatronal;
+    // });
+
+    // return $item==null ? null : new Empleador($item);
+    return $this->repo;
+  }
+  function buscarPorPatronal($numeroPatronal){
+    return $this->repo->where("numero_patronal", $numeroPatronal)->first();
+  }
+
+  function buscarPorId($id){
+    return $this->repo->where("id", $id)->first();
+  }
+
+  function buscarPorIds($ids){
+    return $this->repo->whereIn("id", $ids);
+  }
+}
