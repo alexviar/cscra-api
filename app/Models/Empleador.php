@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use ArrayAccess;
+use Exception;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use InvalidArgumentException;
 
 /**
  * @property integer id
@@ -16,6 +18,9 @@ class Empleador implements Arrayable, ArrayAccess {
 
   function __construct($attributes=[])
   {
+    if($attributes == NULL){
+      throw new InvalidArgumentException();
+    }
     $this->attributes = $attributes;
   }
 

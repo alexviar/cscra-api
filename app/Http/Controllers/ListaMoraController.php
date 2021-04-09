@@ -35,8 +35,10 @@ class ListaMoraController extends Controller {
     return response()->json([
       "meta" => [
         "total" => $total,
-        "size" => $pageSize,
-        "currentPage" => $currentPage
+        "page" => [
+          "size" => $pageSize,
+          "current" => $currentPage
+        ]
       ],
       "records" => $records
     ]);

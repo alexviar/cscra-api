@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\EmpleadorController;
+use App\Http\Controllers\EspecialidadesController;
 use App\Http\Controllers\ListaMoraController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,3 +27,6 @@ Route::get("empleadores", [EmpleadorController::class, "buscar"]);
 Route::get("lista-mora", [ListaMoraController::class, "buscar"]);
 Route::post("lista-mora/agregar", [ListaMoraController::class, "agregar"]);
 Route::post("lista-mora/quitar", [ListaMoraController::class, "quitar"]);
+
+Route::get("especialidades", [EspecialidadesController::class, "buscar"]);
+Route::post("especialidades/importar", [EspecialidadesController::class, "importar"]);

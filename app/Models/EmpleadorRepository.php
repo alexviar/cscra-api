@@ -15,7 +15,7 @@ class EmpleadorRepository {
       new Empleador([
         "id" => 1,
         "numero_patronal" => "111-01001",
-        "nombre" => "Empleador Falso 1"
+        "nombre" => "Empleador Falso 1",
       ]),
       new Empleador([
         "id" => 2,

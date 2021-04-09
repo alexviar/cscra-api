@@ -25,20 +25,23 @@ class ListaMoraService {
 
 
     $items = $query->get();
-    $ids = $items->pluck("id");
+    $empleadorIds = $items->pluck("empleador_id");
 
     $empleadorRepository = new EmpleadorRepository();
-    $empleadores = $empleadorRepository->buscarPorIds($ids->all());
+    $empleadores = $empleadorRepository->buscarPorIds($empleadorIds->all());
     
-    return [$total, $items->map(function($item) use($empleadores){
+    return [$total, $items->reduce(function($carry, $item) use($empleadores){
       $empleador = $empleadores->where("id", $item->empleador_id)->first();
-      return [
-        "id" => $item->id,
-        "numero_patronal" => $empleador["numero_patronal"],
-        "nombre" => $empleador["nombre"],
-        "empleado_id" => $empleador["id"]
-      ];
-    })];
+      if($empleador){
+        $carry[] = [
+          "id" => $item->id,
+          "numero_patronal" => $empleador["numero_patronal"],
+          "nombre" => $empleador["nombre"],
+          "empleador_id" => $empleador["id"]
+        ];
+      }
+      return $carry;
+    }, [])];
   }
 
   function agregar($empleador_id){
