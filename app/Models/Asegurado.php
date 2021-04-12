@@ -10,11 +10,15 @@ use InvalidArgumentException;
 
 /**
  * @property integer id
- * @property string numeroPatronal
- * @property string nombre
+ * @property string matricula
+ * @property string apellido_paterno
+ * @property string apellido_materno
+ * @property string nombres
+ * @property string estado
+ * @property string fecha_extinsion
  */
-class Empleador implements Arrayable, ArrayAccess {
-  
+class Asegurado implements Arrayable, ArrayAccess {
+
   private $attributes;
 
   function __construct($attributes=[])
@@ -30,6 +34,12 @@ class Empleador implements Arrayable, ArrayAccess {
   }
 
   function __get($name){
+    if($name == "partes_matricula") {
+      return explode("-", $this->attributes["matricula"]);
+    }
+    if($name == "nombre_completo") {
+      return trim("{$this->apellido_paterno} {$this->apellido_materno} {$this->nombres}");
+    }
     return Arr::get($this->attributes, $name, null);
   }
 
