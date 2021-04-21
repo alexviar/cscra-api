@@ -3,18 +3,19 @@
 namespace App\Application;
 
 use App\Http\Controllers\Controller;
+use App\Models\Asegurado;
 use App\Models\AseguradoRepository;
+use App\Models\Empleador;
 use App\Models\EmpleadorRepository;
 use App\Models\SolicitudAtencionExterna;
+use Carbon\Carbon;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class SolicitudAtencionExternaService extends Controller {
-  private $aseguradoRepository;
-
-  protected function getAseguradoRepository(){
-    return $this->aseguradoRepository ?: new AseguradoRepository();
-  }
 
   protected function setQueryFilters($query, $filter){
     if(Arr::has($filter, "id")){
@@ -25,8 +26,7 @@ class SolicitudAtencionExternaService extends Controller {
         $query->where("regional_id", $filter["regional_id"]);
       }
       if(Arr::has($filter, "numero_patronal")){
-        $empleadorRepository = new EmpleadorRepository();
-        $empleador = $empleadorRepository->buscarPorPatronal($filter["numero_patronal"]);
+        $empleador =Empleador::buscarPorPatronal($filter["numero_patronal"]);
         // $asegurados_ids = [];
         // if($empleador){
         //   // $query->whereRaw(0);
@@ -42,8 +42,7 @@ class SolicitudAtencionExternaService extends Controller {
         $query->where("empleador_id", $empleador->id);
       }
       if(Arr::has($filter, "matricula_asegurado")){
-        $aseguradoRepository = $this->getAseguradoRepository();
-        $asegurado = $aseguradoRepository->buscarPorMatricula($filter["matricula_asegurado"]);
+        $asegurado = Asegurado::buscarPorMatricula($filter["matricula_asegurado"]);
         $query->where("asegurado_id", $asegurado->id);
       }
       if(Arr::has($filter, "proveedor_id")){
@@ -82,8 +81,7 @@ class SolicitudAtencionExternaService extends Controller {
 
   protected function prepareResult($query){
     $solicitudes = $query->with(["medico", "regional", "proveedor"])->get();
-    $aseguradoRepository = $this->getAseguradoRepository();
-    $asegurados = $aseguradoRepository->buscarPorIds($solicitudes->pluck("asegurado_id"));
+    $asegurados = Asegurado::buscarPorIds($solicitudes->pluck("asegurado_id"));
         
     return $solicitudes->map(function($solicitud) use($asegurados){
       return [
@@ -92,42 +90,95 @@ class SolicitudAtencionExternaService extends Controller {
         "asegurado" => $asegurados->where("id", $solicitud->asegurado_id)->first()->toArray(),
         "medico" => $solicitud->medico->nombreCompleto,
         "proveedor" => $solicitud->proveedor->nombre,
+        "url_dm11" => $solicitud->url_dm11
       ];
     });
   }
 
+  public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $prestaciones_solicitadas){
+    $asegurado = Asegurado::buscarPorId($asegurado_id);
+    $empleador = Empleador::buscarPorId($asegurado->empleador_id);
+
+    $hoy = Carbon::now("America/La_Paz");
+    if($asegurado->estado == "Baja" && $asegurado->fecha_baja->addDays(60)->le($hoy)){
+      throw ValidationException::withMessages([
+        "asegurado.fecha_baja" => "El asegurado ha sido dado de baja hace mas de 2 meses"
+      ]);
+    }
+    if($asegurado->titular && $asegurado->titular->estado == "Baja" && $asegurado->titular->fecha_baja->addDays(60)->le($hoy)){
+      throw ValidationException::withMessages([
+        "asegurado.titular.fecha_baja" => "El titular del seguro ha sido dado de baja hace mas de 2 meses"
+      ]);
+    }
+    if($empleador->estado == "Baja" && $empleador->fecha_baja->addDays(60)->le($hoy)){
+      throw ValidationException::withMessages([
+        "asegurado.empleador.fecha_baja" => "El empleador ha sido dado de baja hace mas de 2 meses"
+      ]);
+    }
+    if($empleador->aportes == "En mora"){
+      throw ValidationException::withMessages([
+        "asegurado.empleador.aportes" => "El empleador esta en mora"
+      ]);
+    }
+    if($asegurado->fecha_extinsion && $asegurado->fecha_extinsion->le($hoy)){
+      throw ValidationException::withMessages([
+        "asegurado.fecha_extinsion" => "La fecha de extinsion se ha cumplido"
+      ]);
+    }
+    
+    $solicitud = new SolicitudAtencionExterna();
+
+    $solicitud->fecha = $hoy;
+    $solicitud->regional_id = $regional_id;
+    $solicitud->asegurado_id = $asegurado_id;
+    $solicitud->empleador_id = $asegurado->empleador_id;
+    $solicitud->medico_id = $medico_id;
+    $solicitud->proveedor_id = $proveedor_id;
+
+    foreach($prestaciones_solicitadas as $prestacion_solicitada){
+      $solicitud->prestacionesSolicitadas()->create($prestacion_solicitada, true);
+    }
+    DB::transaction(function() use($solicitud){
+      $solicitud->save();
+    });
+
+    return $solicitud;
+  }
+
   public function generarDatosParaFormularioDm11($numeroSolicitud){
-    $solicitud = SolicitudAtencionExterna::find($numeroSolicitud);
-    $asegurado = $this->getAseguradoRepository()->buscarPorId($solicitud->asegurado_id);
-    $empleador = (new EmpleadorRepository)->buscarPorId($solicitud->empleador_id);
-    // var_dump($asegurado, $solicitud, $empleador);
+    $solicitud = SolicitudAtencionExterna::with("prestacionesSolicitadas")->find($numeroSolicitud);
+    $asegurado = Asegurado::buscarPorId($solicitud->asegurado_id);
+    $titular = Asegurado::buscarPorId($asegurado->titular_id);
+    $empleador = Empleador::buscarPorId($solicitud->empleador_id);
+
     return [
       "numero" => $numeroSolicitud,
       "fecha" => $solicitud->fecha,
       "regional" => $solicitud->regional->nombre,
       "proveedor" => $solicitud->proveedor->nombre,
-      "titular" => !$asegurado->titular ? [
-        "matricula" => $asegurado->partes_matricula,
+      "titular" => !$titular ? [
+        "matricula" => $asegurado->matricula,
         "nombre" => $asegurado->nombre_completo
         ] : [
-          "matricula" => $asegurado->titular->partes_matricula,
-        "nombre" => $asegurado->titular->nombre
-      ],
-      "beneficiario" => !$asegurado->titular ? [
+          "matricula" => $titular->matricula,
+          "nombre" => $titular->nombre_completo
+        ],
+      "beneficiario" => !$titular ? [
         "matricula" => ["","",""],
         "nombre" => ""
         ] : [
-          "matricula" => $asegurado->partes_matricula,
-        "nombre" => $asegurado->nombre_completo
-      ],
+          "matricula" => $asegurado->matricula,
+          "nombre" => $asegurado->nombre_completo
+        ],
       "empleador" => $empleador->nombre,
       "doctor" => [
         "nombre" => $solicitud->medico->nombre_completo,
-        "especialidad" => $solicitud->medico->especialidad->nombre
+        "especialidad" => $solicitud->medico->especialidad
       ],
       "proveedor" => $solicitud->proveedor->nombre,
-      "prestaciones" => $solicitud->prestacionesSolicitadas->map(function($prestacion){
-        return $prestacion->nombre;
+      "prestaciones" => $solicitud->prestacionesSolicitadas->map(function($prestacionSolicitada){
+        Log::debug($prestacionSolicitada->toJson());
+        return $prestacionSolicitada->prestacion . ($prestacionSolicitada->nota ? " - " . $prestacionSolicitada->nota : "");
       })->chunk(ceil($solicitud->prestacionesSolicitadas->count()/3))
     ];
   }
@@ -135,6 +186,7 @@ class SolicitudAtencionExternaService extends Controller {
   public function actualizarUrlDm11($numeroSolicitud, $url){
     $solicitud = SolicitudAtencionExterna::find($numeroSolicitud);
     $solicitud->url_dm11 = $url;
-    return $solicitud->save();
+    $solicitud->save();
+    return $solicitud;
   }
 }

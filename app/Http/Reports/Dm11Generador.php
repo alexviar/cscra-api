@@ -20,6 +20,8 @@ class Dm11Generador {
     $numeroSolicitud = $solicitud["numero"];
     Storage::put("formularios/dm11/{$numeroSolicitud}.pdf", $pdf->output());
 
-    return url("formularios/dm11/{$numeroSolicitud}");
+    return route("forms.dm11", [
+      "numero" => $numeroSolicitud
+    ]);
   }
 }

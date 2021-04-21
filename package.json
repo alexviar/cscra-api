@@ -1,6 +1,7 @@
 {
     "private": true,
     "scripts": {
+        "start": "php artisan serve --host=api.example.com --port=80",
         "dev": "npm run development",
         "development": "mix",
         "watch": "mix watch",
@@ -14,5 +15,8 @@
         "laravel-mix": "^6.0.6",
         "lodash": "^4.17.19",
         "postcss": "^8.1.14"
+    },
+    "dependencies": {
+        "react-bootstrap-typeahead": "^5.1.4"
     }
 }

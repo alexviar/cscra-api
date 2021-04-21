@@ -10,4 +10,8 @@ class ListaMoraItem extends Model {
   protected $table = "lista_mora";
 
   protected $fillable = ["empleador_id"];
+
+  static function buscarPorIdEmpleadores($idEmpleadores){
+    return static::whereIn("empleador_id", $idEmpleadores)->get();
+  }
 }

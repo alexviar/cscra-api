@@ -10,4 +10,11 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    function buildPaginatedResponseData($total, $records){
+      return [
+        "meta" => ["total" => $total],
+        "records" => $records
+      ];
+    }
 }

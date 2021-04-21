@@ -46,7 +46,7 @@ class ListaMoraController extends Controller {
 
   function agregar(Request $request): JsonResponse {
     $payload = $request->validate([
-      "empleador_id" => "required|numeric"
+      "empleador_id" => "required"
     ]);
 
     $item  = $this->listaMoraService->agregar($payload["empleador_id"]);
@@ -56,7 +56,7 @@ class ListaMoraController extends Controller {
 
   function quitar(Request $request): JsonResponse {
     $payload = $request->validate([
-      "empleador_id" => "required|numeric"
+      "empleador_id" => "required"
     ]);
     $this->listaMoraService->quitar($payload["empleador_id"]);
     return response()->json();

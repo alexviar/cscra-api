@@ -2,11 +2,8 @@
 
 namespace App\Models;
 
-use ArrayAccess;
-use Exception;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
-use InvalidArgumentException;
+use DateTimeInterface;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property integer id
@@ -17,56 +14,45 @@ use InvalidArgumentException;
  * @property string estado
  * @property string fecha_extinsion
  */
-class Asegurado implements Arrayable, ArrayAccess {
+class Asegurado extends Model {
 
-  private $attributes;
+  public $incrementing = false;
 
-  function __construct($attributes=[])
-  {
-    if($attributes == NULL){
-      throw new InvalidArgumentException();
+  protected $keyType =  "string";
+
+  protected $table = "asegurados";
+
+  function getNombreCompletoAttribute(){
+    $nombreCompleto = $this->nombres;
+    if($this->apellido_materno){
+      $nombreCompleto = $this->apellido_materno . " " . $nombreCompleto;
     }
-    $this->attributes = $attributes;
+    if($this->apellido_paterno){
+      $nombreCompleto = $this->apellido_paterno . " " . $nombreCompleto;
+    }
+    return $nombreCompleto;
   }
 
-  function __set($name, $value){
-    $this->attributes[$name] = $value;
-  }
-
-  function __get($name){
-    if($name == "partes_matricula") {
-      return explode("-", $this->attributes["matricula"]);
-    }
-    if($name == "nombre_completo") {
-      return trim("{$this->apellido_paterno} {$this->apellido_materno} {$this->nombres}");
-    }
-    return Arr::get($this->attributes, $name, null);
+  function getMatriculaAttribute($value){
+    return explode("-", $value);
   }
 
   function toArray()
   {
-    return $this->attributes;
-  }
-  
-  function offsetExists($offset)
-  {
-    return Arr::has($this->attributes, $offset);
+    $array = parent::toArray();
+    $array["matricula"] = $this->attributes["matricula"];
+    return $array;
   }
 
-  function offsetGet($offset)
-  {
-    return $this->attributes[$offset];
+  static function buscarPorIds($ids){
+    return static::whereIn("id", $ids)->get();
   }
 
-  function offsetSet($offset, $value)
-  {
-    $this->attributes[$offset] = $value;
+  static function buscarPorId($id){
+    return static::where("id", $id)->first();
   }
 
-  function offsetUnset($offset)
-  {
-    unset($this->attributes[$offset]);
+  static function buscarPorMatricula($matricula){
+    return static::where("matricula", "like", $matricula."%");
   }
-
-
 }

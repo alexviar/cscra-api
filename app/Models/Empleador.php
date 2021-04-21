@@ -2,61 +2,35 @@
 
 namespace App\Models;
 
-use ArrayAccess;
-use Exception;
-use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
-use InvalidArgumentException;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property integer id
  * @property string numeroPatronal
  * @property string nombre
  */
-class Empleador implements Arrayable, ArrayAccess {
+class Empleador extends Model {
   
-  private $attributes;
+  protected $table = "empleadores";
 
-  function __construct($attributes=[])
-  {
-    if($attributes == NULL){
-      throw new InvalidArgumentException();
-    }
-    $this->attributes = $attributes;
+  public $incrementing = false;
+
+  protected $keyType =  "string";
+
+  protected $casts = [
+    "fecha_baja" => "date:d/m/Y",
+  ];
+
+  static function buscarPorId($id){
+    return static::where("id", $id)->first();
   }
 
-  function __set($name, $value){
-    $this->attributes[$name] = $value;
-  }
-
-  function __get($name){
-    return Arr::get($this->attributes, $name, null);
-  }
-
-  function toArray()
-  {
-    return $this->attributes;
+  static function buscarPorIds($ids){
+    return static::whereIn("id", $ids)->get();
   }
   
-  function offsetExists($offset)
-  {
-    return Arr::has($this->attributes, $offset);
+  static function buscarPorNumeroPatronal($numeroPatronal){
+    return static::where("numero_patronal", $numeroPatronal)->first();
   }
-
-  function offsetGet($offset)
-  {
-    return $this->attributes[$offset];
-  }
-
-  function offsetSet($offset, $value)
-  {
-    $this->attributes[$offset] = $value;
-  }
-
-  function offsetUnset($offset)
-  {
-    unset($this->attributes[$offset]);
-  }
-
 
 }

@@ -8,6 +8,7 @@ use App\Models\SolicitudAtencionExterna;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SolicitudAtencionExternaController extends Controller {
@@ -33,8 +34,30 @@ class SolicitudAtencionExternaController extends Controller {
   }
 
   function registrar(Request $request){
-    $payload = $request->validate([]);    
-    return response()->json();
+    $payload = $request->validate([
+      "regional_id" => "required",
+      "asegurado_id" => "required",
+      "medico_id" => "required",
+      "proveedor_id" => "required",
+      "prestaciones_solicitadas" => "array | required",
+      "prestaciones_solicitadas.*.prestacion_id" => "required",
+      "prestaciones_solicitadas.*.nota" => "nullable"
+    ]);    
+    $solicitud = $this->solicitudAtencionExternaService->registrar(
+      $payload["regional_id"], 
+      $payload["asegurado_id"],
+      $payload["medico_id"],
+      $payload["proveedor_id"],      
+      $payload["prestaciones_solicitadas"],      
+    );
+    // if($request->user()->can("generar dm11")){
+      $datos = $this->solicitudAtencionExternaService->generarDatosParaFormularioDm11($solicitud->numero);
+      Log::debug(json_encode($datos));
+      $dm11Generator = new Dm11Generador();
+      $url = $dm11Generator->generar($datos);
+      $solicitud = $this->solicitudAtencionExternaService->actualizarUrlDm11($solicitud->numero, $url);
+    // }
+    return response()->json($solicitud);
   }
 
   function generarDm11(Request $request, string $numeroSolicitud): JsonResponse {
