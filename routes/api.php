@@ -47,15 +47,20 @@ Route::middleware("auth:sanctum")->put("solicitudes-atencion-externa/{id}/genera
   ->where('id', '[0-9]{10}');
 
 Route::middleware("auth:sanctum")->get("medicos", [MedicosController::class, "buscar"]);
+Route::middleware("auth:sanctum")->get("medicos/{id}", [MedicosController::class, "mostrar"]);
+Route::middleware("auth:sanctum")->post("medicos", [MedicosController::class, "registrar"]);
+Route::middleware("auth:sanctum")->put("medicos/{id}", [MedicosController::class, "actualizar"]);
+Route::middleware("auth:sanctum")->delete("medicos/{id}", [MedicosController::class, "eliminar"]);
 
 Route::middleware("auth:sanctum")->get("regionales", [RegionalesController::class, "obtener"]);
 
 Route::middleware("auth:sanctum")->get("prestaciones", [PrestacionController::class, "buscar"]);
+Route::middleware("auth:sanctum")->get("prestaciones/buscar-nombre", [PrestacionController::class, "buscarPorNombre"]);
 Route::middleware("auth:sanctum")->get("prestaciones/{id}", [PrestacionController::class, "ver"]);
 Route::middleware("auth:sanctum")->post("prestaciones", [PrestacionController::class, "registrar"]);
 Route::middleware("auth:sanctum")->put("prestaciones/{id}", [PrestacionController::class, "actualizar"]);
 Route::middleware("auth:sanctum")->delete("prestaciones/{id}", [PrestacionController::class, "eliminar"]);
 Route::middleware("auth:sanctum")->post("prestaciones/importar", [PrestacionController::class, "importar"]);
-Route::middleware("auth:sanctum")->get("prestaciones/buscar-nombre", [PrestacionController::class, "buscarPorNombre"]);
 
+Route::middleware("auth:sanctum")->get("proveedores", [ProveedorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorController::class, "buscarPorNombre"]);

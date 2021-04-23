@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Grimzy\LaravelMysqlSpatial\Eloquent\SpatialTrait;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Proveedor extends Model {
+  // use \Staudenmeir\EloquentHasManyDeep\HasRelationships;
   use SpatialTrait;
 
   const EMPLEADO = 1;
@@ -22,7 +24,16 @@ class Proveedor extends Model {
     return $this->hasOne(Medico::class, "id", "medico_id");
   }
 
+  function contrato(){
+    $today = Carbon::today(config("app.timezone"))->toDateString();
+    return $this->hasOne(ContratoProveedor::class, "proveedor_id", "id")
+      ->whereDate("fin", ">=", $today)
+      ->whereDate("inicio", "<=", $today);
+  }
 
+  function historialContratos(){
+    return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id");
+  }
 
   // function toArray()
   // {
@@ -34,15 +45,15 @@ class Proveedor extends Model {
   static function buscarPorNombre($nombre){
     $query = static::query();
 
-    $query->limit(50);
+    // $query->limit(50);
 
-    $query->with(["medico", "medico.especialidad"]);
+    $query->with(["medico.especialidad", "contrato.prestaciones"]);
 
     $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"])
     ->orWhereHas("medico", function($query) use($nombre){
       $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);
-    })
-    ;
+    });
+
     return $query->get();
   }
 }

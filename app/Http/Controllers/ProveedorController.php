@@ -11,7 +11,12 @@ use Illuminate\Support\Arr;
 
 class ProveedorController extends Controller {
   function buscar(Request $request) {
-
+    $page = $request->page;
+    $query = Proveedor::query();
+    $query->with("medico.especialidad", "contrato.prestaciones");
+    if(!$page){
+      return response()->json($query->get());
+    }
   }
 
   function buscarPorNombre(Request $request){

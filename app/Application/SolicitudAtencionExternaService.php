@@ -85,6 +85,7 @@ class SolicitudAtencionExternaService extends Controller {
         
     return $solicitudes->map(function($solicitud) use($asegurados){
       return [
+        "id" => $solicitud->id,
         "numero" => $solicitud->numero,
         "fecha" => $solicitud->fecha,
         "asegurado" => $asegurados->where("id", $solicitud->asegurado_id)->first()->toArray(),

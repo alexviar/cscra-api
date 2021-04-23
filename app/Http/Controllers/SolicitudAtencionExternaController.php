@@ -52,7 +52,6 @@ class SolicitudAtencionExternaController extends Controller {
     );
     // if($request->user()->can("generar dm11")){
       $datos = $this->solicitudAtencionExternaService->generarDatosParaFormularioDm11($solicitud->numero);
-      Log::debug(json_encode($datos));
       $dm11Generator = new Dm11Generador();
       $url = $dm11Generator->generar($datos);
       $solicitud = $this->solicitudAtencionExternaService->actualizarUrlDm11($solicitud->numero, $url);

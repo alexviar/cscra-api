@@ -19,6 +19,11 @@ class PrestacionController extends Controller {
     if(Arr::has($filter, "nombre")){
       $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$filter["nombre"]."*"]);
     }
+
+    if(!$page){
+      return response()->json($query->get());
+    }
+
     $total = $query->count();
 
     $pageSize = Arr::get($page, "size");
@@ -35,7 +40,7 @@ class PrestacionController extends Controller {
   }
 
   function buscarPorNombre(Request $request){
-    $prestaciones = $request->nombre ? Prestacion::whereRaw("MATCH(`nombre` AGAINST(? IN BOOLEAN MODE)", [$request->nombre."*"] )->get() : [];
+    $prestaciones = $request->nombre ? Prestacion::whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$request->nombre."*"] )->get() : [];
     return response()->json($prestaciones);
   }
 
