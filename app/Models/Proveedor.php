@@ -20,6 +20,12 @@ class Proveedor extends Model {
     'ubicacion',
   ];
 
+  protected $appends = ["tipo"];
+
+  function getTipoAttribute(){
+    return $this->tipo_id == 1 ? "Médico" : "Empresa";
+  }
+
   function medico(){
     return $this->hasOne(Medico::class, "id", "medico_id");
   }

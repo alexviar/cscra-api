@@ -14,9 +14,19 @@ class ProveedorController extends Controller {
     $page = $request->page;
     $query = Proveedor::query();
     $query->with("medico.especialidad", "contrato.prestaciones");
-    if(!$page){
-      return response()->json($query->get());
+
+    if($page && Arr::has($page, "size")){
+      $query->limit($page["size"]);
+      if(Arr::has($page, "current")){
+        $query->offset(($page["current"] - 1) * $page["size"]);
+      }
+      $total = $query->count();
+      return $this->buildPaginatedResponseData($total, $query->get());
     }
+    if(Arr::has($page, "current")){
+      $query->offset($page["current"]);
+    }
+    return response()->json($query->get());
   }
 
   function buscarPorNombre(Request $request){

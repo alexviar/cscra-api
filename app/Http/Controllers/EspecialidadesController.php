@@ -43,7 +43,7 @@ class EspecialidadesController extends Controller {
         $query->offset(($page["current"] - 1) * $page["size"]);
       }
       $total = $query->count();
-      return $this->buildPaginatedResponseData($total, $query->get());
+      return response()->json($this->buildPaginatedResponseData($total, $query->get()));
     }
     if(Arr::has($page, "current")){
       $query->offset($page["current"]);
