@@ -34,15 +34,16 @@ class EspecialidadesController extends Controller {
     //   "records" => $records
     // ]);
     $query = Especialidad::query();
+    // $query->whereRaw("1");
     if(Arr::has($filter, "nombre") && $nombre=$filter["nombre"]){
       $query->where("nombre", "LIKE", "{$nombre}%");
     }
     if($page && Arr::has($page, "size")){
+      $total = $query->count();
       $query->limit($page["size"]);
       if(Arr::has($page, "current")){
         $query->offset(($page["current"] - 1) * $page["size"]);
       }
-      $total = $query->count();
       return response()->json($this->buildPaginatedResponseData($total, $query->get()));
     }
     if(Arr::has($page, "current")){

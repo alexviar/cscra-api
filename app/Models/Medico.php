@@ -19,7 +19,8 @@ class Medico extends Model {
     "apellido_materno",
     "nombres",
     "regional_id",
-    "especialidad_id"
+    "especialidad_id",
+    "es_proveedor"
   ];
 
   public function getNombreCompletoAttribute(){

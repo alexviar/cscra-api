@@ -22,6 +22,10 @@ class Asegurado extends Model {
 
   protected $table = "asegurados";
 
+  protected $casts = [
+    "fecha_baja" => "date:d/m/Y",
+  ];
+
   function getNombreCompletoAttribute(){
     $nombreCompleto = $this->nombres;
     if($this->apellido_materno){

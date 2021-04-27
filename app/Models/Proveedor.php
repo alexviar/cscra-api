@@ -16,6 +16,14 @@ class Proveedor extends Model {
   public $timestamps = false;
   protected $table = "proveedores";
 
+  protected $fillable = [
+    "tipo_id",
+    "nit",
+    "medico_id",
+    "nombre",
+    "regional_id"
+  ];
+
   protected $spatialFields = [
     'ubicacion',
   ];
