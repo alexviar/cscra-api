@@ -161,17 +161,17 @@ class SolicitudAtencionExternaService extends Controller {
       "regional" => $solicitud->regional->nombre,
       "proveedor" => $solicitud->proveedor->nombre,
       "titular" => !$titular ? [
-        "matricula" => $asegurado->matricula,
+        "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
         "nombre" => $asegurado->nombre_completo
         ] : [
-          "matricula" => $titular->matricula,
+          "matricula" => [$titular->matricula, $titular->matricula_complemento],
           "nombre" => $titular->nombre_completo
         ],
       "beneficiario" => !$titular ? [
-        "matricula" => ["","",""],
+        "matricula" => ["",""],
         "nombre" => ""
         ] : [
-          "matricula" => $asegurado->matricula,
+          "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
           "nombre" => $asegurado->nombre_completo
         ],
       "empleador" => $empleador->nombre,
@@ -181,7 +181,7 @@ class SolicitudAtencionExternaService extends Controller {
       ],
       "proveedor" => $solicitud->proveedor->nombre,
       "prestaciones" => $solicitud->prestacionesSolicitadas->map(function($prestacionSolicitada){
-        Log::debug($prestacionSolicitada->toJson());
+        // Log::debug($prestacionSolicitada->toJson());
         return $prestacionSolicitada->prestacion . ($prestacionSolicitada->nota ? " - " . $prestacionSolicitada->nota : "");
       })->chunk(ceil($solicitud->prestacionesSolicitadas->count()/3))
     ];

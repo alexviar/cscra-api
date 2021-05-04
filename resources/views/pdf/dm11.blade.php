@@ -74,12 +74,12 @@
                     <div style="height: 24px;margin: 5px">
                         <div style="vertical-align: middle; width: 74px; display: inline-block"><span>Nº Carnet Asegurado</span></div>
                         <div style="text-align: center; vertical-align: middle; line-height: 24px; display: inline-block; border: 1px solid; border-top-left-radius: 4px; border-bottom-left-radius: 4px; height: 24px; width: 90px">
-                        {{$titular["matricula"][0]}}{{$titular["matricula"][1]}}</div><div style="text-align: center; vertical-align: middle; line-height: 24px; display: inline-block; margin-left: -1px; border: 1px solid; border-top-right-radius: 4px; border-bottom-right-radius: 4px; height: 24px; width: 45px">{{$titular["matricula"][2]}}</div>
+                        {{$titular["matricula"][0]}}</div><div style="text-align: center; vertical-align: middle; line-height: 24px; display: inline-block; margin-left: -1px; border: 1px solid; border-top-right-radius: 4px; border-bottom-right-radius: 4px; height: 24px; width: 45px">{{$titular["matricula"][1]}}</div>
                     </div>
                     <div style="height: 24px;margin: 5px">
                         <div style="vertical-align: middle; width: 74px; display: inline-block"><span>Nº Carnet Beneficiario</span></div>
                         <div style="text-align: center; vertical-align: middle; line-height: 24px;  display: inline-block; border: 1px solid; border-top-left-radius: 4px; border-bottom-left-radius: 4px; height: 24px; width: 90px">
-                        {{$beneficiario["matricula"][0]}}{{$beneficiario["matricula"][1]}}</div><div style="text-align: center; vertical-align: middle; line-height: 24px;  display: inline-block; margin-left: -1px; border: 1px solid; border-top-right-radius: 4px; border-bottom-right-radius: 4px; height: 24px; width: 45px">{{$beneficiario["matricula"][2]}}</div>
+                        {{$beneficiario["matricula"][0]}}</div><div style="text-align: center; vertical-align: middle; line-height: 24px;  display: inline-block; margin-left: -1px; border: 1px solid; border-top-right-radius: 4px; border-bottom-right-radius: 4px; height: 24px; width: 45px">{{$beneficiario["matricula"][1]}}</div>
                     </div>
                 </div>
             </td>
