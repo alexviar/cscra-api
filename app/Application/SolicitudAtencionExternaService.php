@@ -90,9 +90,9 @@ class SolicitudAtencionExternaService extends Controller {
         "id" => $solicitud->id,
         "numero" => $solicitud->numero,
         "fecha" => $solicitud->fecha,
-        "asegurado" => $asegurados->where("id", $solicitud->asegurado_id)->first()->toArray(),
+        "asegurado" => $asegurados->where("ID", $solicitud->asegurado_id)->first()->toArray(),
         "medico" => $solicitud->medico->nombreCompleto,
-        "proveedor" => $solicitud->proveedor->nombre,
+        "proveedor" => $solicitud->proveedor->medico?->nombreCompleto ?: $solicitud->proveedor->nombre,
         "url_dm11" => $solicitud->url_dm11
       ];
     });
