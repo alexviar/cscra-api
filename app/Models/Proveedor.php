@@ -45,7 +45,7 @@ class Proveedor extends Model {
       ->whereDate("inicio", "<=", $today);
   }
 
-  function historialContratos(){
+  function contratos(){
     return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id");
   }
 
@@ -62,6 +62,8 @@ class Proveedor extends Model {
     // $query->limit(50);
 
     $query->with(["medico.especialidad", "contrato.prestaciones"]);
+
+    $query->whereHas("contrato");
 
     $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"])
     ->orWhereHas("medico", function($query) use($nombre){

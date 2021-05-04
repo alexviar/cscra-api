@@ -3,6 +3,7 @@
 namespace App\Application;
 
 use App\Models\Empleador;
+use App\Models\Galeno\Empleador as GalenoEmpleador;
 use App\Models\ListaMoraItem;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Arr;
@@ -27,7 +28,7 @@ class ListaMoraService {
     $items = $query->get();
     $empleadorIds = $items->pluck("empleador_id");
 
-    $empleadores = Empleador::buscarPorIds($empleadorIds->all());
+    $empleadores = GalenoEmpleador::buscarPorIds($empleadorIds->all());
     
     return [$total, $items->reduce(function($carry, $item) use($empleadores){
       $empleador = $empleadores->where("id", $item->empleador_id)->first();
@@ -44,7 +45,7 @@ class ListaMoraService {
   }
 
   function agregar($empleador_id){
-    $empleador = Empleador::buscarPorId($empleador_id);
+    $empleador = GalenoEmpleador::buscarPorId($empleador_id);
     if(!$empleador)
       throw new ModelNotFoundException("El empleador no existe");
     return ListaMoraItem::firstOrCreate([

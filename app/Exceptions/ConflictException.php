@@ -32,8 +32,8 @@ class ConflictException extends Exception
         ], 409);
     }
 
-    public static function withData($data){
-      $exception = new ConflictException("Conflict");
+    public static function withData($message, $data){
+      $exception = new ConflictException($message);
       $exception->data = $data;
       return $exception;
     }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SolicitudAtencionExternaController extends Controller {
@@ -70,6 +71,12 @@ class SolicitudAtencionExternaController extends Controller {
   }
 
   function VerDm11(Request $request, string $numeroSolicitud): BinaryFileResponse {
+    if(!Storage::exists("app/formularios/dm11/${numeroSolicitud}.pdf")){
+      $solicitud = $this->solicitudAtencionExternaService->generarDatosParaFormularioDm11($numeroSolicitud);
+      $dm11Generator = new Dm11Generador();
+      $url = $dm11Generator->generar($solicitud);
+      $this->solicitudAtencionExternaService->actualizarUrlDm11($numeroSolicitud, $url);
+    }
     return response()->file(storage_path("app/formularios/dm11/${numeroSolicitud}.pdf"), [
       "Access-Control-Allow-Origin" => "*",
       "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS",

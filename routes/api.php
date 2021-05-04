@@ -9,7 +9,13 @@ use App\Http\Controllers\PrestacionController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RegionalesController;
 use App\Http\Controllers\SolicitudAtencionExternaController;
+use App\Http\Controllers\UnidadesTerritorialesController;
+use App\Models\Asegurado;
+use App\Models\Galeno\AfiliacionBeneficiario;
+use App\Models\Galeno\AfiliacionTitular;
+use App\Models\Galeno\Afiliado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,7 +32,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-
 
 Route::middleware("auth:sanctum")->get("empleadores", [EmpleadorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("empleadores/buscar-por-patronal", [EmpleadorController::class, "buscarPorPatronal"]);
@@ -62,7 +67,15 @@ Route::middleware("auth:sanctum")->put("prestaciones/{id}", [PrestacionControlle
 Route::middleware("auth:sanctum")->delete("prestaciones/{id}", [PrestacionController::class, "eliminar"]);
 Route::middleware("auth:sanctum")->post("prestaciones/importar", [PrestacionController::class, "importar"]);
 
+
+Route::middleware("auth:sanctum")->post("proveedores/{id}/contratos", [ProveedorController::class, "registrarContrato"]);
 Route::middleware("auth:sanctum")->get("proveedores", [ProveedorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->post("proveedores", [ProveedorController::class, "registrar"]);
 // Route::middleware("auth:sanctum")->put("proveedores", [ProveedorController::class, "registrar"]);
 Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorController::class, "buscarPorNombre"]);
+
+Route::middleware("auth:sanctum")->get("departamentos", [UnidadesTerritorialesController::class, "getDepartamentos"]);
+Route::middleware("auth:sanctum")->get("provincias", [UnidadesTerritorialesController::class, "getProvincias"]);
+Route::middleware("auth:sanctum")->get("municipios", [UnidadesTerritorialesController::class, "getMunicipios"]);
+
+

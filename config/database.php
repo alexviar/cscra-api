@@ -87,19 +87,22 @@ return [
             ]) : [],
         ],
 
-        'pgsql' => [
+        'galeno' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
+            'host' => env('GALENO_DB_HOST', '127.0.0.1'),
+            'port' => env('GALENO_DB_PORT', '5432'),
+            'database' => env('GALENO_DB_NAME', 'forge'),
+            'username' => env('GALENO_DB_USERNAME', 'forge'),
+            'password' => env('GALENO_DB_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,
-            'schema' => 'public',
+            'schema' => 'ALEXANDER',
             'sslmode' => 'prefer',
+            // 'options' => [
+            //   PDO::ATTR_CASE => PDO::CASE_LOWER
+            // ]
         ],
 
         'sqlsrv' => [

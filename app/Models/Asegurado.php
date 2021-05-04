@@ -24,6 +24,7 @@ class Asegurado extends Model {
 
   protected $casts = [
     "fecha_baja" => "date:d/m/Y",
+    "fecha_extinsion" => "date:d/m/Y"
   ];
 
   function getNombreCompletoAttribute(){
