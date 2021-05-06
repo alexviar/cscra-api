@@ -26,7 +26,7 @@ class AfiliacionTitular extends Model {
     "FECHA_I_CSC_TIT",
     "FECHA_I_REG_TIT",
     "FECHA_I_TRABAJO_TIT",
-    "ID",
+    // "ID",
     "IDSIRA",
     "ID_AFO",
     "ID_EPR",
