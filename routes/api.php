@@ -10,6 +10,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RegionalesController;
 use App\Http\Controllers\SolicitudAtencionExternaController;
 use App\Http\Controllers\UnidadesTerritorialesController;
+use App\Http\Controllers\UserController;
 use App\Models\Asegurado;
 use App\Models\Galeno\AfiliacionBeneficiario;
 use App\Models\Galeno\AfiliacionTitular;
@@ -32,6 +33,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::middleware("auth.sanctum")->get("usuarios", [UserController::class, "index"]);
 
 Route::middleware("auth:sanctum")->get("empleadores", [EmpleadorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("empleadores/buscar-por-patronal", [EmpleadorController::class, "buscarPorPatronal"]);

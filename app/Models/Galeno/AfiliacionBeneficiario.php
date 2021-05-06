@@ -28,7 +28,7 @@ class AfiliacionBeneficiario extends Model {
     "FECHA_EXTINSION_BEN",
     "FECHA_INGRESO_BEN",
     "FECHA_I_BEN",
-    "ID",
+    // "ID",
     "IDSIRA",
     "ID_AFO",
     "ID_TTR",

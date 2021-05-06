@@ -4,7 +4,7 @@ namespace App\Models\Galeno;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use stdClass;
+use Illuminate\Support\Facades\Log;
 
 class Afiliado extends Model {
 
@@ -64,7 +64,7 @@ class Afiliado extends Model {
     "tipo",
     "empleador",
     "afiliacionDelTitular",
-    // "ultimaAfiliacion"
+    "ultimaAfiliacion"
   ];
 
   protected $primaryKey = 'ID';
@@ -84,6 +84,17 @@ class Afiliado extends Model {
 
   function getMatriculaComplementoAttribute(){
     return $this->getAttribute("MATRICULA_CO");
+  }
+
+  function getNombreCompletoAttribute(){
+    $nombreCompleto = $this->nombres;
+    if($this->apellido_materno){
+      $nombreCompleto = $this->apellido_materno . " " . $nombreCompleto;
+    }
+    if($this->apellido_paterno){
+      $nombreCompleto = $this->apellido_paterno . " " . $nombreCompleto;
+    }
+    return $nombreCompleto;
   }
 
   function getApellidoPaternoAttribute(){
@@ -112,13 +123,13 @@ class Afiliado extends Model {
 
   function getAfiliacionDelTitularAttribute(){
     if($this->tipo == 2){
-      return $this->ultimaAfiliacion->afiliacionDelTitular;
+      return $this->ultimaAfiliacion?->afiliacionDelTitular;
     }
   }
   
   function getFechaExtinsionAttribute(){
     if($this->tipo == 2){
-      return $this->ultimaAfiliacion->fecha_extinsion;
+      return $this->ultimaAfiliacion?->fecha_extinsion;
     }
   }
 
@@ -127,15 +138,12 @@ class Afiliado extends Model {
   }
 
   function getUltimaAfiliacionAttribute(){
+    // Log::debug(json_encode([$this->afiliacionesComoBeneficiario, $this->afiliacionesComoTitular]));
     if($this->tipo == 1){
-      return $this->afiliacionesComoTitular->sortByDesc([
-        "ID",
-      ])->first();
+      return $this->afiliacionesComoTitular->sortByDesc(fn ($afi) => $afi->ID)->first();
     }
     else if($this->tipo == 2){
-      return $this->afiliacionesComoBeneficiario->sortByDesc([
-        "ID",
-      ])->first();
+      return $this->afiliacionesComoBeneficiario->sortByDesc(fn ($afi) => $afi->ID)->first();
     }
   }
 

@@ -17,6 +17,12 @@ class AmpliacionPrestacion extends Model {
   // In Laravel 6.0+ make sure to also set $keyType
   protected $keyType = 'string';
 
+  protected $casts = [
+    "FECHA_EXTINSION_AMP"=>"date: d/m/Y",
+    "fecha_extinsion"=>"date: Y-m-d",
+    "fecha_validez_seguro"=>"date: Y-m-d",
+  ];
+
   protected $hidden = [
 
   ];
@@ -34,6 +40,6 @@ class AmpliacionPrestacion extends Model {
   }
   
   function getFechaExtinsionAttribute(){
-    return $this->attributes["FECHA_EXTINSION_AMP"];
+    return $this->getAttribute("FECHA_EXTINSION_AMP");
   }
 }
