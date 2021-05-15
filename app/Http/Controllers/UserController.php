@@ -13,17 +13,15 @@ use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
-use Jenssegers\Optimus\Optimus;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
 
   public function index(Request $request){
+    $this->authorize("ver-todo", User::class);
+
     $filter = $request->filter;
     $page =  $request->page;
     $query = User::query();
@@ -34,6 +32,9 @@ class UserController extends Controller
     if(Arr::has($filter, "estado")){
       $query->where("estado", $filter["estado"]);
     }
+    if(Arr::has($filter, "regional_id")){
+      $query->where("regional_id", $filter["regional_id"]);
+    }
 
     if($page && Arr::has($page, "size")){
       $total = $query->count();
@@ -41,22 +42,29 @@ class UserController extends Controller
       if(Arr::has($page, "current")){
         $query->offset(($page["current"] - 1) * $page["size"]);
       }
-      return response()->json($this->buildPaginatedResponseData($total, $query->get()));
+      $records = $query->get();
+      $records->makeVisible("role_names");
+      return response()->json($this->buildPaginatedResponseData($total, $records));
     }
     if(Arr::has($page, "current")){
       $query->offset($page["current"]);
     }
 
-    return response()->json($query->get());
+    $records = $query->get();
+    $records->makeVisible("role_names");
+    return response()->json($records);
   }
 
   public function show(Request $request, $id){
     $user =  User::with("roles")->find($id);
+
     if(!$user){
       throw new ModelNotFoundException();
     }
-    $user->append("role_ids");
-    $user->makeHidden("roles");
+
+    $this->authorize("ver", [User::class, $user]);
+
+    $user->append("role_names");
     return response()->json($user);
   }
 
@@ -69,33 +77,34 @@ class UserController extends Controller
       "apellido_paterno" => "required",
       "apellido_materno" => "required",
       "nombres" => "required",
-      "role_ids" => "required|array",
-      "role_ids.*" => "exists:".Role::class.",id"
+      "roles" => "required|array",
+      "roles.*" => "exists:".Role::class.",name"
     ]);
+
+    $this->authorize("registrar", [User::class, $payload]);
+
+    $user = User::where("ci_raiz", $payload["ci"])->where("ci_complemento", $payload["ci_complemento"])->first();
+    if($user){
+      throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado",$user);
+    }
 
     $user = DB::transaction(function () use($payload) {
       $model = User::create([
         "username" => $payload["username"],
         "password" => Hash::make($payload["password"]),
-        "ci" => $payload["ci"],
+        "ci_raiz" => $payload["ci"],
         "ci_complemento" => $payload["ci_complemento"],
         "apellido_paterno" => $payload["apellido_paterno"],
         "apellido_materno" => $payload["apellido_materno"],
         "nombres" => $payload["nombres"],
+        "estado" => 1
       ]);
-      $model->syncRoles($payload["role_ids"]);
+      $model->syncRoles($payload["roles"]);
       return $model;
     });
 
-      // $service = new UserService();
-      // $user = $service->register(
-      //   $payload['external_id'],
-      //   $payload['username'],
-      //   $payload['password'],
-      //   $payload['role_ids']
-      // );
-
-      return response()->json($user);
+    $user->append("role_names");
+    return response()->json($user);
   }
   
   public function update(Request $request, $id){
@@ -105,47 +114,88 @@ class UserController extends Controller
       // abort(409, json_encode($user));
       throw new ModelNotFoundException();
     }
-      $payload = $request->validate([
-        "username" => ["required", Rule::unique("users")->whereNot("id", $id)],
-        "role_ids" => "required|array",
-        "role_ids.*" => "exists:".Role::class.",id"
-      ]);
+    
+    $this->authorize("editar", $user);
 
-      // $service = new UserService();
-      // $user = $service->register(
-      //   $payload['external_id'],
-      //   $payload['username'],
-      //   $payload['password'],
-      //   $payload['role_ids']
-      // );
-      DB::transaction(function() use($user, $payload) {
-        $user->username = $payload["username"];
-        $user->syncRoles($payload["role_ids"]);
-        $user->save();
-      });
+    $payload = $request->validate([
+      // "username" => ["required", Rule::unique("users")->whereNot("id", $id)],
+      "ci" => "required",
+      "ci_complemento" => "nullable",
+      "apellido_paterno" => "required",
+      "apellido_materno" => "required",
+      "nombres" => "required",
+      "roles" => "required|array",
+      "roles.*" => "exists:".Role::class.",name"
+    ]);
 
-      return response()->json([
-        'username' => $user->username,
-        'externalId' => $user->external_id,
-        'roleIds' => $user->roles->map(function($role){return $role->id;})
-      ]);
+    $user2 = User::where("ci_raiz", $payload["ci"])->where("ci_complemento", $payload["ci_complemento"])->where("id", "<>", $user->id)->first();
+    if($user2){
+      throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado", $user2);
+    }
+
+    DB::transaction(function() use($user, $payload) {
+      $user->ci_raiz = $payload["ci"];
+      $user->ci_complemento = $payload["ci_complemento"];
+      $user->apellido_paterno = $payload["apellido_paterno"];
+      $user->apellido_materno = $payload["apellido_materno"];
+      $user->nombres = $payload["nombres"];
+      $user->syncRoles($payload["roles"]);
+      $user->save();
+    });
+
+    $user->append("role_names");
+    return response()->json($user);
   }
 
-  // public function authenticate(Request $request){
-  //   $request->validate([
-  //     'username' => 'required',
-  //     'password' => 'required',
-  //     'device_name' => 'required',
-  //   ]);
+  function changePassword(Request $request, $id){
+    /** @var User $user */
+    $user = User::find($id);
+    if(!$user){
+      // abort(409, json_encode($user));
+      throw new ModelNotFoundException();
+    }
 
-  //   $user = User::where('username', $request->username)->first();
+    $payload = $request->validate([
+      "new_password" => "required"
+    ]);
 
-  //   if (! $user || ! Hash::check($request->password, $user->password_hash)) {
-  //       throw ValidationException::withMessages([
-  //           'username' => ['The provided credentials are incorrect.'],
-  //       ]);
-  //   }
+    $this->authorize("cambiar-contrasena", [$user, $payload]);
 
-  //   return $user->createToken($request->device_name)->plainTextToken;
-  // }
+    $user->password = Hash::make($payload["new_password"]);
+    $user->save();
+    
+    return response()->json();
+  }
+
+  function enable(Request $request, $id) {
+    /** @var User $user */
+    $user = User::find($id);
+    if(!$user){
+      throw new ModelNotFoundException();
+    }
+
+    $this->authorize("enable", $user);
+
+    $user->update([
+      "estado" => 1
+    ]);
+
+    return response()->json();
+  }
+
+  function disable(Request $request, $id) {
+    /** @var User $user */
+    $user = User::find($id);
+    if(!$user){
+      throw new ModelNotFoundException();
+    }
+
+    $this->authorize("disable", $user);
+
+    $user->update([
+      "estado" => 0
+    ]);
+
+    return response()->json();
+  }
 }

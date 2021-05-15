@@ -12,20 +12,23 @@ class MedicosController extends Controller {
   function buscar(Request $request) {
     $query = Medico::query();
     $page = $request->page;
-    if(Arr::has($page, "size")){
-      $query->limit($request->page["size"]);
-    }
     $filter = $request->filter;
-    if(Arr::has($filter, "nombre_completo")){
-      $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$request->filter["nombre_completo"]."*"]);
+    
+    if(Arr::has($filter, "nombre_completo") && $nombre=$filter["nombre_completo"]){
+      $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);
     }
-
-    return response()->json([
-      "meta"=>[
-        "total" => $query->count()
-      ],
-      "records" => $query->get()
-    ]);
+    if($page && Arr::has($page, "size")){
+      $total = $query->count();
+      $query->limit($page["size"]);
+      if(Arr::has($page, "current")){
+        $query->offset(($page["current"] - 1) * $page["size"]);
+      }
+      return response()->json($this->buildPaginatedResponseData($total, $query->get()));
+    }
+    if(Arr::has($page, "current")){
+      $query->offset($page["current"]);
+    }
+    return response()->json($query->get());
   }
 
   function mostrar(Request $request, $id){

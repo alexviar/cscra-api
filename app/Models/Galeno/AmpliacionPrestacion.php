@@ -29,10 +29,7 @@ class AmpliacionPrestacion extends Model {
 
   protected $appends = [
     "id",
-    "fecha_extinsion",
-    "nombre",
-    "estado",
-    "fecha_baja"
+    "fecha_extinsion"
   ];
 
   function getIdAttribute(){

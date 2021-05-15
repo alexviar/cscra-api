@@ -59,11 +59,9 @@ class Afiliado extends Model {
     "apellidoMaterno",
     "nombres",
     "estado",
-    "fecha_validez_seguro",
     "fecha_extinsion",
     "tipo",
     "empleador",
-    "afiliacionDelTitular",
     "ultimaAfiliacion"
   ];
 
@@ -147,12 +145,6 @@ class Afiliado extends Model {
     }
   }
 
-  // function titular(){
-  //   $obj = new stdClass;
-  //   $obj->id = $this->afiliacionDelTitular->afiliado->id;
-  //   $obj->estado = $this->afiliacion
-  // }
-
   function afiliacionesComoTitular(){
     return $this->hasMany(AfiliacionTitular::class, "ID_AFO", "ID");
   }
@@ -162,18 +154,23 @@ class Afiliado extends Model {
   }
 
   function toArray(){
-    $this->makeHidden(["afiliacionDelTitular", "fechaValidezSeguro", "fechaExtinsion"]);
     $array = parent::toArray();
-    $array["fecha_validez_seguro"] = $this->fechaValidezSeguro?->format("d/m/Y");
-    $array["fecha_extinsion"] = $this->fechaExtinsion?->format("d/m/Y");
+    $array["fecha_extinsion"] = $this->fecha_extinsion?->format("Y-m-d");
+    $array["baja"] = $this->ultimaAfiliacion?->baja ? [
+      "reg_date" => $this->ultimaAfiliacion->baja->REG_DATE->format("Y-m-d"),
+      "fecha_validez_seguro" => $this->ultimaAfiliacion->baja->fecha_validez_seguro?->format("Y-m-d")
+    ] : null;
     $array["titular"] = $this->afiliacionDelTitular ? [
       "id"  => $this->afiliacionDelTitular->afiliado->id,
-      "estado"  => $this->afiliacionDelTitular->estado,
-      "fecha_validez_seguro" => $this->afiliacionDelTitular->fecha_validez_seguro?->format("d/m/Y"),
       "matricula" => $this->afiliacionDelTitular->afiliado->matricula,
       "apellido_paterno" => $this->afiliacionDelTitular->afiliado->apellido_paterno,
       "apellido_materno" => $this->afiliacionDelTitular->afiliado->apellido_materno,
       "nombres" => $this->afiliacionDelTitular->afiliado->nombres,
+      "estado"  => $this->afiliacionDelTitular->estado,
+      "baja" =>  $this->afiliacionDelTitular->baja ? [
+        "reg_date" => $this->afiliacionDelTitular->baja->REG_DATE->format("Y-m-d"),
+        "fecha_validez_seguro" => $this->afiliacionDelTitular->baja->fecha_validez_seguro?->format("Y-m-d")
+      ] : null,
     ] : null;
     return $array;
   }

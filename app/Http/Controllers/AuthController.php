@@ -29,10 +29,13 @@ class AuthController extends Controller
 
     $remember_me =  $request->remember_me;
 
-    if (Auth::attempt($credentials+["active"=>1], $remember_me)) {
+    if (Auth::attempt($credentials+["estado"=>1], $remember_me)) {
       $request->session()->regenerate();
 
       // var_dump(Auth::user());
+      $user = Auth::user();
+      $user->makeVisible("all_permissions");
+      $user->load("roles");
       return response()->json(Auth::user());
     }
 

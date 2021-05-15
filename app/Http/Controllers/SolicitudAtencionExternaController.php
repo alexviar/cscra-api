@@ -8,6 +8,7 @@ use App\Models\SolicitudAtencionExterna;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -25,6 +26,17 @@ class SolicitudAtencionExternaController extends Controller {
   function buscar(Request $request): JsonResponse {
     $filter = $request->filter ?: [];
     $page = $request->page ?: [];
+    $this->authorize("ver-todo", [SolicitudAtencionExterna::class, $filter]);
+    
+    if(!$request->user()->can("ver solicitudes de atencion externa")){
+      if($request->user()->can("ver unicamente solicitudes de atencion externa registradas por el usuario")){
+        $filter["usuario_id"] = $request->user()->id;
+      }
+      if($request->user()->can("ver unicamente solicitudes de atencion externa de la misma regional")){
+        $filter["regional_id"] = $request->user()->regional_id;
+      }
+    }
+
     [$total, $solicitudes] = $this->solicitudAtencionExternaService->buscar($filter, $page);
     return response()->json([
       "meta" => [
@@ -35,6 +47,7 @@ class SolicitudAtencionExternaController extends Controller {
   }
 
   function registrar(Request $request){
+    $this->authorize("registrar", SolicitudAtencionExterna::class);
     $payload = $request->validate([
       "regional_id" => "required",
       "asegurado_id" => "required",
@@ -49,33 +62,22 @@ class SolicitudAtencionExternaController extends Controller {
       $payload["asegurado_id"],
       $payload["medico_id"],
       $payload["proveedor_id"],      
-      $payload["prestaciones_solicitadas"],      
+      $request->user()->id,
+      $payload["prestaciones_solicitadas"]
     );
-    // if($request->user()->can("generar dm11")){
-      $datos = $this->solicitudAtencionExternaService->generarDatosParaFormularioDm11($solicitud->numero);
+    // if(Gate::allows("ver-dm11", SolicitudAtencionExterna::class)){
       $dm11Generator = new Dm11Generador();
-      $url = $dm11Generator->generar($datos);
-      $solicitud = $this->solicitudAtencionExternaService->actualizarUrlDm11($solicitud->numero, $url);
+      $dm11Generator->generar($solicitud);
     // }
     return response()->json($solicitud);
   }
 
-  function generarDm11(Request $request, string $numeroSolicitud): JsonResponse {
-    $solicitud = $this->solicitudAtencionExternaService->generarDatosParaFormularioDm11($numeroSolicitud);
-    $dm11Generator = new Dm11Generador();
-    $url = $dm11Generator->generar($solicitud);
-    $this->solicitudAtencionExternaService->actualizarUrlDm11($numeroSolicitud, $url);
-    return response()->json([
-      "url" => $url
-    ]);
-  }
-
-  function VerDm11(Request $request, string $numeroSolicitud): BinaryFileResponse {
-    if(!Storage::exists("app/formularios/dm11/${numeroSolicitud}.pdf")){
-      $solicitud = $this->solicitudAtencionExternaService->generarDatosParaFormularioDm11($numeroSolicitud);
+  function verDm11(Request $request, string $numeroSolicitud): BinaryFileResponse {
+    $this->authorize("ver-dm11", SolicitudAtencionExterna::class);
+    if(!Storage::exists("formularios/dm11/${numeroSolicitud}.pdf")){
+      $solicitud = SolicitudAtencionExterna::find(intval($numeroSolicitud));
       $dm11Generator = new Dm11Generador();
-      $url = $dm11Generator->generar($solicitud);
-      $this->solicitudAtencionExternaService->actualizarUrlDm11($numeroSolicitud, $url);
+      $dm11Generator->generar($solicitud);
     }
     return response()->file(storage_path("app/formularios/dm11/${numeroSolicitud}.pdf"), [
       "Access-Control-Allow-Origin" => "*",

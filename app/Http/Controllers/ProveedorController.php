@@ -26,11 +26,11 @@ class ProveedorController extends Controller {
     }
 
     if($page && Arr::has($page, "size")){
+      $total = $query->count();
       $query->limit($page["size"]);
       if(Arr::has($page, "current")){
         $query->offset(($page["current"] - 1) * $page["size"]);
       }
-      $total = $query->count();
       return response()->json($this->buildPaginatedResponseData($total, $query->get()));
     }
     if(Arr::has($page, "current")){

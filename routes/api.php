@@ -5,9 +5,11 @@ use App\Http\Controllers\AseguradosController;
 use App\Http\Controllers\EspecialidadesController;
 use App\Http\Controllers\ListaMoraController;
 use App\Http\Controllers\MedicosController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PrestacionController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RegionalesController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SolicitudAtencionExternaController;
 use App\Http\Controllers\UnidadesTerritorialesController;
 use App\Http\Controllers\UserController;
@@ -34,7 +36,30 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::middleware("auth.sanctum")->get("usuarios", [UserController::class, "index"]);
+/**
+ * User routes
+ */
+Route::middleware("auth:sanctum")->get("usuarios", [UserController::class, "index"]);
+Route::middleware("auth:sanctum")->get("usuarios/{id}", [UserController::class, "show"]);
+Route::middleware("auth:sanctum")->post("usuarios", [UserController::class, "store"]);
+Route::middleware("auth:sanctum")->put("usuarios/{id}/cambiar-contrasena", [UserController::class, "changePassword"]);
+Route::middleware("auth:sanctum")->put("usuarios/{id}/bloquear", [UserController::class, "disable"]);
+Route::middleware("auth:sanctum")->put("usuarios/{id}/desbloquear", [UserController::class, "enable"]);
+Route::middleware("auth:sanctum")->put("usuarios/{id}", [UserController::class, "update"]);
+
+/**
+ * Roles routes
+ */
+Route::middleware("auth:sanctum")->get("roles", [RoleController::class, "index"]);
+Route::middleware("auth:sanctum")->get("roles/{id}", [RoleController::class, "show"]);
+Route::middleware("auth:sanctum")->post("roles", [RoleController::class, "store"]);
+Route::middleware("auth:sanctum")->put("roles/{id}", [RoleController::class, "update"]);
+Route::middleware("auth:sanctum")->delete("roles/{id}", [RoleController::class, "destroy"]);
+
+/**
+ * Permisos routes
+ */
+Route::middleware("auth:sanctum")->get("permisos", [PermissionController::class, "index"]);
 
 Route::middleware("auth:sanctum")->get("empleadores", [EmpleadorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("empleadores/buscar-por-patronal", [EmpleadorController::class, "buscarPorPatronal"]);

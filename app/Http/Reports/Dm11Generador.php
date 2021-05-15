@@ -2,26 +2,29 @@
 
 namespace App\Http\Reports;
 
+use App\Models\SolicitudAtencionExterna;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Support\Facades\Storage;
 
 class Dm11Generador {
 
-  function generar($solicitud){
-    $key = app()->make('config')->get('app.key');
-    $payload= pack("N", $solicitud["numero"]);
-    $solicitud["sign"] = hash_hmac("sha256", $payload, $key, true);
-    $solicitud["qr_data"] = base64_encode($payload.$solicitud["sign"]);
+  function generar(SolicitudAtencionExterna $solicitud){
 
-    $pdf = PDF::loadView('pdf.dm11', $solicitud);
+    $content = $solicitud->content_array;
+
+    $pdf = PDF::loadView('pdf.dm11', $content);
     //$pdf->setEncryption('pwd')
     $pdf->setPaper('half-letter', "landscape");
 
-    $numeroSolicitud = $solicitud["numero"];
+    $numeroSolicitud = $solicitud->numero;
     Storage::put("formularios/dm11/{$numeroSolicitud}.pdf", $pdf->output());
 
-    return route("forms.dm11", [
-      "numero" => $numeroSolicitud
-    ]);
+    // $url = route("forms.dm11", [
+    //   "numero" => $numeroSolicitud
+    // ]);
+
+    // $solicitud->update([
+    //   "url_dm11" => $url
+    // ]);
   }
 }

@@ -20,15 +20,14 @@ use Illuminate\Validation\ValidationException;
 class SolicitudAtencionExternaService extends Controller {
 
   protected function setQueryFilters($query, $filter){
-    if(Arr::has($filter, "id")){
-      $query->where("id", $filter["regional_id"]);
-    }
-    else{
       if(Arr::has($filter, "regional_id")){
         $query->where("regional_id", $filter["regional_id"]);
       }
+      if(Arr::has($filter, "registrado_por") && ($registradoPor = $filter["registrado_por"])){
+        $query->where("usuario_id", $registradoPor);
+      }
       if(Arr::has($filter, "numero_patronal")){
-        $empleador =GalenoEmpleador::buscarPorPatronal($filter["numero_patronal"]);
+        $empleador = GalenoEmpleador::buscarPorPatronal($filter["numero_patronal"]);
         // $asegurados_ids = [];
         // if($empleador){
         //   // $query->whereRaw(0);
@@ -53,13 +52,15 @@ class SolicitudAtencionExternaService extends Controller {
       if(Arr::has($filter, "medico_id")){
         $query->where("medico_id", $filter["medico_id"]);
       }
+      if(Arr::has($filter, "usuario_id")){
+        $query->where("usuario_id", $filter["usuario_id"]);
+      }
       if(Arr::has($filter, "desde")){
         $query->whereDate("fecha", ">=", $filter["desde"]);
       }
       if(Arr::has($filter, "hasta")){
         $query->whereDate("fecha", "<=", $filter["hasta"]);
       }
-    }
     return $query;
   }
 
@@ -98,7 +99,7 @@ class SolicitudAtencionExternaService extends Controller {
     });
   }
 
-  public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $prestaciones_solicitadas){
+  public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $usuario_id, $prestaciones_solicitadas){
     $asegurado = Afiliado::buscarPorId($asegurado_id);
     $empleador = GalenoEmpleador::buscarPorId($asegurado->empleador_id);
 
@@ -137,60 +138,20 @@ class SolicitudAtencionExternaService extends Controller {
     $solicitud->empleador_id = $asegurado->empleador->id;
     $solicitud->medico_id = $medico_id;
     $solicitud->proveedor_id = $proveedor_id;
+    $solicitud->usuario_id = $usuario_id;
 
     foreach($prestaciones_solicitadas as $prestacion_solicitada){
       $solicitud->prestacionesSolicitadas()->create($prestacion_solicitada, true);
     }
     DB::transaction(function() use($solicitud){
       $solicitud->save();
+      $solicitud->url_dm11 = route("forms.dm11", [
+        "numero" => $solicitud->numero
+      ]);
+      $solicitud->save();
     });
 
     return $solicitud;
   }
 
-  public function generarDatosParaFormularioDm11($numeroSolicitud){
-    $solicitud = SolicitudAtencionExterna::with("prestacionesSolicitadas")->find($numeroSolicitud);
-    Log::debug(json_encode($solicitud->toArray()));
-    $asegurado = Afiliado::buscarPorId($solicitud->asegurado_id);
-    $titular = $asegurado->afiliacionDelTitular ? Afiliado::buscarPorId($asegurado->afiliacionDelTitular->ID_AFO) : NULL;
-    $empleador = GalenoEmpleador::buscarPorId($solicitud->empleador_id);
-
-    return [
-      "numero" => $numeroSolicitud,
-      "fecha" => $solicitud->fecha,
-      "regional" => $solicitud->regional->nombre,
-      "proveedor" => $solicitud->proveedor->nombre,
-      "titular" => !$titular ? [
-        "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
-        "nombre" => $asegurado->nombre_completo
-        ] : [
-          "matricula" => [$titular->matricula, $titular->matricula_complemento],
-          "nombre" => $titular->nombre_completo
-        ],
-      "beneficiario" => !$titular ? [
-        "matricula" => ["",""],
-        "nombre" => ""
-        ] : [
-          "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
-          "nombre" => $asegurado->nombre_completo
-        ],
-      "empleador" => $empleador->nombre,
-      "doctor" => [
-        "nombre" => $solicitud->medico->nombre_completo,
-        "especialidad" => $solicitud->medico->especialidad
-      ],
-      "proveedor" => $solicitud->proveedor->nombre,
-      "prestaciones" => $solicitud->prestacionesSolicitadas->map(function($prestacionSolicitada){
-        // Log::debug($prestacionSolicitada->toJson());
-        return $prestacionSolicitada->prestacion . ($prestacionSolicitada->nota ? " - " . $prestacionSolicitada->nota : "");
-      })->chunk(ceil($solicitud->prestacionesSolicitadas->count()/3))
-    ];
-  }
-
-  public function actualizarUrlDm11($numeroSolicitud, $url){
-    $solicitud = SolicitudAtencionExterna::find($numeroSolicitud);
-    $solicitud->url_dm11 = $url;
-    $solicitud->save();
-    return $solicitud;
-  }
 }
