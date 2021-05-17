@@ -17,18 +17,30 @@ class MedicosController extends Controller {
     if(Arr::has($filter, "nombre_completo") && $nombre=$filter["nombre_completo"]){
       $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);
     }
+    if(Arr::has($filter, "tipo")){
+      switch($filter["tipo"]){
+        case 1: $query->where("es_proveedor", 0);
+          break;
+        case 2: $query->where("es_proveedore", 1);
+          break;
+      }
+    }
     if($page && Arr::has($page, "size")){
       $total = $query->count();
       $query->limit($page["size"]);
       if(Arr::has($page, "current")){
         $query->offset(($page["current"] - 1) * $page["size"]);
       }
-      return response()->json($this->buildPaginatedResponseData($total, $query->get()));
+      $records = $query->get();
+      $records->makeVisible("nombre_completo");
+      return response()->json($this->buildPaginatedResponseData($total, $records));
     }
     if(Arr::has($page, "current")){
       $query->offset($page["current"]);
     }
-    return response()->json($query->get());
+    $records = $query->get();
+    $records->makeVisible("nombre_completo");
+    return response()->json($records);
   }
 
   function mostrar(Request $request, $id){

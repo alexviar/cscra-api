@@ -10,7 +10,7 @@ class Medico extends Model {
 
   public $with = ["especialidad"];
 
-  protected $appends = ["especialidad"];
+  protected $appends = ["especialidad", "nombreCompleto"];
 
   protected $fillable = [
     "ci",
@@ -23,8 +23,16 @@ class Medico extends Model {
     "es_proveedor"
   ];
 
-  public function getNombreCompletoAttribute(){
-    return trim("{$this->apellido_paterno} {$this->apellido_materno} {$this->nombres}");
+
+  function getNombreCompletoAttribute(){
+    $nombreCompleto = $this->nombres;
+    if($this->apellido_materno){
+      $nombreCompleto = $this->apellido_materno . " " . $nombreCompleto;
+    }
+    if($this->apellido_paterno){
+      $nombreCompleto = $this->apellido_paterno . " " . $nombreCompleto;
+    }
+    return $nombreCompleto;
   }
 
   public function especialidad(){

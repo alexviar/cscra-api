@@ -20,23 +20,18 @@ class PrestacionController extends Controller {
       $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$filter["nombre"]."*"]);
     }
 
-    if(!$page){
-      return response()->json($query->get());
+    if($page && Arr::has($page, "size")){
+      $total = $query->count();
+      $query->limit($page["size"]);
+      if(Arr::has($page, "current")){
+        $query->offset(($page["current"] - 1) * $page["size"]);
+      }
+      return response()->json($this->buildPaginatedResponseData($total, $query->get()));
     }
-
-    $total = $query->count();
-
-    $pageSize = Arr::get($page, "size");
-    if($pageSize){
-      $query->limit($pageSize);
+    if(Arr::has($page, "current")){
+      $query->offset($page["current"]);
     }
-    $currentPage = Arr::get($page, "current");
-    if($currentPage){
-      $query->offset(($currentPage-1) * ($pageSize ?: 1));
-    }
-    Log::debug($query->toSql());
-    $records = $query->get();
-    return response()->json($this->buildPaginatedResponseData($total, $records));
+    return response()->json($query->get());
   }
 
   function buscarPorNombre(Request $request){
