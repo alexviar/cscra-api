@@ -56,32 +56,46 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(['name' => Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL, 'guard_name' => 'sanctum']);
         Permission::create(['name' => Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR, 'guard_name' => 'sanctum']);
 
-        // //especialidades permissions
-        // Permission::create(['name' => 'ver especialidades', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'registrar especialidades', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'editar especialidades', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'eliminar especialidades', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'importar especialidades', 'guard_name' => 'sanctum']);
+        //lista mora
+        Permission::create(["name" => Permisos::VER_LISTA_DE_MORA, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::VER_LISTA_DE_MORA_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::AGREGAR_EMPLEADOR_EN_MORA, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::AGREGAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::QUITAR_EMPLEADOR_EN_MORA, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::QUITAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL, "guard_name" => "sanctum"]);
 
-        // //prestaciones premissions
-        // Permission::create(['name' => 'ver prestaciones', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'registrar prestaciones', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'editar prestaciones', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'eliminar prestaciones', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'importar prestaciones', 'guard_name' => 'sanctum']);
+        //Medicos
+        Permission::create(["name" => Permisos::VER_MEDICOS, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::VER_MEDICOS_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_MEDICOS, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_MEDICOS_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EDITAR_MEDICOS, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EDITAR_MEDICOS_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::BAJA_MEDICOS, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::BAJA_MEDICOS_REGIONAL, "guard_name" => "sanctum"]);
 
-        // //medicos premissions
-        // Permission::create(['name' => 'ver medicos', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'registrar medicos', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'editar medicos', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'bloquear medicos', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'desbloquear medicos', 'guard_name' => 'sanctum']);
+        //Proveedores
+        Permission::create(["name" => Permisos::VER_PROVEEDORES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::VER_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_PROVEEDORES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EDITAR_PROVEEDORES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EDITAR_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::BAJA_PROVEEDORES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::BAJA_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
 
-        // //proveedores premissions
-        // Permission::create(['name' => 'ver proveedores', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'registrar proveedores', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'editar proveedores', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'bloquear proveedores', 'guard_name' => 'sanctum']);
-        // Permission::create(['name' => 'desbloquear proveedores', 'guard_name' => 'sanctum']);
+        //Prestaciones
+        Permission::create(["name" => Permisos::VER_PRESTACIONES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_PRESTACIONES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EDITAR_PRESTACIONES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::ELIMINAR_PRESTACIONES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::IMPORTAR_PRESTACIONES, "guard_name" => "sanctum"]);
+
+        //Prestaciones
+        Permission::create(["name" => Permisos::VER_ESPECIALIDADES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EDITAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::ELIMINAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::IMPORTAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
     }
 }

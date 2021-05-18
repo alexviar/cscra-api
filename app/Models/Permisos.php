@@ -44,10 +44,52 @@ class Permisos {
   /**
    * Permisos de lista de mora
    */
-
+  const VER_LISTA_DE_MORA = "Ver lista de mora";
+  const VER_LISTA_DE_MORA_REGIONAL = "Ver lista de mora (regional)";
   const AGREGAR_EMPLEADOR_EN_MORA = "Agregar empleador en mora";
-  const AGREGAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL = "Agregar empleador en mora de la misma regional";
+  const AGREGAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL = "Agregar empleador en mora (misma regional)";
   const QUITAR_EMPLEADOR_EN_MORA = "Quitar empleador en mora";
-  const QUITAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL = "Quitar empleador en mora de la misma regional";
+  const QUITAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL = "Quitar empleador en mora (misma regional)";
 
+  /**
+   * Medicos
+   */
+  const VER_MEDICOS = "Ver médicos";
+  const VER_MEDICOS_REGIONAL = "Ver médicos (regional)";
+  const REGISTRAR_MEDICOS = "Registrar médicos";
+  const REGISTRAR_MEDICOS_REGIONAL = "Registrar médicos (regional)";
+  const EDITAR_MEDICOS = "Editar médicos";
+  const EDITAR_MEDICOS_REGIONAL = "Editar médicos (regional)";
+  const BAJA_MEDICOS = "Baja médicos";
+  const BAJA_MEDICOS_REGIONAL = "Baja médicos (regional)";
+
+  /**
+   * Proveedores
+   */
+  const VER_PROVEEDORES = "Ver proveedores";
+  const VER_PROVEEDORES_REGIONAL = "Ver proveedores (regional)";
+  const REGISTRAR_PROVEEDORES = "Registrar proveedores";
+  const REGISTRAR_PROVEEDORES_REGIONAL = "Registrar proveedores (regional)";
+  const EDITAR_PROVEEDORES = "Editar proveedores";
+  const EDITAR_PROVEEDORES_REGIONAL = "Editar proveedores (regional)";
+  const BAJA_PROVEEDORES = "Baja proveedores";
+  const BAJA_PROVEEDORES_REGIONAL = "Baja proveedores (regional)";
+
+  /**
+   * Especialidades
+   */
+  const VER_ESPECIALIDADES = "Ver especialidades";
+  const REGISTRAR_ESPECIALIDADES = "Registrar especialidades";
+  const EDITAR_ESPECIALIDADES = "Editar especialidades";
+  const ELIMINAR_ESPECIALIDADES = "Eliminar especialidades";
+  const IMPORTAR_ESPECIALIDADES = "Importar especialidades";
+
+  /**
+   * Prestaciones
+   */
+  const VER_PRESTACIONES = "Ver prestaciones";
+  const REGISTRAR_PRESTACIONES = "Registrar prestaciones";
+  const EDITAR_PRESTACIONES = "Editar prestaciones";
+  const ELIMINAR_PRESTACIONES = "Eliminar prestaciones";
+  const IMPORTAR_PRESTACIONES = "Importar prestaciones";
 }

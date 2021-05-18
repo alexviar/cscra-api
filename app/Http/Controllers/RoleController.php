@@ -33,7 +33,7 @@ class RoleController extends Controller
       $page =  $request->page;
       $query = Role::query();
 
-      if(Arr::has($filter, "texto") && ($texto = $filter["username"])){
+      if(Arr::has($filter, "texto") && ($texto = $filter["texto"])){
         $query->whereRaw("MATCH(`name`, `decription`) AGAINST(? IN BOOLEAN MODE)", [$texto.'*']);
       }
 

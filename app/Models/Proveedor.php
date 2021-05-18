@@ -49,6 +49,10 @@ class Proveedor extends Model {
     return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id");
   }
 
+  function ofrece($prestacionId){
+    return $this->contrato->prestaciones->contains(fn ($prestacion) => $prestacion->id == $prestacionId);
+  }
+
   // function toArray()
   // {
   //   $array = parent::toArray();

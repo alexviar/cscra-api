@@ -47,7 +47,7 @@ class SolicitudAtencionExternaController extends Controller {
   }
 
   function registrar(Request $request){
-    $this->authorize("registrar", SolicitudAtencionExterna::class);
+    $this->authorize("registrar", [SolicitudAtencionExterna::class, $request->regional_id]);
     $payload = $request->validate([
       "regional_id" => "required",
       "asegurado_id" => "required",

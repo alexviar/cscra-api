@@ -51,9 +51,9 @@ class SolicitudAtencionExternaPolicy
         || $solicitud->registrado_por_id == $user->id))) return true;
     }
 
-    public function registrar(User $user, SolicitudAtencionExterna $solicitud){
+    public function registrar(User $user, $regional_id){
       if($user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
       if((!$user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)
-        || $solicitud->regional_id == $user->id)) return true;
+        || $regional_id == $user->id)) return true;
     }
 }

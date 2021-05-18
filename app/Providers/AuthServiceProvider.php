@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\ListaMoraItem;
+use Spatie\Permission\Models\Role;
 use App\Policies\RolePolicy;
+use App\Policies\ListaMoraPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use Spatie\Permission\Models\Role;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -16,7 +18,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         'App\Models\User' => 'App\Policies\UserPolicy',
-        Role::class => RolePolicy::class
+        Role::class => RolePolicy::class,
+        ListaMoraItem::class => ListaMoraPolicy::class
     ];
 
     /**

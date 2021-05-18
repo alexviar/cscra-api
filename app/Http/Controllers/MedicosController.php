@@ -13,6 +13,8 @@ class MedicosController extends Controller {
     $query = Medico::query();
     $page = $request->page;
     $filter = $request->filter;
+
+    $this->authorize("verTodo", [Medico::class, $filter]);
     
     if(Arr::has($filter, "nombre_completo") && $nombre=$filter["nombre_completo"]){
       $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);

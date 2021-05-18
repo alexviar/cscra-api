@@ -59,14 +59,13 @@ class Afiliado extends Model {
     "apellidoMaterno",
     "nombres",
     "estado",
-    "fecha_extinsion",
     "tipo",
     "empleador",
     "ultimaAfiliacion"
   ];
 
   protected $primaryKey = 'ID';
-  
+
   public $incrementing = false;
 
   // In Laravel 6.0+ make sure to also set $keyType
@@ -119,13 +118,17 @@ class Afiliado extends Model {
     return $this->ultimaAfiliacion?->empleador;
   }
 
+  function getTitularAttribute(){
+      return $this->afiliacionDelTitular->afiliado;
+  }
+
   function getAfiliacionDelTitularAttribute(){
     if($this->tipo == 2){
       return $this->ultimaAfiliacion?->afiliacionDelTitular;
     }
   }
-  
-  function getFechaExtinsionAttribute(){
+
+  function getFechaExtincionAttribute(){
     if($this->tipo == 2){
       return $this->ultimaAfiliacion?->fecha_extinsion;
     }
@@ -155,7 +158,7 @@ class Afiliado extends Model {
 
   function toArray(){
     $array = parent::toArray();
-    $array["fecha_extinsion"] = $this->fecha_extinsion?->format("Y-m-d");
+    $array["fecha_extincion"] = $this->fecha_extincion?->format("Y-m-d");
     $array["baja"] = $this->ultimaAfiliacion?->baja ? [
       "reg_date" => $this->ultimaAfiliacion->baja->REG_DATE->format("Y-m-d"),
       "fecha_validez_seguro" => $this->ultimaAfiliacion->baja->fecha_validez_seguro?->format("Y-m-d")
