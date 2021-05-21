@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ConflictException;
 use App\Http\Controllers\Controller;
+use App\Models\ContratoProveedor;
 use App\Models\Medico;
 use App\Models\Prestacion;
 use App\Models\Proveedor;
+use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -18,6 +20,9 @@ class ProveedorController extends Controller {
   function buscar(Request $request) {
     $page = $request->page;
     $filter = $request->filter;
+
+    $this->authorize("verTodo", [Proveedor::class, $filter]);
+
     $query = Proveedor::query();
     $query->with("medico.especialidad", "contrato.prestaciones");
 
@@ -48,9 +53,135 @@ class ProveedorController extends Controller {
     return response()->json($records);
   }
 
+  function mostrar(Request $request, $id){
+    $proveedor = Proveedor::find($id);
+    if(!$proveedor) {
+      throw new ModelNotFoundException("El proveedor no existe");
+    }
+    $this->authorize("ver", $proveedor);
+
+    $proveedor->load(["medico", "contratos"]);
+    return response()->json($proveedor);
+  }
+
   function registrar(Request $request){
-    $tipo_id = $request->tipo_id;
+    $tipo_id = $request->general["tipo_id"];
     if($tipo_id == 1){
+      $payload = $request->validate([
+        "general.nit" => "nullable",
+        "general.ci" => "required",
+        "general.ci_complemento" => "nullable",
+        "general.apellido_paterno" => "nullable",
+        "general.apellido_materno" => "required",
+        "general.nombres" => "required",
+        "general.especialidad_id" => "required",
+        "general.regional_id" => "required",
+        "contacto" => "nullable",
+        "contacto.municipio_id" => "exclude_if:contacto,null|numeric|required",
+        "contacto.direccion" => "exclude_if:contacto,null|required",
+        "contacto.ubicacion" => "exclude_if:contacto,null|required",
+        "contacto.ubicacion.latitud" => "exclude_if:contacto,null|numeric|required",
+        "contacto.ubicacion.longitud" => "exclude_if:contacto,null|numeric|required",
+        "contacto.telefono1" => "exclude_if:contacto,null|numeric|required",
+        "contacto.telefono2" => "exclude_if:contacto,null|nullable|numeric",
+        "contrato.inicio" => "date|required",
+        "contrato.fin" => "nullable|date",
+        // "contrato.regional_id" => "numeric|required",
+        "contrato.prestacion_ids" => "array|required"
+      ]);
+      $this->authorize("registrar", [Proveedor::class, $payload]);
+      $proveedor = DB::transaction(function() use($payload){
+        @["general" => $general, "contacto" => $contacto, "contrato" => $contrato] = $payload;
+        $medico = Medico::create([
+          "ci" => $general["ci"],
+          "ci_complemento" => $general["ci_complemento"],
+          "apellido_paterno" => $general["apellido_paterno"],
+          "apellido_materno" => $general["apellido_materno"],
+          "nombres" => $general["nombres"],
+          "especialidad_id" => $general["especialidad_id"],
+          "regional_id" => $general["regional_id"],
+          "tipo" => 2
+        ]);
+        $proveedor = Proveedor::create([
+          "tipo_id" => 1,
+          "nit"=>$general["nit"],
+          "regional_id" => $general["regional_id"],
+          "medico_id" => $medico->id,
+          "municipio_id" => $contacto["municipio_id"]??null,
+          "direccion" => $contacto["direccion"]??null,
+          "ubicacion" => $contacto ? new Point($contacto["ubicacion"]["latitud"], $contacto["ubicacion"]["longitud"]) : null,
+          "telefono1" => $contacto["telefono1"]??null,
+          "telefono2" => $contacto["telefono2"]??null
+        ]);
+
+        $contratoModel = $proveedor->contratos()->create([
+          "inicio" => $contrato["inicio"],
+          "fin" => $contrato["fin"] ?? null,
+          // "regional_id" => $contrato["regional_id"]
+        ]);
+        $prestacion_ids = $contrato["prestacion_ids"];
+        $contratoModel->prestaciones()->attach($prestacion_ids);
+        return $proveedor;
+      });
+      $proveedor->load(["medico", "contratos"]);
+      return response()->json($proveedor);
+    }
+    else if($tipo_id == 2){
+      $payload = $request->validate([
+        "general.nit" => "nullable",
+        "general.nombre" => "required",
+        "general.regional_id" => "numeric|required",
+        "contacto" => "nullable",
+        "contacto.municipio_id" => "exclude_if:contacto,null|numeric|required",
+        "contacto.direccion" => "exclude_if:contacto,null|required",
+        "contacto.ubicacion" => "exclude_if:contacto,null|required",
+        "contacto.ubicacion.latitud" => "exclude_if:contacto,null|numeric|required",
+        "contacto.ubicacion.longitud" => "exclude_if:contacto,null|numeric|required",
+        "contacto.telefono1" => "exclude_if:contacto,null|numeric|required",
+        "contacto.telefono2" => "exclude_if:contacto,null|nullable|numeric",
+        "contrato.inicio" => "date|required",
+        "contrato.fin" => "nullable|date",
+        // "contrato.regional_id" => "numeric|required",
+        "contrato.prestacion_ids" => "array|required"
+      ]);
+      
+      $this->authorize("registrar", [Proveedor::class, $payload]);
+      $proveedor = DB::transaction(function() use($payload){
+        @["general" => $general, "contacto" => $contacto, "contrato" => $contrato] = $payload;
+        $proveedor = Proveedor::create([
+          "tipo_id" => 2,
+          "nit"=>$general["nit"],
+          "nombre" => $general["nombre"],
+          "regional_id" => $general["regional_id"],
+          "municipio_id" => $contacto["municipio_id"]??null,
+          "direccion" => $contacto["direccion"]??null,
+          "ubicacion" => $contacto ? new Point($contacto["ubicacion"]["latitud"], $contacto["ubicacion"]["longitud"]) : null,
+          "telefono1" => $contacto["telefono1"]??null,
+          "telefono2" => $contacto["telefono2"]??null
+        ]);
+        $contratoModel = $proveedor->contratos()->create([
+          "inicio" => $contrato["inicio"],
+          "fin" => $contrato["fin"] ?? null,
+          // "regional_id" => $contrato["regional_id"]
+        ]);
+        $prestacion_ids = $contrato["prestacion_ids"];
+        $contratoModel->prestaciones()->attach($prestacion_ids);
+        return $proveedor;
+      });
+      $proveedor->load(["medico", "contratos"]);
+      return response()->json($proveedor);
+    }
+    else{
+      abort(400);
+    }
+  }
+
+  function actualizar(Request $request, $id){
+    $proveedor = Proveedor::find($id);
+    if(!$proveedor){
+      throw ModelNotFoundException("El proveedor no existe");
+    }
+    if($proveedor->tipo_id == 1){
       $payload = $request->validate([
         "nit" => "nullable",
         "ci" => "required",
@@ -61,40 +192,41 @@ class ProveedorController extends Controller {
         "especialidad_id" => "required",
         "regional_id" => "required"
       ]);
-      $proveedor = DB::transaction(function() use($payload){
-        $medico = Medico::create([
+      
+      $this->authorize("actualizar", [$proveedor, $payload]);
+      DB::transaction(function() use($proveedor, $payload){
+        $proveedor->medico->update([
           "ci" => $payload["ci"],
           "ci_complemento" => $payload["ci_complemento"],
           "apellido_paterno" => $payload["apellido_paterno"],
           "apellido_materno" => $payload["apellido_materno"],
           "nombres" => $payload["nombres"],
           "especialidad_id" => $payload["especialidad_id"],
-          "regional_id" => $payload["regional_id"],
-          "es_proveedor" => true
+          "regional_id" => $payload["regional_id"]
         ]);
-        $proveedor = Proveedor::create([
-          "tipo_id" => 1,
+        $proveedor->update([
           "nit"=>$payload["nit"],
           "regional_id" => $payload["regional_id"],
-          "medico_id" => $medico->id
         ]);
-        $proveedor->load(["medico"]);
-        return $proveedor;
+        $proveedor->refresh()->load(["medico", "contratos"]);
       });
       return response()->json($proveedor);
     }
-    else if($tipo_id == 2){
+    else {
       $payload = $request->validate([
         "nit" => "nullable",
         "nombre" => "required",
         "regional_id" => "required"
       ]);
-      $payload["tipo_id"] = 2;
-      $proveedor = Proveedor::create($payload);
+      
+      $this->authorize("actualizar", [$proveedor, $payload]);
+      $proveedor->update([
+        "nit"=>$payload["nit"],
+        "nombre" => $payload["nombre"],
+        "regional_id" => $payload["regional_id"],
+      ]);
+      $proveedor->refresh()->load(["medico", "contratos"]);
       return response()->json($proveedor);
-    }
-    else{
-      abort(400);
     }
   }
 

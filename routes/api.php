@@ -96,10 +96,11 @@ Route::middleware("auth:sanctum")->delete("prestaciones/{id}", [PrestacionContro
 Route::middleware("auth:sanctum")->post("prestaciones/importar", [PrestacionController::class, "importar"]);
 
 
-Route::middleware("auth:sanctum")->post("proveedores/{id}/contratos", [ProveedorController::class, "registrarContrato"]);
 Route::middleware("auth:sanctum")->get("proveedores", [ProveedorController::class, "buscar"]);
+Route::middleware("auth:sanctum")->get("proveedores/{id}", [ProveedorController::class, "mostrar"]);
 Route::middleware("auth:sanctum")->post("proveedores", [ProveedorController::class, "registrar"]);
-// Route::middleware("auth:sanctum")->put("proveedores", [ProveedorController::class, "registrar"]);
+Route::middleware("auth:sanctum")->post("proveedores/{id}/contratos", [ProveedorController::class, "registrarContrato"]);
+Route::middleware("auth:sanctum")->put("proveedores/{id}", [ProveedorController::class, "actualizar"]);
 Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorController::class, "buscarPorNombre"]);
 
 Route::middleware("auth:sanctum")->get("departamentos", [UnidadesTerritorialesController::class, "getDepartamentos"]);

@@ -41,7 +41,7 @@ class AseguradosController extends Controller {
     ]);
 
     if(Arr::has($filter, "matricula")){
-      $query->where("MATRICULA", "like", Str::upper($filter["matricula"])."%");
+      $query->where("MATRICULA", Str::upper($filter["matricula"]));
     }
 
     if($page && Arr::has($page, "size")){

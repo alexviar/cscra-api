@@ -28,7 +28,7 @@ class MedicoPolicy
         && Arr::has($payload, "regional_id") && $user->regional_id == $payload["regional_id"]) return true;
     }
 
-    public function baja(User $user, $medico){
+    public function cambiarEstado(User $user, $medico){
       if($user->can(Permisos::BAJA_MEDICOS_REGIONAL)) return true;
       if($user->can(Permisos::BAJA_MEDICOS_REGIONAL)
         && $user->regional_id == $medico->regional_id) return true;

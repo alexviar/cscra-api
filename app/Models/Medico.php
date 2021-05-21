@@ -10,7 +10,7 @@ class Medico extends Model {
 
   public $with = ["especialidad"];
 
-  protected $appends = ["especialidad", "nombreCompleto"];
+  protected $appends = ["especialidad", "nombreCompleto", "ciText", "estadoText"];
 
   protected $fillable = [
     "ci",
@@ -23,6 +23,16 @@ class Medico extends Model {
     "es_proveedor"
   ];
 
+  function getCiTextAttribute(){
+    return $this->ci . ($this->ci_complemento ? "-" .  $this->ci_complemento :  "");
+  }
+  
+  function getEstadoTextAttribute(){
+    switch($this->estado){
+      case 1: return "Alta";
+      case 2: return "Baja";
+    }
+  }
 
   function getNombreCompletoAttribute(){
     $nombreCompleto = $this->nombres;

@@ -19,13 +19,8 @@ class MedicosController extends Controller {
     if(Arr::has($filter, "nombre_completo") && $nombre=$filter["nombre_completo"]){
       $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);
     }
-    if(Arr::has($filter, "tipo")){
-      switch($filter["tipo"]){
-        case 1: $query->where("es_proveedor", 0);
-          break;
-        case 2: $query->where("es_proveedore", 1);
-          break;
-      }
+    if(Arr::has($filter, "tipo") && $tipo=$filter["tipo"]){
+      $query->where("tipo", $tipo);
     }
     if($page && Arr::has($page, "size")){
       $total = $query->count();
@@ -47,9 +42,28 @@ class MedicosController extends Controller {
 
   function mostrar(Request $request, $id){
     $medico = Medico::find($id);
+    $this->authorize("ver", $medico);
     if(!$medico){
       throw new ModelNotFoundException("Medico no existe");
     }
+    return response()->json($medico);
+  }
+  
+  function registrar(Request $request){
+    $payload = $request->validate([
+      "ci" => "required|numeric",
+      "ci_complemento" => "nullable",
+      "apellido_paterno" => "nullable",
+      "apellido_materno" => "required",
+      "nombres" => "required",
+      "regional_id" => "required|numeric",
+      "especialidad_id" => "required|numeric"
+    ]);
+
+    $this->authorize("registrar", [Medico::class, $payload]);
+
+    $medico = Medico::create($payload);
+    $medico->load("especialidad");
     return response()->json($medico);
   }
 
@@ -69,30 +83,25 @@ class MedicosController extends Controller {
     if(!$medico){
       throw new ModelNotFoundException("Medico no existe");
     }
+    
+    $this->authorize("actualizar", [$medico, $payload]);
 
     $medico->fill($payload);
     $medico->save();
     return response()->json($medico);
   }
 
-  function eliminar(Request $request, $id){
-    Medico::destroy($id);
-    return response()->json();
-  }
-
-  function registrar(Request $request){
+  function cambiarEstado(Request $request, $id){
     $payload = $request->validate([
-      "ci" => "required|numeric",
-      "ci_complemento" => "nullable",
-      "apellido_paterno" => "nullable",
-      "apellido_materno" => "required",
-      "nombres" => "required",
-      "regional_id" => "required|numeric",
-      "especialidad_id" => "required|numeric"
+      "estado" => "required|numeric"
     ]);
-
-    $medico = Medico::create($payload);
-    $medico->load("especialidad");
+    $medico = Medico::find($id);
+    if(!$medico){
+      throw new ModelNotFoundException("Medico no existe");
+    }
+    $this->authorize("cambiarEstado", $medico);
+    
+    $medico->update($payload);
     return response()->json($medico);
   }
 }

@@ -21,6 +21,11 @@ class Proveedor extends Model {
     "nit",
     "medico_id",
     "nombre",
+    "municipio_id",
+    "ubicacion",
+    "direccion",
+    "telefono1",
+    "telefono2",
     "regional_id"
   ];
 
@@ -41,7 +46,12 @@ class Proveedor extends Model {
   function contrato(){
     $today = Carbon::today(config("app.timezone"))->toDateString();
     return $this->hasOne(ContratoProveedor::class, "proveedor_id", "id")
-      ->whereDate("fin", ">=", $today)
+      ->where(function($query) use ($today){
+        $query->whereNull("fin")
+          ->orWhere(function($query) use($today){
+            $query->whereDate("fin", ">=", $today);
+          });
+      })
       ->whereDate("inicio", "<=", $today);
   }
 
