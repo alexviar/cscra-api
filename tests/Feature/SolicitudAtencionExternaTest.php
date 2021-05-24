@@ -289,7 +289,7 @@ class SolicitudAtencionExternaTest extends TestCase
         
         DB::rollBack();
         DB::connection("galeno")->rollback();
-    }    
+    }  
     
     function test_afiliado_con_estado_desconocido(){
         $this->travelTo(Carbon::create(2020));
@@ -334,9 +334,72 @@ class SolicitudAtencionExternaTest extends TestCase
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors(["asegurado.estado" => "El asegurado tiene un estado indeterminado"]);
         
+        $titular = Afiliado::factory()->state(["ESTADO_AFI" => 3])->create();
+        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
+        
+        $data = [
+            "asegurado_id" => $titular->id,
+            "regional_id" => 1,
+            "medico_id" => $medico->id,
+            "proveedor_id" => $proveedor->id,
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
+                "prestacion_id" => $prestacion->id
+            ])
+        ];
+        
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["asegurado.estado" => "El asegurado tiene un estado indeterminado"]);
+        
+
         DB::rollBack();
         DB::connection("galeno")->rollback();
     }
+    
+    function test_beneficiario_con_fecha_de_validez_vencida_ayer(){
+        $this->travelTo(Carbon::create(2020));
 
+        DB::beginTransaction();
+        DB::connection("galeno")->beginTransaction();
 
+        $regional_id = 1;
+        $empleador = Empleador::factory()->create();
+        $titular = Afiliado::factory()->create();
+        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
+
+        $medico = Medico::factory()
+            ->state([
+                "regional_id" => $regional_id
+            ])
+            ->for(Especialidad::factory()->create())
+            ->create();
+
+        $proveedor = Proveedor::factory()
+            ->state([
+                "regional_id" => $regional_id
+            ])
+            ->has(
+                ContratoProveedor::factory()
+                ->has(Prestacion::factory()->count(10), "prestaciones")
+                ->inicioAyer()
+            , "contratos")
+            ->create();
+
+        $data = [
+            "asegurado_id" => $titular->id,
+            "regional_id" => 1,
+            "medico_id" => $medico->id,
+            "proveedor_id" => $proveedor->id,
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
+                "prestacion_id" => $prestacion->id
+            ])
+        ];
+
+        $user = $this->createSuperUser();
+
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertOk(); 
+        
+        DB::rollBack();
+        DB::connection("galeno")->rollback();
+    }
 }
