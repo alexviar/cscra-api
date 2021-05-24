@@ -22,10 +22,15 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
         return [
-            'name' => $this->faker->name,
-            'email' => $this->faker->unique()->safeEmail,
-            'email_verified_at' => now(),
+            "id" => $this->faker->unique()->randomNumber(),
+            "ci_raiz" => $ci[0],
+            "ci_complemento" => $ci[1],
+            "apellido_paterno" => $this->faker->lastName,
+            "apellido_materno" => $this->faker->lastName,
+            'nombres' => $this->faker->name,
+            'username' => $this->faker->unique()->userName,
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];

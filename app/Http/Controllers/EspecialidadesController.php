@@ -52,6 +52,42 @@ class EspecialidadesController extends Controller {
     return response()->json($query->get());
   }
 
+  function ver(Request $request, int $id){
+    $prestacion = Especialidad::find($id);
+    if($prestacion)
+      return response()->json($prestacion);
+    throw new ModelNotFoundException("Prestacion no encontrada");
+  }
+
+  function registrar(Request $request){
+    $prestacionClass = Especialidad::class;
+    $payload = $request->validate([
+      "nombre" => "required|unique:{$prestacionClass}"
+    ]);
+
+    $prestacion = Especialidad::create($payload);
+    return response()->json($prestacion);
+  }
+
+  function actualizar(Request $request, int $id){
+    $prestacionClass = Especialidad::class;
+    $payload = $request->validate([
+      "nombre" => "required|unique:{$prestacionClass},nombre,{$id}"
+    ]);
+
+    $prestacion = Especialidad::find($id);
+    if(!$prestacion)
+      throw new ModelNotFoundException("Prestacion no encontrada");
+    $prestacion->nombre = $payload["nombre"];
+    $prestacion->save();
+    return response()->json($prestacion);
+  }
+
+  function eliminar(Request $request, int $id){
+    Especialidad::destroy($id);
+    return response()->json();
+  }
+
   function importar(Request $request): JsonResponse {
     $archivo = $request->file("archivo");
     // var_dump($archivo, $archivo->getPathname());

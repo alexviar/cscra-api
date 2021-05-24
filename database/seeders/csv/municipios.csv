@@ -1,0 +1,342 @@
+CODIGO_DEPARTAMENTO;NOMBRE_DEPARTAMENTO;CODIGO_PROVINCIA;NOMBRE_PROVINCIA;CODIGO_SECCION;NOMBRE_MUNICIPIO
+1;Chuquisaca;1;Oropeza;1;Sucre
+1;Chuquisaca;1;Oropeza;2;Yotala
+1;Chuquisaca;1;Oropeza;3;Poroma
+1;Chuquisaca;2;Azurduy;4;Azurduy
+1;Chuquisaca;2;Azurduy;5;Tarvita
+1;Chuquisaca;3;Zudáñez;6;Zudañez
+1;Chuquisaca;3;Zudáñez;7;Presto
+1;Chuquisaca;3;Zudáñez;8;Mojocoya
+1;Chuquisaca;3;Zudáñez;9;Villa Ricardo Mugia - Icla
+1;Chuquisaca;4;Tomina;10;Padilla
+1;Chuquisaca;4;Tomina;11;Tomina
+1;Chuquisaca;4;Tomina;12;Sopachui
+1;Chuquisaca;4;Tomina;13;Alcalá
+1;Chuquisaca;4;Tomina;14;El Villar
+1;Chuquisaca;5;Hernando Siles;15;Monteagudo
+1;Chuquisaca;5;Hernando Siles;16;Huacareta
+1;Chuquisaca;6;Yamparáez;17;Tarabuco
+1;Chuquisaca;6;Yamparáez;18;Yamparáez
+1;Chuquisaca;7;Nor Cinti;19;Camargo
+1;Chuquisaca;7;Nor Cinti;20;San Lucas
+1;Chuquisaca;7;Nor Cinti;21;Incahuasi
+1;Chuquisaca;7;Nor Cinti;22;Villa Charcas
+1;Chuquisaca;8;Belisario Boeto;23;Villa Serrano
+1;Chuquisaca;9;Sud Cinti;24;Villa Abecia
+1;Chuquisaca;9;Sud Cinti;25;Culpina
+1;Chuquisaca;9;Sud Cinti;26;Las Carreras
+1;Chuquisaca;10;Luis Calvo;27;Villa Vaca Guzmán
+1;Chuquisaca;10;Luis Calvo;28;Huacaya
+1;Chuquisaca;10;Luis Calvo;29;Macharetí
+2;La Paz;11;Murillo;30;Nuestra Señora de La Paz
+2;La Paz;11;Murillo;31;Palca
+2;La Paz;11;Murillo;32;Mecapaca
+2;La Paz;11;Murillo;33;Achocalla
+2;La Paz;11;Murillo;34;El Alto
+2;La Paz;12;Omasuyos;35;Achacachi
+2;La Paz;12;Omasuyos;36;Villa Ancoraimes
+2;La Paz;12;Omasuyos;37;Chua Cocani
+2;La Paz;12;Omasuyos;38;Huarina
+2;La Paz;12;Omasuyos;39;Santiago de Huata
+2;La Paz;12;Omasuyos;40;Huatajata
+2;La Paz;13;Pacajes;41;Corocoro
+2;La Paz;13;Pacajes;42;Caquiaviri
+2;La Paz;13;Pacajes;43;Calacoto
+2;La Paz;13;Pacajes;44;Comanche
+2;La Paz;13;Pacajes;45;Charaña
+2;La Paz;13;Pacajes;46;Waldo Ballivian
+2;La Paz;13;Pacajes;47;Nazacara de Pacajes
+2;La Paz;13;Pacajes;48;Santiago de Callapa
+2;La Paz;14;Camacho;49;Puerto Acosta
+2;La Paz;14;Camacho;50;Mocomoco
+2;La Paz;14;Camacho;51;Puerto Mayor de Carabuco
+2;La Paz;14;Camacho;52;Humanata
+2;La Paz;14;Camacho;53;Escoma
+2;La Paz;15;Muñecas;54;Chuma
+2;La Paz;15;Muñecas;55;Ayata
+2;La Paz;15;Muñecas;56;Aucapata
+2;La Paz;16;Larecaja;57;Sorata
+2;La Paz;16;Larecaja;58;Guanay
+2;La Paz;16;Larecaja;59;Tacacoma
+2;La Paz;16;Larecaja;60;Quiabaya
+2;La Paz;16;Larecaja;61;Combaya
+2;La Paz;16;Larecaja;62;Tipuani
+2;La Paz;16;Larecaja;63;Mapiri
+2;La Paz;16;Larecaja;64;Teoponte
+2;La Paz;17;Franz Tamayo;65;Apolo
+2;La Paz;17;Franz Tamayo;66;Pelechuco
+2;La Paz;18;Ingavi;67;Viacha
+2;La Paz;18;Ingavi;68;Puerto Mayor de Guaqui
+2;La Paz;18;Ingavi;69;Tiahuanacu
+2;La Paz;18;Ingavi;70;Desaguadero
+2;La Paz;18;Ingavi;71;La (Marka) San Andrés de Machaca
+2;La Paz;18;Ingavi;72;Jesús de Machaka
+2;La Paz;18;Ingavi;73;Taraco
+2;La Paz;19;Loayza;74;Luribay
+2;La Paz;19;Loayza;75;Sapahaqui
+2;La Paz;19;Loayza;76;Yaco
+2;La Paz;19;Loayza;77;Malla
+2;La Paz;19;Loayza;78;Cairoma
+2;La Paz;20;Inquisivi;79;Inquisivi
+2;La Paz;20;Inquisivi;80;Quime
+2;La Paz;20;Inquisivi;81;Cajuata
+2;La Paz;20;Inquisivi;82;Colquiri
+2;La Paz;20;Inquisivi;83;Ichoca
+2;La Paz;20;Inquisivi;84;Villa Libertad Licoma
+2;La Paz;21;Sud Yungas;85;Chulumani
+2;La Paz;21;Sud Yungas;86;Irupana
+2;La Paz;21;Sud Yungas;87;Yanacachi
+2;La Paz;21;Sud Yungas;88;Palos Blancos
+2;La Paz;21;Sud Yungas;89;La Asunta
+2;La Paz;22;Los Andes;90;Pucarani
+2;La Paz;22;Los Andes;91;Laja
+2;La Paz;22;Los Andes;92;Batallas
+2;La Paz;22;Los Andes;93;Puerto Pérez
+2;La Paz;23;Aroma;94;Sicasica
+2;La Paz;23;Aroma;95;Umala
+2;La Paz;23;Aroma;96;Ayo Ayo
+2;La Paz;23;Aroma;97;Calamarca
+2;La Paz;23;Aroma;98;Patacamaya
+2;La Paz;23;Aroma;99;Colquencha
+2;La Paz;23;Aroma;100;Collana
+2;La Paz;24;Nor Yungas;101;Coroico
+2;La Paz;24;Nor Yungas;102;Coripata
+2;La Paz;25;Abel Iturralde;103;Ixiamas
+2;La Paz;25;Abel Iturralde;104;San Buenaventura
+2;La Paz;26;Bautista Saavedra;105;Charazani
+2;La Paz;26;Bautista Saavedra;106;Curva
+2;La Paz;27;Manco Kapac;107;Copacabana
+2;La Paz;27;Manco Kapac;108;San Pedro de Tiquina
+2;La Paz;27;Manco Kapac;109;Tito Yupanqui
+2;La Paz;28;Gualberto Villarroel;110;San Pedro de Curahuara
+2;La Paz;28;Gualberto Villarroel;111;Papel Pampa
+2;La Paz;28;Gualberto Villarroel;112;Chacarilla
+2;La Paz;29;General José Manuel Pando;113;Santiago de Machaca
+2;La Paz;29;General José Manuel Pando;114;Catacora
+2;La Paz;30;Caranavi;115;Caranavi
+2;La Paz;30;Caranavi;116;Alto Beni
+3;Cochabamba;31;Cercado;117;Cochabamba
+3;Cochabamba;32;Campero;118;Aiquile
+3;Cochabamba;32;Campero;119;Pasorapa
+3;Cochabamba;32;Campero;120;Omereque
+3;Cochabamba;33;Ayopaya;121;Ayopaya (Villa de Independencia)
+3;Cochabamba;33;Ayopaya;122;Morochata
+3;Cochabamba;33;Ayopaya;123;Cocapata
+3;Cochabamba;34;Esteban Arze;124;Tarata
+3;Cochabamba;34;Esteban Arze;125;Anzaldo
+3;Cochabamba;34;Esteban Arze;126;Arbieto
+3;Cochabamba;34;Esteban Arze;127;Sacabamba
+3;Cochabamba;35;Arani;128;Arani
+3;Cochabamba;35;Arani;129;Vacas
+3;Cochabamba;36;Arque;130;Arque
+3;Cochabamba;36;Arque;131;Tacopaya
+3;Cochabamba;37;Capinota;132;Capinota
+3;Cochabamba;37;Capinota;133;Santivañez
+3;Cochabamba;37;Capinota;134;Sicaya
+3;Cochabamba;38;Germán Jordán;135;Cliza
+3;Cochabamba;38;Germán Jordán;136;Toco
+3;Cochabamba;38;Germán Jordán;137;Tolata
+3;Cochabamba;39;Quillacollo;138;Quillacollo
+3;Cochabamba;39;Quillacollo;139;Sipesipe
+3;Cochabamba;39;Quillacollo;140;Tiquipaya
+3;Cochabamba;39;Quillacollo;141;Vinto
+3;Cochabamba;39;Quillacollo;142;Colcapirhua
+3;Cochabamba;40;Chapare;143;Sacaba
+3;Cochabamba;40;Chapare;144;Colomi
+3;Cochabamba;40;Chapare;145;Villa Tunari
+3;Cochabamba;41;Tapacarí;146;Tapacarí
+3;Cochabamba;42;Carrasco;147;Totora
+3;Cochabamba;42;Carrasco;148;Pojo
+3;Cochabamba;42;Carrasco;149;Pocona
+3;Cochabamba;42;Carrasco;150;Chimoré
+3;Cochabamba;42;Carrasco;151;Puerto Villarroel
+3;Cochabamba;42;Carrasco;152;Entre Ríos
+3;Cochabamba;43;Mizque;153;Mizque
+3;Cochabamba;43;Mizque;154;Vila Vila
+3;Cochabamba;43;Mizque;155;Alalay
+3;Cochabamba;43;Mizque;156;AIOC Raqaypampa
+3;Cochabamba;44;Punata;157;Punata
+3;Cochabamba;44;Punata;158;Villa Rivero
+3;Cochabamba;44;Punata;159;San Benito (Villa José Quintín Mendoza)
+3;Cochabamba;44;Punata;160;Tacachi
+3;Cochabamba;44;Punata;161;Villa Gualberto Villarroel
+3;Cochabamba;45;Bolivar;162;Bolivar
+3;Cochabamba;46;Tiraque;163;Tiraque
+3;Cochabamba;46;Tiraque;164;Shinahota
+4;Oruro;47;Cercado;165;Oruro
+4;Oruro;47;Cercado;166;Caracollo
+4;Oruro;47;Cercado;167;El Choro
+4;Oruro;47;Cercado;168;Paria (Soracachi)
+4;Oruro;48;Abaroa;169;Challapata
+4;Oruro;48;Abaroa;170;Santuario de Quillacas
+4;Oruro;49;Carangas;171;Corque
+4;Oruro;49;Carangas;172;Choquecota
+4;Oruro;50;Sajama;173;Curahuara de Carangas
+4;Oruro;50;Sajama;174;Turco
+4;Oruro;51;Litoral;175;Huachacalla
+4;Oruro;51;Litoral;176;Escara
+4;Oruro;51;Litoral;177;Cruz de Machacamarca
+4;Oruro;51;Litoral;178;Yunguyo del Litoral
+4;Oruro;51;Litoral;179;Esmeralda
+4;Oruro;52;Poopó;180;Poopó
+4;Oruro;52;Poopó;181;Pazña
+4;Oruro;52;Poopó;182;Antequera
+4;Oruro;53;Pantaleón Dalence;183;Huanuni
+4;Oruro;53;Pantaleón Dalence;184;Machacamarca
+4;Oruro;54;Ladislao Cabrera;185;AIOC de Salinas
+4;Oruro;54;Ladislao Cabrera;186;Pampa Aullagas
+4;Oruro;55;Sabaya;187;Sabaya
+4;Oruro;55;Sabaya;188;Coipasa
+4;Oruro;55;Sabaya;189;AIOC Uru Chipaya
+4;Oruro;56;Saucarí;190;Toledo
+4;Oruro;57;Tomás Barrón;191;Eucaliptus
+4;Oruro;58;Sur Carangas;192;Andamarca
+4;Oruro;58;Sur Carangas;193;Belén de Andamarca
+4;Oruro;59;San Pedro de Totora;194;Totora
+4;Oruro;60;Sebastián Pagador;195;Santiago de Huari
+4;Oruro;61;Mejillones;196;La Rivera
+4;Oruro;61;Mejillones;197;Todos Santos
+4;Oruro;61;Mejillones;198;Carangas
+4;Oruro;62;Nor Carangas;199;Huayllamarca
+5;Potosí;63;Tomás Frías;200;Potosí
+5;Potosí;63;Tomás Frías;201;Tinguipaya
+5;Potosí;63;Tomás Frías;202;Yocalla
+5;Potosí;63;Tomás Frías;203;Urmiri
+5;Potosí;64;Bustillo;204;Uncía
+5;Potosí;64;Bustillo;205;Chayanta
+5;Potosí;64;Bustillo;206;Llallagua
+5;Potosí;64;Bustillo;207;Chuquihuta Ayllu Jucumani
+5;Potosí;65;Cornelio Saavedra;208;Betanzos
+5;Potosí;65;Cornelio Saavedra;209;Chaquí
+5;Potosí;65;Cornelio Saavedra;210;Tacobamba
+5;Potosí;66;Chayanta;211;Colquechaca
+5;Potosí;66;Chayanta;212;Ravelo
+5;Potosí;66;Chayanta;213;Pocoata
+5;Potosí;66;Chayanta;214;Ocurí
+5;Potosí;66;Chayanta;215;San Pedro de Macha
+5;Potosí;67;Chárcas;216;San Pedro
+5;Potosí;67;Chárcas;217;Toro Toro
+5;Potosí;68;Nor Chichas;218;Cotagaita
+5;Potosí;68;Nor Chichas;219;Vitiche
+5;Potosí;69;Alonso de Ibáñez;220;Sacaca
+5;Potosí;69;Alonso de Ibáñez;221;Caripuyo
+5;Potosí;70;Sud Chichas;222;Tupiza
+5;Potosí;70;Sud Chichas;223;Atocha
+5;Potosí;71;Nor Lipez;224;"Colcha ""K"""
+5;Potosí;71;Nor Lipez;225;San Pedro de Quemes
+5;Potosí;72;Sud Lipez;226;San Pablo
+5;Potosí;72;Sud Lipez;227;Mojinete
+5;Potosí;72;Sud Lipez;228;San Antonio de Esmoruco
+5;Potosí;73;José María Linares;229;Puna (Villa Talavera)
+5;Potosí;73;José María Linares;230;"Caiza ""D"""
+5;Potosí;73;José María Linares;231;Ckochas
+5;Potosí;74;Antonio Quijarro;232;Uyuni
+5;Potosí;74;Antonio Quijarro;233;Tomave
+5;Potosí;74;Antonio Quijarro;234;Porco
+5;Potosí;75;General Bernardino Bilbao;235;Arampampa
+5;Potosí;75;General Bernardino Bilbao;236;Acasio
+5;Potosí;76;Daniel Campos;237;Llica
+5;Potosí;76;Daniel Campos;238;Tahua
+5;Potosí;77;Modesto Omiste;239;Villazón
+5;Potosí;78;Enrique Baldivieso;240;San Agustín
+6;Tarija;79;Cercado;241;Tarija
+6;Tarija;80;Arce;242;Padcaya
+6;Tarija;80;Arce;243;Bermejo
+6;Tarija;81;Gran Chaco;244;Yacuiba
+6;Tarija;81;Gran Chaco;245;Caraparí
+6;Tarija;81;Gran Chaco;246;Villa Montes
+6;Tarija;82;Avilés;247;Uriondo (Concepción)
+6;Tarija;82;Avilés;248;Yunchará
+6;Tarija;83;Méndez;249;San Lorenzo
+6;Tarija;83;Méndez;250;El Puente
+6;Tarija;84;O' Connor;251;Entre Ríos
+7;Santa Cruz;85;Andrés Ibáñez;252;Santa Cruz de La Sierra
+7;Santa Cruz;85;Andrés Ibáñez;253;Cotoca
+7;Santa Cruz;85;Andrés Ibáñez;254;Porongo
+7;Santa Cruz;85;Andrés Ibáñez;255;La Guardia
+7;Santa Cruz;85;Andrés Ibáñez;256;El Torno
+7;Santa Cruz;86;Warnes;257;Warnes
+7;Santa Cruz;86;Warnes;258;Okinawa Uno
+7;Santa Cruz;87;Velasco;259;San Ignacio
+7;Santa Cruz;87;Velasco;260;San Miguel
+7;Santa Cruz;87;Velasco;261;San Rafael
+7;Santa Cruz;88;Ichilo;262;Buena Vista
+7;Santa Cruz;88;Ichilo;263;San Carlos
+7;Santa Cruz;88;Ichilo;264;Yapacaní
+7;Santa Cruz;88;Ichilo;265;San Juan
+7;Santa Cruz;89;Chiquitos;266;San José
+7;Santa Cruz;89;Chiquitos;267;Pailón
+7;Santa Cruz;89;Chiquitos;268;Roboré
+7;Santa Cruz;90;Sara;269;Portachuelo
+7;Santa Cruz;90;Sara;270;Santa Rosa
+7;Santa Cruz;90;Sara;271;Colpa Bélgica
+7;Santa Cruz;91;Cordillera;272;Lagunillas
+7;Santa Cruz;91;Cordillera;273;AIOC Charagua Iyambae
+7;Santa Cruz;91;Cordillera;274;Cabezas
+7;Santa Cruz;91;Cordillera;275;Cuevo
+7;Santa Cruz;91;Cordillera;276;AIOC Guaraní Kereimba Iyaambae
+7;Santa Cruz;91;Cordillera;277;Camiri
+7;Santa Cruz;91;Cordillera;278;Boyuibe
+7;Santa Cruz;92;Vallegrande;279;Vallegrande
+7;Santa Cruz;92;Vallegrande;280;Trigal
+7;Santa Cruz;92;Vallegrande;281;Moromoro
+7;Santa Cruz;92;Vallegrande;282;Postrervalle
+7;Santa Cruz;92;Vallegrande;283;Pucará
+7;Santa Cruz;93;Florida;284;Samaipata
+7;Santa Cruz;93;Florida;285;Pampa Grande
+7;Santa Cruz;93;Florida;286;Mairana
+7;Santa Cruz;93;Florida;287;Quirusillas
+7;Santa Cruz;94;Obispo Santistéban;288;Montero
+7;Santa Cruz;94;Obispo Santistéban;289;General Saavedra
+7;Santa Cruz;94;Obispo Santistéban;290;Mineros
+7;Santa Cruz;94;Obispo Santistéban;291;Fernández Alonso
+7;Santa Cruz;94;Obispo Santistéban;292;San Pedro
+7;Santa Cruz;95;Ñuflo De Chávez;293;Concepción
+7;Santa Cruz;95;Ñuflo De Chávez;294;San Javier
+7;Santa Cruz;95;Ñuflo De Chávez;295;San Ramón
+7;Santa Cruz;95;Ñuflo De Chávez;296;San Julian
+7;Santa Cruz;95;Ñuflo De Chávez;297;San Antonio de Lomerio
+7;Santa Cruz;95;Ñuflo De Chávez;298;Cuatro Cañadas
+7;Santa Cruz;96;Angel Sandoval;299;San Matías
+7;Santa Cruz;97;Manuel María Caballero;300;Comarapa
+7;Santa Cruz;97;Manuel María Caballero;301;Saipina
+7;Santa Cruz;98;Germán Busch;302;Puerto Suarez
+7;Santa Cruz;98;Germán Busch;303;Puerto Quijarro
+7;Santa Cruz;98;Germán Busch;304;El Carmen Rivero Tórrez
+7;Santa Cruz;99;Guarayos;305;Ascención de Guarayos
+7;Santa Cruz;99;Guarayos;306;Urubicha
+7;Santa Cruz;99;Guarayos;307;El Puente
+8;Beni;100;Cercado;308;Trinidad
+8;Beni;100;Cercado;309;San Javier
+8;Beni;101;Vaca Diez;310;Riberalta
+8;Beni;101;Vaca Diez;311;Guayaramerín
+8;Beni;102;General José Ballivián;312;Reyes
+8;Beni;102;General José Ballivián;313;San Borja
+8;Beni;102;General José Ballivián;314;Santa Rosa
+8;Beni;102;General José Ballivián;315;Puerto Menor de Rurrenabaque
+8;Beni;103;Yacuma;316;Santa Ana
+8;Beni;103;Yacuma;317;Exaltación
+8;Beni;104;Moxos;318;San Ignacio
+8;Beni;105;Marbán;319;Loreto
+8;Beni;105;Marbán;320;San Andrés
+8;Beni;106;Mamoré;321;San Joaquín
+8;Beni;106;Mamoré;322;San Ramón
+8;Beni;106;Mamoré;323;Puerto Siles
+8;Beni;107;Iténez;324;Magdalena
+8;Beni;107;Iténez;325;Baures
+8;Beni;107;Iténez;326;Huacaraje
+9;Pando;108;Nicolás Suárez;327;Cobija
+9;Pando;108;Nicolás Suárez;328;Porvenir
+9;Pando;108;Nicolás Suárez;329;Bolpebra
+9;Pando;108;Nicolás Suárez;330;Bella Flor
+9;Pando;109;Manuripi;331;Puerto Rico
+9;Pando;109;Manuripi;332;San Pedro
+9;Pando;109;Manuripi;333;Filadelfia
+9;Pando;110;Madre de Dios;334;Puerto Gonzalo Moreno
+9;Pando;110;Madre de Dios;335;San Lorenzo
+9;Pando;110;Madre de Dios;336;Sena
+9;Pando;111;Abuná;337;Santa Rosa
+9;Pando;111;Abuná;338;Ingavi
+9;Pando;112;Federico Román;339;Nueva Esperanza
+9;Pando;112;Federico Román;340;Villa Nueva
+9;Pando;112;Federico Román;341;Santos Mercado

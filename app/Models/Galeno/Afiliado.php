@@ -2,15 +2,19 @@
 
 namespace App\Models\Galeno;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class Afiliado extends Model {
+  use HasFactory;
 
   protected $connection = "galeno";
 
   protected $table = "AFAFILIADOS";
+
+  public $timestamps = false;
 
   protected $casts = [
     "fecha_extinsion"=>"date: Y-m-d",

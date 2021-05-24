@@ -2,68 +2,84 @@
 
 namespace App\Models\Galeno;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AfiliacionBeneficiario extends Model {
+class AfiliacionBeneficiario extends Model
+{
+    use HasFactory;
 
-  protected $connection = "galeno";
+    protected $connection = "galeno";
 
-  protected $table = "AFBENEFICIARIOS";
+    protected $table = "AFBENEFICIARIOS";
 
-  protected $primaryKey = 'ID';
-  
-  public $incrementing = false;
+    protected $primaryKey = 'ID';
 
-  // In Laravel 6.0+ make sure to also set $keyType
-  protected $keyType = 'string';
+    public $incrementing = false;
 
-  protected $casts = [
-    "FECHA_EXTINSION_BEN"=>"date: d/m/Y",
-    "fecha_extinsion"=>"date: Y-m-d",
-    "fecha_validez_seguro"=>"date: Y-m-d",
-  ];
+    public $timestamps = false;
 
-  protected $hidden = [
-    "CAUSAS_BEN",
-    "FECHA_EXTINSION_BEN",
-    "FECHA_INGRESO_BEN",
-    "FECHA_I_BEN",
-    // "ID",
-    "IDSIRA",
-    "ID_AFO",
-    "ID_TTR",
-    "OBSERVACIONES_BEN",
-    "PARENTESCO_BEN",
-    "REG_DATE",
-    "REG_LOGIN"
-  ];
+    // In Laravel 6.0+ make sure to also set $keyType
+    protected $keyType = 'string';
 
-  protected $appends = [
-    "fecha_extinsion",
-    "fecha_validez_seguro"
-  ];
+    protected $casts = [
+        "FECHA_EXTINSION_BEN" => "date: d/m/Y",
+        "fecha_extinsion" => "date: Y-m-d",
+        "fecha_validez_seguro" => "date: Y-m-d",
+    ];
 
-  function getEmpleadorAttribute(){
-    return $this->afiliacionDelTitular?->empleador;
-  }
+    protected $hidden = [
+        "CAUSAS_BEN",
+        "FECHA_EXTINSION_BEN",
+        "FECHA_INGRESO_BEN",
+        "FECHA_I_BEN",
+        // "ID",
+        "IDSIRA",
+        "ID_AFO",
+        "ID_TTR",
+        "OBSERVACIONES_BEN",
+        "PARENTESCO_BEN",
+        "REG_DATE",
+        "REG_LOGIN"
+    ];
 
-  function getFechaExtinsionAttribute(){
-    return $this->ampliacion?->fecha_extinsion ?: $this->getAttribute("FECHA_EXTINSION_BEN");
-  }
+    protected $appends = [
+        "fecha_extinsion",
+        "fecha_validez_seguro"
+    ];
 
-  function getFechaValidezSeguroAttribute(){
-    return $this->baja?->fecha_validez_seguro;
-  }
+    function getEmpleadorAttribute()
+    {
+        return $this->afiliacionDelTitular?->empleador;
+    }
 
-  function baja(){
-    return $this->hasOne(BajaAfiliacion::class, "ID_BNO", "ID");
-  }
+    function getFechaExtinsionAttribute()
+    {
+        return $this->ampliacion?->fecha_extinsion ?: $this->getAttribute("FECHA_EXTINSION_BEN");
+    }
 
-  function ampliacion(){
-    return $this->hasOne(AmpliacionPrestacion::class, "ID_BNO", "ID");
-  }
+    function getFechaValidezSeguroAttribute()
+    {
+        return $this->baja?->fecha_validez_seguro;
+    }
 
-  function afiliacionDelTitular(){
-    return $this->belongsTo(AfiliacionTitular::class, "ID_TTR", "ID");
-  }
+    function afiliado()
+    {
+        return $this->belongsTo(Afiliado::class, "ID_AFO", "ID");
+    }
+
+    function baja()
+    {
+        return $this->hasOne(BajaAfiliacion::class, "ID_BNO", "ID");
+    }
+
+    function ampliacion()
+    {
+        return $this->hasOne(AmpliacionPrestacion::class, "ID_BNO", "ID");
+    }
+
+    function afiliacionDelTitular()
+    {
+        return $this->belongsTo(AfiliacionTitular::class, "ID_TTR", "ID");
+    }
 }

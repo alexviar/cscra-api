@@ -17,7 +17,10 @@ class RolesAndPermissionsSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Permission::truncate();
+        Role::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        Role::create(["name" => "super user", "guard_name" => "sanctum"]);
 
         // user permissions
         Permission::create(['name' => Permisos::VER_USUARIOS, 'guard_name' => 'sanctum']);

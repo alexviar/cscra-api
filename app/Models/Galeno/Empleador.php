@@ -2,9 +2,11 @@
 
 namespace App\Models\Galeno;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Empleador extends Model {
+  use HasFactory;
 
   protected $connection = "galeno";
 
@@ -13,6 +15,8 @@ class Empleador extends Model {
   protected $primaryKey = 'ID';
   
   public $incrementing = false;
+
+  public $timestamps = false;
 
   // In Laravel 6.0+ make sure to also set $keyType
   protected $keyType = 'string';
