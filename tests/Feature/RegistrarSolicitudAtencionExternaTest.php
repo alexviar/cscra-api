@@ -32,18 +32,15 @@ class SolicitudAtencionExternaTest extends TestCase
 
     protected $connectionsToTransact = ["mysql", "galeno"];
 
+
     function createSuperUser()
     {
-        $user = User::factory()
-            ->state([
-                "regional_id" => 1
-            ])
-            ->create();
-        $user->syncRoles([
-            "super user"
-        ]);
+        return User::where("username", "admin")->first();
+    }
 
-        return $user;
+    function assertSolicitudRegistrada(){
+        $this->assertDatabaseCount("atenciones_externas", 1);
+        $this->assertDatabaseCount("detalles_atenciones_externas", 1);
     }
 
     function test_beneficiario_con_fecha_de_extinsion_vencida_ayer()
@@ -193,6 +190,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
 
     function test_beneficiario_sin_fecha_de_extinsion()
@@ -242,6 +240,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
 
     function test_beneficiario_con_ampliacion_vencida_ayer()
@@ -401,6 +400,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
 
     function test_afiliado_con_estado_desconocido()
@@ -950,6 +950,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
 
     function test_beneficiario_con_fecha_de_validez_vencida_maniana()
@@ -1002,6 +1003,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
 
     function test_titular_con_fecha_de_validez_vencida_maniana()
@@ -1054,6 +1056,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
 
     function test_afiliado_con_baja_sin_fecha_de_validez()
@@ -1376,6 +1379,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }
     
     function test_empleador_de_alta_con_fecha_de_baja()
@@ -1878,6 +1882,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }    
     
     public function test_usuario_con_permiso_para_registrar_por_regional()
@@ -1926,6 +1931,7 @@ class SolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertOk();
+        $this->assertSolicitudRegistrada();
     }    
     
     public function test_usuario_con_permiso_para_registrar_por_regional_registrando_en_otra_regional()
@@ -1974,6 +1980,58 @@ class SolicitudAtencionExternaTest extends TestCase
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertForbidden();
     }
+
+    
+    public function test_usuario_con_permiso_para_registrar_por_regional_y_global()
+    {
+        $this->travelTo(Carbon::create(2020));
+        $empleador = Empleador::factory()
+            ->create();
+        $asegurado = Afiliado::factory()->create();
+        AfiliacionTitular::factory()
+            ->for($empleador)
+            ->for($asegurado)
+            ->create();
+
+        $medico = Medico::factory()
+            ->regionalSantaCruz()
+            ->for(Especialidad::factory()->create())
+            ->create();
+
+        $proveedor = Proveedor::factory()
+            ->regionalSantaCruz()
+            ->has(
+                ContratoProveedor::factory()
+                    ->has(Prestacion::factory()->count(10), "prestaciones")
+                    ->inicioAyer(),
+                "contratos"
+            )
+            ->create();
+
+        $data = [
+            "asegurado_id" => $asegurado->id,
+            "regional_id" => 3,
+            "medico_id" => $medico->id,
+            "proveedor_id" => $proveedor->id,
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
+                ->map(fn ($prestacion) => [
+                    "prestacion_id" => $prestacion->id,
+                ])
+        ];
+
+        $user = User::factory()
+        ->withPermissions([
+            Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL
+        ])
+        ->withPermissions([
+            Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA
+        ])
+        ->create();
+
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertOk();
+        $this->assertSolicitudRegistrada();
+    }
     
     public function test_usuario_sin_permisos()
     {
@@ -2018,6 +2076,48 @@ class SolicitudAtencionExternaTest extends TestCase
         ->create();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertStatus(403);
+        $response->assertForbidden();
+    }
+    
+    
+    public function test_usuario_no_autenticado()
+    {
+        $this->travelTo(Carbon::create(2020));
+        $empleador = Empleador::factory()
+            ->create();
+        $asegurado = Afiliado::factory()->create();
+        AfiliacionTitular::factory()
+            ->for($empleador)
+            ->for($asegurado)
+            ->create();
+
+        $medico = Medico::factory()
+            ->regionalLaPaz()
+            ->for(Especialidad::factory()->create())
+            ->create();
+
+        $proveedor = Proveedor::factory()
+            ->regionalLaPaz()
+            ->has(
+                ContratoProveedor::factory()
+                    ->has(Prestacion::factory()->count(10), "prestaciones")
+                    ->inicioAyer(),
+                "contratos"
+            )
+            ->create();
+
+        $data = [
+            "asegurado_id" => $asegurado->id,
+            "regional_id" => 1,
+            "medico_id" => $medico->id,
+            "proveedor_id" => $proveedor->id,
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
+                ->map(fn ($prestacion) => [
+                    "prestacion_id" => $prestacion->id,
+                ])
+        ];
+
+        $response = $this->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertUnauthorized();
     }
 }

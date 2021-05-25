@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Permisos;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -18,9 +19,21 @@ class RolesAndPermissionsSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Permission::truncate();
         Role::truncate();
+        User::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        Role::create(["name" => "super user", "guard_name" => "sanctum"]);
+        Role::create([
+            "name" => "super user", 
+            "guard_name" => "sanctum"
+        ]);
+        User::create([
+            "ci_raiz" => 0,
+            "regional_id" => 1,
+            "nombres" => "",
+            "username" => "admin",
+            "password" => '$2y$10$QUnLfz295yFWvgHw0jHFeOinnL91AhgaQxhPEjAzbPSGTNCffrAhq'
+        ])->assignRole("super user");
+        
 
         // user permissions
         Permission::create(['name' => Permisos::VER_USUARIOS, 'guard_name' => 'sanctum']);
