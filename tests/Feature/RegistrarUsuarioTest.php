@@ -87,24 +87,42 @@ class RegistrarUsuario extends TestCase
         ]);
     }
     
-    public function test_usuario_sin_apellidos()
-    {
+    // public function test_usuario_sin_apellidos()
+    // {
+    //     $roles = Role::factory()->count(1)->create();
+
+    //     $user = $this->getSuperUser();
+
+    //     $response = $this->actingAs($user, "sanctum")
+    //         ->postJson('/api/usuarios', [
+    //             "ci" => 12345678,
+    //             "nombres" => "Nombres",
+    //             "username" => "usuario",
+    //             "password" => "contraseña",
+    //             "regional_id" => 1,
+    //             "roles" => $roles->map(fn ($rol) => $rol->name)
+    //         ]);
+    //     $response->assertJsonValidationErrors([
+    //         "apellido_paterno" => "Debe indicar al menos un apellido",
+    //         "apellido_materno" => "Debe indicar al menos un apellido"
+    //     ]);
+    // }
+
+    public function test_campos_requeridos(){
         $roles = Role::factory()->count(1)->create();
 
         $user = $this->getSuperUser();
 
         $response = $this->actingAs($user, "sanctum")
-            ->postJson('/api/usuarios', [
-                "ci" => 12345678,
-                "nombres" => "Nombres",
-                "username" => "usuario",
-                "password" => "contraseña",
-                "regional_id" => 1,
-                "roles" => $roles->map(fn ($rol) => $rol->name)
-            ]);
+            ->postJson('/api/usuarios', []);
         $response->assertJsonValidationErrors([
+            "ci" => "El campo ci es requerido.",
+            "username" => "El campo nombre de usuario es requerido.",
+            "password" => "El campo contraseña es requerido.",
             "apellido_paterno" => "Debe indicar al menos un apellido",
-            "apellido_materno" => "Debe indicar al menos un apellido"
+            "apellido_materno" => "Debe indicar al menos un apellido",
+            "nombres" => "El campo nombres es requerido.",
+            "roles" => "El campo roles es requerido.",
         ]);
     }
 }
