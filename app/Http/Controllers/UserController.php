@@ -78,7 +78,7 @@ class UserController extends Controller
       "apellido_paterno" => "required",
       "apellido_materno" => "required",
       "nombres" => "required",
-      "regional_id" => "numeric,required,exists:".Regional::class.",id",
+      "regional_id" => "numeric|required|exists:".Regional::class.",id",
       "roles" => "required|array",
       "roles.*" => "exists:".Role::class.",name"
     ]);
