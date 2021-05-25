@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Application\TransferenciaExternaService;
 use App\Application\UserService;
 use App\Exceptions\ConflictException;
+use App\Models\Regional;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
@@ -77,6 +78,7 @@ class UserController extends Controller
       "apellido_paterno" => "required",
       "apellido_materno" => "required",
       "nombres" => "required",
+      "regional_id" => "numeric,required,exists:".Regional::class.",id",
       "roles" => "required|array",
       "roles.*" => "exists:".Role::class.",name"
     ]);
@@ -97,7 +99,8 @@ class UserController extends Controller
         "apellido_paterno" => $payload["apellido_paterno"],
         "apellido_materno" => $payload["apellido_materno"],
         "nombres" => $payload["nombres"],
-        "estado" => 1
+        "regional_id" => $payload["regional_id"],
+        "estado" => 1,
       ]);
       $model->syncRoles($payload["roles"]);
       return $model;
