@@ -69,7 +69,8 @@ class RoleController extends Controller
             "description" => "nullable",
             "permissions" => "array|required"
         ], [
-            "name.unique" => "Ya existe un rol con el mismo nombre."
+            "name.unique" => "Ya existe un rol con el mismo nombre.",
+            "permissions.required" => "Debe indicar al menos un permiso."
         ]);
         $role = DB::transaction(function () use ($payload) {
             $role = Role::create([

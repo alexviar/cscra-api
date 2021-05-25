@@ -210,7 +210,6 @@ class RegistrarUsuario extends TestCase
         $this->assertTrue(Hash::check("contraseña", $user->password));
     }
     
-
     public function test_usuario_con_permiso_para_registrar_por_regional_registrando_en_otra_regional()
     {        
         $roles = Role::factory()->count(1)->create();
@@ -258,6 +257,23 @@ class RegistrarUsuario extends TestCase
                 "roles" => $roles->map(fn ($rol) => $rol->name)
             ]);
         $response->assertForbidden();
+    }
+    
+
+    public function test_usuario_no_autenticado(){
+        $roles = Role::factory()->count(1)->create();
         
+        $response = $this->postJson("/api/usuarios", [
+                "ci" => 12345678,
+                "ci_complemento" => "A1",
+                "apellido_paterno" => "Paterno",
+                "apellido_materno" => "Materno",
+                "nombres" => "Nombres",
+                "username" => "usuario",
+                "password" => "contraseña",
+                "regional_id" => 1,
+                "roles" => $roles->map(fn ($rol) => $rol->name)
+            ]);
+        $response->assertUnauthorized();
     }
 }

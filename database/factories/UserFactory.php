@@ -25,7 +25,7 @@ class UserFactory extends Factory
     {
         $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
         return [
-            "id" => $this->faker->unique()->randomNumber(),
+            // "id" => $this->faker->unique()->randomNumber(),
             "ci_raiz" => $ci[0],
             "ci_complemento" => $ci[1],
             "apellido_paterno" => $this->faker->lastName,

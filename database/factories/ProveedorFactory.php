@@ -23,7 +23,7 @@ class ProveedorFactory extends Factory
     {
         $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
         return [
-            "id" => $this->faker->randomNumber(),
+            // "id" => $this->faker->randomNumber(),
             "nit" => $this->faker->boolean() ? $this->faker->numerify("###########") : null,
             // "nombre" => null,
             // "ci" => $ci[0],

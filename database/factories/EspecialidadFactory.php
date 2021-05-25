@@ -22,7 +22,7 @@ class EspecialidadFactory extends Factory
     public function definition()
     {
         return [
-          "id" => $this->faker->unique()->randomNumber(),
+        //   "id" => $this->faker->unique()->randomNumber(),
           "nombre" => $this->faker->unique()->text(15)
         ];
     }
