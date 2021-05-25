@@ -132,11 +132,15 @@ return [
 
     'custom' => [
         'apellido_paterno' => [
-            'required_if' => 'Debe indicar al menos un apellido',
+            'required_if' => 'Debe indicar al menos un apellido.',
         ],
         'apellido_materno' => [
-            'required_if' => 'Debe indicar al menos un apellido',
+            'required_if' => 'Debe indicar al menos un apellido.',
         ],
+        'regional_id' => [
+            'required' => 'Debe indicar una regional.',
+            'exists' => 'La regional seleccionada es invalida.'
+        ]
     ],
 
     /*

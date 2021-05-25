@@ -18,7 +18,6 @@ class RoleController extends Controller
      */
     public function __construct()
     {
-        // $this->authorizeResource(Person::class, 'person');
     }
 
     /**
@@ -28,32 +27,32 @@ class RoleController extends Controller
      */
     public function index(Request $request)
     {
-      $this->authorize("ver-todo", Role::class);
-      $filter = $request->filter;
-      $page =  $request->page;
-      $query = Role::query();
+        $this->authorize("ver-todo", Role::class);
+        $filter = $request->filter;
+        $page =  $request->page;
+        $query = Role::query();
 
-      if(Arr::has($filter, "texto") && ($texto = $filter["texto"])){
-        $query->whereRaw("MATCH(`name`, `decription`) AGAINST(? IN BOOLEAN MODE)", [$texto.'*']);
-      }
-
-      if($page && Arr::has($page, "size")){
-        $total = $query->count();
-        $query->limit($page["size"]);
-        if(Arr::has($page, "current")){
-          $query->offset(($page["current"] - 1) * $page["size"]);
+        if (Arr::has($filter, "texto") && ($texto = $filter["texto"])) {
+            $query->whereRaw("MATCH(`name`, `decription`) AGAINST(? IN BOOLEAN MODE)", [$texto . '*']);
         }
-        return response()->json($this->buildPaginatedResponseData($total, $query->get()->map(fn ($role) => array_merge($role->toArray(), [
-          "permission_names" => $role->getPermissionNames()
-        ]))));
-      }
-      if(Arr::has($page, "current")){
-        $query->offset($page["current"]);
-      }
 
-      return response()->json($query->get()->map(fn ($role) => array_merge($role->toArray(), [
-        "permission_names" => $role->getPermissionNames()
-      ])));
+        if ($page && Arr::has($page, "size")) {
+            $total = $query->count();
+            $query->limit($page["size"]);
+            if (Arr::has($page, "current")) {
+                $query->offset(($page["current"] - 1) * $page["size"]);
+            }
+            return response()->json($this->buildPaginatedResponseData($total, $query->get()->map(fn ($role) => array_merge($role->toArray(), [
+                "permission_names" => $role->getPermissionNames()
+            ]))));
+        }
+        if (Arr::has($page, "current")) {
+            $query->offset($page["current"]);
+        }
+
+        return response()->json($query->get()->map(fn ($role) => array_merge($role->toArray(), [
+            "permission_names" => $role->getPermissionNames()
+        ])));
     }
 
     /**
@@ -64,23 +63,25 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-      $this->authorize("registrar", Role::class);
-      $payload = $request->validate([
-        "name" => "required|unique:roles",
-        "description" => "nullable",
-        "permissions" => "array|required"
-      ]);
-      $role = DB::transaction(function() use($payload){
-        $role = Role::create([
-          "name" => $payload["name"],
-          "description" => $payload["description"]
+        $this->authorize("registrar", Role::class);
+        $payload = $request->validate([
+            "name" => "required|unique:roles",
+            "description" => "nullable",
+            "permissions" => "array|required"
+        ], [
+            "name.unique" => "Ya existe un rol con el mismo nombre."
         ]);
-        $role->givePermissionTo($payload["permissions"]);
-        return $role;
-      });
-      return response()->json(array_merge($role->toArray(), [
-        "permission_names" => $role->getPermissionNames()
-      ]));
+        $role = DB::transaction(function () use ($payload) {
+            $role = Role::create([
+                "name" => $payload["name"],
+                "description" => $payload["description"]
+            ]);
+            $role->givePermissionTo($payload["permissions"]);
+            return $role;
+        });
+        return response()->json(array_merge($role->toArray(), [
+            "permission_names" => $role->getPermissionNames()
+        ]));
     }
 
     /**
@@ -91,16 +92,16 @@ class RoleController extends Controller
      */
     public function show($id)
     {
-      $role = Role::with("permissions")->find($id);
-      if(!$role){
-        throw new ModelNotFoundException();
-      }
+        $role = Role::with("permissions")->find($id);
+        if (!$role) {
+            throw new ModelNotFoundException();
+        }
 
-      $this->authorize("ver", $role);
+        $this->authorize("ver", $role);
 
-      return response()->json(array_merge($role->toArray(), [
-        "permission_names" => $role->getPermissionNames()
-      ]));
+        return response()->json(array_merge($role->toArray(), [
+            "permission_names" => $role->getPermissionNames()
+        ]));
     }
 
     /**
@@ -112,29 +113,28 @@ class RoleController extends Controller
      */
     public function update(Request $request, $id)
     {
-      $payload = $request->validate([
-        "name" => "required",
-        "description" => "nullable",
-        "permissions" => "required"
-      ]);
-      $role = Role::find($id);
-      if(!$role){
-        throw new ModelNotFoundException();
-      }
+        $payload = $request->validate([
+            "name" => "required",
+            "description" => "nullable",
+            "permissions" => "required"
+        ]);
+        $role = Role::find($id);
+        if (!$role) {
+            throw new ModelNotFoundException();
+        }
 
-      $role->name = $payload["name"];
-      $role->description = $payload["description"];
+        $role->name = $payload["name"];
+        $role->description = $payload["description"];
 
-      $this->authorize("editar", $role);
+        $this->authorize("editar", $role);
 
-      DB::transaction(function() use($role, $payload){
-        $role->save();
-        $role->syncPermissions($payload["permissions"]);
-      });
-      return response()->json(array_merge($role->toArray(), [
-        "permission_names" => $role->getPermissionNames()
-      ]));
-
+        DB::transaction(function () use ($role, $payload) {
+            $role->save();
+            $role->syncPermissions($payload["permissions"]);
+        });
+        return response()->json(array_merge($role->toArray(), [
+            "permission_names" => $role->getPermissionNames()
+        ]));
     }
 
     /**
@@ -145,10 +145,10 @@ class RoleController extends Controller
      */
     public function destroy($id)
     {
-      
-      $this->authorize("eliminar", Role::class);
-      if(!Role::destroy($id))
-        throw new \Exception("No se pudo eliminar el rol");
-      return response()->json();
+
+        $this->authorize("eliminar", Role::class);
+        if (!Role::destroy($id))
+            throw new \Exception("No se pudo eliminar el rol");
+        return response()->json();
     }
 }
