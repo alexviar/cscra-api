@@ -28,8 +28,9 @@ class UnidadesTerritorialesSeeder extends Seeder
         // Municipio::importar(__DIR__.DIRECTORY_SEPARATOR."csv".DIRECTORY_SEPARATOR."municipios.csv");
         $csv = __DIR__.DIRECTORY_SEPARATOR."csv".DIRECTORY_SEPARATOR."municipios.csv";
         $filename = str_replace("\\", "\\\\", $csv);
+        
         DB::select("LOAD DATA LOCAL INFILE '{$filename}' IGNORE INTO TABLE `departamentos` CHARACTER SET 'utf8' FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES (`departamentos`.`id`, `departamentos`.`nombre`, @skip, @skip, @skip, @skip)");
-        DB::select("LOAD DATA LOCAL INFILE '{$filename}' IGNORE INTO TABLE `provincias` CHARACTER SET 'utf8' FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES (@skip, @skip, `provincias`.`id`, `provincias`.`nombre`, @skip, @skip)");
-        DB::select("LOAD DATA LOCAL INFILE '{$filename}' IGNORE INTO TABLE `municipios` CHARACTER SET 'utf8' FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES (@skip, @skip, @skip, @skip, `municipios`.`id`, `municipios`.`nombre`)");
+        DB::select("LOAD DATA LOCAL INFILE '{$filename}' IGNORE INTO TABLE `provincias` CHARACTER SET 'utf8' FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES (`departamento_id`, @skip, `provincias`.`id`, `provincias`.`nombre`, @skip, @skip)");
+        DB::select("LOAD DATA LOCAL INFILE '{$filename}' IGNORE INTO TABLE `municipios` CHARACTER SET 'utf8' FIELDS TERMINATED BY ';' OPTIONALLY ENCLOSED BY '\"' LINES TERMINATED BY '\\r\\n' IGNORE 1 LINES (@skip, @skip, `provincia_id`, @skip, `municipios`.`id`, `municipios`.`nombre`)");
     }
 }
