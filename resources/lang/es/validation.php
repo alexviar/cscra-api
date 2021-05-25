@@ -41,7 +41,7 @@ return [
     'distinct' => 'The :attribute field has a duplicate value.',
     'email' => 'The :attribute must be a valid email address.',
     'ends_with' => 'The :attribute must end with one of the following: :values.',
-    'exists' => 'The selected :attribute is invalid.',
+    'exists' => 'El :attribute seleccionado es invalido.',
     'file' => 'The :attribute must be a file.',
     'filled' => 'The :attribute field must have a value.',
     'gt' => [
@@ -131,8 +131,11 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'apellido_paterno' => [
+            'required_if' => 'Debe indicar al menos un apellido',
+        ],
+        'apellido_materno' => [
+            'required_if' => 'Debe indicar al menos un apellido',
         ],
     ],
 
@@ -149,7 +152,8 @@ return [
 
     'attributes' => [
       'username' => 'nombre de usuario',
-      'password' => 'contraseña'
+      'password' => 'contraseña',
+      'roles.*' => 'rol'
     ],
 
 ];
