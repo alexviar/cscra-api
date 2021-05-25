@@ -90,7 +90,6 @@ class SolicitudAtencionExternaService extends Controller
     public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $usuario_id, $prestaciones_solicitadas)
     {
         $asegurado = Afiliado::buscarPorId($asegurado_id);
-
         $hoy = Carbon::now("America/La_Paz");
         $errors = [];
         if (!$asegurado) {
@@ -101,14 +100,14 @@ class SolicitudAtencionExternaService extends Controller
             if ($asegurado->estado == 1) {
                 if ($asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
             } else if ($asegurado->estado == 2) {
-                if (!$asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja.";
+                if (!$asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja";
             } else {
                 $errors["asegurado.estado"] = "El asegurado tiene un estado indeterminado";
             }
 
             if ($asegurado->ultimaAfiliacion->baja) {
                 if (!$asegurado->fechaValidezSeguro) $errors["asegurado.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
-                else if ($asegurado->fechaValidezSeguro->lte($hoy)) $errors["asegurado.fecha_validez_seguro"] = "El seguro a no tiene validez";
+                else if ($asegurado->fechaValidezSeguro->lte($hoy)) $errors["asegurado.fecha_validez_seguro"] = "El seguro ya no tiene validez";
             }
             if ($asegurado->fechaExtincion?->lte($hoy)) {
                 $errors["asegurado.fecha_extincion"] = "Fecha de extincion alcanzada";
@@ -119,55 +118,65 @@ class SolicitudAtencionExternaService extends Controller
                 if ($titular->estado == 1) {
                     if ($asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
                 } else if ($titular->estado == 2) {
-                    if (!$asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja.";
+                    if (!$asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja";
                 } else {
                     $errors["titular.estado"] = "El asegurado tiene un estado indeterminado";
                 }
 
                 if ($asegurado->afiliacionDelTitular->baja) {
                     if (!$asegurado->afiliacionDelTitular->baja->fechaValidezSeguro) $errors["titular.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
-                    else if ($asegurado->afiliacionDelTitular->baja->fechaValidezSeguro->lte($hoy)) $errors["titular.fecha_validez_seguro"] = "El seguro a no tiene validez";
+                    else if ($asegurado->afiliacionDelTitular->baja->fechaValidezSeguro->lte($hoy)) $errors["titular.fecha_validez_seguro"] = "El seguro ya no tiene validez";
                 }
             }
 
             $empleador = $asegurado->empleador;
             if ($empleador->estado == 1) {
-                if ($empleador->fechaBaja) $errors["empleador.estado"] = "El empleador figura como activo, pero tiene una fecha de baja";
+                if ($empleador->fecha_baja) $errors["empleador.estado"] = "El empleador figura como activo, pero tiene una fecha de baja";
             } else if ($empleador->estado == 2 || $empleador->estado == 3) {
-                if ($empleador->fechaBaja) $error["empleador.fecha_baja"] = "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez";
+                if (!$empleador->fecha_baja) $errors["empleador.fecha_baja"] = "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez";
+                else if ($empleador->fecha_baja->addMonths(2)->lte($hoy)) $errors["empleador.fecha_baja"] = "El seguro ya no tiene validez";
             } else {
-                $errors["titular.estado"] = "El empleador tiene un estado indeterminado";
+                $errors["empleador.estado"] = "El empleador tiene un estado indeterminado";
             }
         }
 
         $medico = Medico::find($medico_id);
         if (!$medico) {
-            $errors["medico"] = "El medico no existe";
+            $errors["medico"] = "El médico no existe";
+        } else if ($medico->regional_id !== $regional_id) {
+            $errors["medico"] = "El médico pertenece a otra regional";
         }
+
         $proveedor = Proveedor::find($proveedor_id);
         if (!$proveedor) {
             $errors["proveedor"] = "El proveedor no existe";
-        }
-        if (count($prestaciones_solicitadas) == 0) {
-            $errors["prestaciones_solicitadas"] = "No se solicitaron prestaciones";
-        }
-        if (count($prestaciones_solicitadas) > 1) {
-            $errors["prestaciones_solicitadas"] = "Actualmente solo se permite una prestacion por DM 11";
-        }
-        // $length = 0;
-        foreach ($prestaciones_solicitadas as $index => $value) {
-            @["prestacion_id" => $prestacion_id, "nota" => $nota] = $value;
-            $prestacion = Prestacion::find($prestacion_id);
-            if (!$prestacion) {
-                $errors["prestaciones_solicitadas.$index.prestacion"] = "La prestación no existe";
-            } else if (!$proveedor->ofrece($prestacion_id)) {
-                $errors["prestaciones_solicitadas.$index.prestacion"] = "El proveedor no ofrece la prestacion '{$prestacion->nombre}'";
+        } else if ($proveedor->regional_id !== $regional_id) {
+            $errors["proveedor"] = "El proveedor pertenece a otra regional";
+        } else if (!$proveedor->contrato) {
+            $errors["proveedor"] = "El proveedor no tiene un contrato activo";
+        } else {
+            if (count($prestaciones_solicitadas) == 0) {
+                $errors["prestaciones_solicitadas"] = "No se solicitaron prestaciones";
+            } elseif (count($prestaciones_solicitadas) > 1) {
+                $errors["prestaciones_solicitadas"] = "Actualmente solo se permite una prestacion por DM 11";
+            } else {
+                // $length = 0;
+                foreach ($prestaciones_solicitadas as $index => $value) {
+                    @["prestacion_id" => $prestacion_id, "nota" => $nota] = $value;
+                    $prestacion = Prestacion::find($prestacion_id);
+                    if (!$prestacion) {
+                        $errors["prestaciones_solicitadas.$index.prestacion"] = "La prestación no existe";
+                    } else if (!$proveedor->ofrece($prestacion_id)) {
+                        $errors["prestaciones_solicitadas.$index.prestacion"] = "El proveedor no ofrece esta prestacion"; //"El proveedor no ofrece la prestacion '{$prestacion->nombre}'";
+                    }
+                    if (strlen($nota) > 60) {
+                        $errors["prestaciones_solicitadas.$index.nota"] = "Las notas no deben exceder los 60 caracteres";
+                    }
+                    // $length += strlen($prestacion->nombre) + strlen($nota) + 3;
+                }
             }
-            if (strlen($nota) > 150) {
-                $errors["prestaciones_solicitadas.$index.nota"] = "Las notas no deben exceder los 150 caracteres";
-            }
-            // $length += strlen($prestacion->nombre) + strlen($nota) + 3;
         }
+
         if (count($errors)) {
             throw ValidationException::withMessages($errors);
         }

@@ -17,6 +17,8 @@ class BajaAfiliacion extends Model
 
     public $incrementing = false;
 
+    public $timestamps = false;
+
     // In Laravel 6.0+ make sure to also set $keyType
     protected $keyType = 'string';
 
@@ -46,6 +48,14 @@ class BajaAfiliacion extends Model
     protected $appends = [
         "fecha_validez_seguro"
     ];
+
+    function afiliacionTitular(){
+        return $this->belongsTo(AfiliacionTitular::class, "ID_TTR", "ID");
+    }
+
+    function afiliacionBeneficiario(){
+        return $this->belongsTo(AfiliacionTitular::class, "ID_BNO", "ID");
+    }
 
     function getFechaValidezSeguroAttribute()
     {

@@ -53,11 +53,11 @@ class SolicitudAtencionExternaPolicy
                 || $solicitud->registrado_por_id == $user->id))) return true;
     }
 
-    public function registrar(User $user, $regional_id)
+    public function registrar(User $user, $payload)
     {
-        dd($user->toArray());
+        // dd("Policy", $user->toArray());
         if ($user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-        if ((!$user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)
-            || $regional_id == $user->id)) return true;
+        if ($user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)
+            && Arr::get($payload, "regional_id") == $user->regional_id) return true;
     }
 }

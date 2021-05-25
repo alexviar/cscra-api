@@ -19,4 +19,9 @@ class ContratoProveedor extends Model
     {
         return $this->belongsToMany(Prestacion::class, "prestaciones_contratadas", "contrato_id", "prestacion_id");
     }
+
+    function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, "proveedor_id", "id");
+    }
 }

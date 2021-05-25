@@ -24,24 +24,27 @@ class BajaAfiliacionFactory extends Factory
     {
         return [
             "ID" => $this->faker->unique()->numerify("AA#############"),
+            "FECHA_PRESENTACION_BAJ" => $this->faker->date(),
+            "FECHA_REG_BAJ" => $this->faker->date(),
+            "ESTADO" => 1
         ];
     }
 
     public function validezVencidaAyer(){
-        return [
+        return $this->state([
             "FECHA_VALIDEZ_SEGURO_BAJ" => Carbon::now()->subDay()
-        ];
+        ]);
     }
 
     public function validezVencidaHoy(){
-        return [
+        return $this->state([
             "FECHA_VALIDEZ_SEGURO_BAJ" => Carbon::now()
-        ];
+        ]);
     }
 
     public function validezVencidaManiana(){
-        return [
+        return $this->state([
             "FECHA_VALIDEZ_SEGURO_BAJ" => Carbon::now()->addDay()
-        ];
+        ]);
     }
 }

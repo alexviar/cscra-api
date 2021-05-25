@@ -33,13 +33,19 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-
+        
         Gate::before(function ($user) {
-          return $user->estado == 1;
+          if($user->estado === 1){
+              return true;
+          }
         });
 
         Gate::after(function ($user) {
-          return $user->hasRole("super user");
+            // dd("I'm here",$user->hasRole("super user"));
+          if($user->hasRole("super user")){
+            //   dd("I'm here");
+              return true;
+          }
         });
     }
 }

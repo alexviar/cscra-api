@@ -23,6 +23,7 @@ class ProveedorFactory extends Factory
     {
         $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
         return [
+            "id" => $this->faker->randomNumber(),
             "nit" => $this->faker->boolean() ? $this->faker->numerify("###########") : null,
             // "nombre" => null,
             // "ci" => $ci[0],
@@ -32,6 +33,20 @@ class ProveedorFactory extends Factory
             // "nombres" => $this->faker->name,
             "tipo_id" => 1
         ];
+    }
+
+    public function regionalLaPaz()
+    {
+        return $this->state([
+            "regional_id" => 1
+        ]);
+    }
+
+    public function regionalSantaCruz()
+    {
+        return $this->state([
+            "regional_id" => 3
+        ]);
     }
 
     public function empresa()

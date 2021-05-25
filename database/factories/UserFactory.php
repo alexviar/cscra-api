@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use App\Models\Role;
 
 class UserFactory extends Factory
 {
@@ -30,23 +31,25 @@ class UserFactory extends Factory
             "apellido_paterno" => $this->faker->lastName,
             "apellido_materno" => $this->faker->lastName,
             'nombres' => $this->faker->name,
+            'regional_id' => 1,
+            'estado' => 1,
             'username' => $this->faker->unique()->userName,
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
         ];
     }
 
-    /**
-     * Define the model's unverified state.
-     *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
-     */
-    public function unverified()
+    public function regionalSantaCruz()
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'email_verified_at' => null,
-            ];
-        });
+        return $this->state([
+            "regional_id" => 3
+        ]);
     }
+
+    public function withPermissions($permissions)
+    {    
+        $rol = Role::factory()->create();
+        $rol->syncPermissions($permissions);
+        return $this->hasAttached($rol);
+    }    
 }

@@ -17,6 +17,8 @@ class AmpliacionPrestacion extends Model
 
     public $incrementing = false;
 
+    public $timestamps = false;
+
     // In Laravel 6.0+ make sure to also set $keyType
     protected $keyType = 'string';
 
@@ -41,5 +43,9 @@ class AmpliacionPrestacion extends Model
     function getFechaExtinsionAttribute()
     {
         return $this->getAttribute("FECHA_EXTINSION_AMP");
+    }
+
+    function afiliacionBeneficiario(){
+        return $this->belongsTo(AfiliacionBeneficiario::class, "ID_BNO", "ID");
     }
 }

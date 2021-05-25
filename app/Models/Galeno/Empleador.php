@@ -83,11 +83,11 @@ class Empleador extends Model {
   }
 
   function getEstadoAttribute(){
-    return $this->attributes["ESTADO_EMP"];
+    return $this->getAttribute("ESTADO_EMP");
   }
 
   function getFechaBajaAttribute(){
-    return $this->attributes["FECHA_BAJA_EMP"];
+    return $this->getAttribute("FECHA_BAJA_EMP");
   }
 
   function toArray(){

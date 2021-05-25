@@ -47,6 +47,12 @@ class AfiliadoFactory extends Factory
         ]);
     }
 
+    public function baja(){
+        return $this->state([
+            "ESTADO_AFI" => 2
+        ]);
+    }
+
     public function estadoDesconocido(){
         return $this->state([
             "ESTADO_AFI" => $this->faker->randomDigitNot([1, 2])

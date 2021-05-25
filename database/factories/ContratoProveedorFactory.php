@@ -24,6 +24,19 @@ class ContratoProveedorFactory extends Factory
     {
         return [
             "fin" => null,
+            "estado" => 1
+        ];
+    }
+
+    public function consumido(){
+        return $this->state([
+            "estado" => 2
+        ]);
+    }
+
+    public function anulado(){
+        return [
+            "estado" => 3
         ];
     }
 

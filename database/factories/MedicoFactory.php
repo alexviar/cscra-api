@@ -33,6 +33,18 @@ class MedicoFactory extends Factory
         ];
     }
 
+    public function regionalLaPaz(){
+        return $this->state([
+            "regional_id" => 1
+        ]);
+    }
+
+    public function regionalSantaCruz(){
+        return $this->state([
+            "regional_id" => 3
+        ]);
+    }
+
     public function proveedor()
     {
         return [
