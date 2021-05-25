@@ -14,9 +14,11 @@ class RegistrarUsuario extends TestCase
      *
      * @return void
      */
-    public function test_()
-    {
-        $response = $this->get('/');
+    public function test_nombre_de_usuario_repetido()
+    {        
+        $response = $this->postJson('usuarios', [
+            
+        ]);
 
         $response->assertStatus(200);
     }

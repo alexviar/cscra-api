@@ -29,7 +29,8 @@ class User extends Authenticatable
       'nombres',
       'username',
       'password',
-      'estado'
+      'estado',
+      'regional_id'
     ];
 
     /**
