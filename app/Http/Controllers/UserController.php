@@ -85,7 +85,7 @@ class UserController extends Controller
 
     $this->authorize("registrar", [User::class, $payload]);
 
-    $user = User::where("ci_raiz", $payload["ci"])->where("ci_complemento", $payload["ci_complemento"])->first();
+    $user = User::where("ci_raiz", $payload["ci"])->where("ci_complemento", $payload["ci_complemento"]??null)->first();
     if($user){
       throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado",$user);
     }
@@ -95,9 +95,9 @@ class UserController extends Controller
         "username" => $payload["username"],
         "password" => Hash::make($payload["password"]),
         "ci_raiz" => $payload["ci"],
-        "ci_complemento" => $payload["ci_complemento"],
-        "apellido_paterno" => $payload["apellido_paterno"],
-        "apellido_materno" => $payload["apellido_materno"],
+        "ci_complemento" => $payload["ci_complemento"]??null,
+        "apellido_paterno" => $payload["apellido_paterno"]??null,
+        "apellido_materno" => $payload["apellido_materno"]??null,
         "nombres" => $payload["nombres"],
         "regional_id" => $payload["regional_id"],
         "estado" => 1,
