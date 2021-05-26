@@ -79,7 +79,7 @@ class SolicitudAtencionExternaController extends Controller
 
     function verDm11(Request $request, string $numeroSolicitud): BinaryFileResponse
     {
-        $this->authorize("ver-dm11", SolicitudAtencionExterna::class);
+        //$this->authorize("ver-dm11", SolicitudAtencionExterna::class);
         if (!Storage::exists("formularios/dm11/${numeroSolicitud}.pdf")) {
             $solicitud = SolicitudAtencionExterna::find(intval($numeroSolicitud));
             $dm11Generator = new Dm11Generador();
