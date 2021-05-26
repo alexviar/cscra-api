@@ -10,6 +10,7 @@ use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\AmpliacionPrestacion;
 use App\Models\Galeno\BajaAfiliacion;
 use App\Models\Galeno\Empleador;
+use App\Models\ListaMoraItem;
 use App\Models\Medico;
 use App\Models\Permisos;
 use App\Models\Prestacion;
@@ -1472,11 +1473,62 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
         ]);
     }
 
+    public function test_empleador_en_mora()
+    {
+        $this->travelTo(Carbon::create(2020));
+        $empleador = Empleador::factory()
+            ->create();
+
+        ListaMoraItem::create([
+            "empleador_id" => $empleador->id,
+            "regional_id" => Regional::mapGalenoIdToLocalId($empleador->regional_id)
+        ]);
+
+        $asegurado = Afiliado::factory()->create();
+        AfiliacionTitular::factory()
+            ->for($empleador)
+            ->for($asegurado)
+            ->create();
+
+        $medico = Medico::factory()
+            ->regionalLaPaz()
+            ->for(Especialidad::factory()->create())
+            ->create();
+
+        $proveedor = Proveedor::factory()
+            ->regionalLaPaz()
+            ->has(
+                ContratoProveedor::factory()
+                    ->has(Prestacion::factory()->count(10), "prestaciones")
+                    ->inicioAyer(),
+                "contratos"
+            )
+            ->create();
+
+        $data = [
+            "asegurado_id" => $asegurado->id,
+            "regional_id" => 1,
+            "medico_id" => $medico->id,
+            "proveedor_id" => $proveedor->id,
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
+                "prestacion_id" => $prestacion->id
+            ])
+        ];
+
+        $user = $this->createSuperUser();
+
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "empleador.estado" => "El empleador tiene un estado indeterminado"
+        ]);
+    }
+
     public function test_medico_no_existe()
     {
         $this->travelTo(Carbon::create(2020));
         $empleador = Empleador::factory()
             ->create();
+
         $asegurado = Afiliado::factory()->create();
         AfiliacionTitular::factory()
             ->for($empleador)
@@ -1834,8 +1886,6 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "prestaciones_solicitadas.0.nota" => "Las notas no deben exceder los 60 caracteres"
         ]);
     }
-
-    
     
     public function test_usuario_con_permiso_para_registrar()
     {

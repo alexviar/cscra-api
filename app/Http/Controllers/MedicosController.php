@@ -53,8 +53,8 @@ class MedicosController extends Controller {
     $payload = $request->validate([
       "ci" => "required|numeric",
       "ci_complemento" => "nullable",
-      "apellido_paterno" => "nullable",
-      "apellido_materno" => "required",
+      "apellido_paterno" => "nullable|required_if:apellido_materno,null",
+      "apellido_materno" => "nullable|required_if:apellido_paterno,null",
       "nombres" => "required",
       "regional_id" => "required|numeric",
       "especialidad_id" => "required|numeric"
@@ -72,8 +72,8 @@ class MedicosController extends Controller {
     $payload = $request->validate([
       "ci" => "required|numeric",
       "ci_complemento" => "nullable",
-      "apellido_paterno" => "nullable",
-      "apellido_materno" => "required",
+      "apellido_paterno" => "nullable|required_if:apellido_materno,null",
+      "apellido_materno" => "nullable|required_if:apellido_paterno,null",
       "nombres" => "required",
       "regional_id" => "required|numeric",
       "especialidad_id" => "required|numeric"

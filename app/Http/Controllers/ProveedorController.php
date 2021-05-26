@@ -71,8 +71,8 @@ class ProveedorController extends Controller {
         "general.nit" => "nullable",
         "general.ci" => "required",
         "general.ci_complemento" => "nullable",
-        "general.apellido_paterno" => "nullable",
-        "general.apellido_materno" => "required",
+        "general.apellido_paterno" => "nullable|required_if:apellido_materno,null",
+        "general.apellido_materno" => "nullable|required_if:apellido_paterno,null",
         "general.nombres" => "required",
         "general.especialidad_id" => "required",
         "general.regional_id" => "required",
@@ -179,15 +179,15 @@ class ProveedorController extends Controller {
   function actualizar(Request $request, $id){
     $proveedor = Proveedor::find($id);
     if(!$proveedor){
-      throw ModelNotFoundException("El proveedor no existe");
+      throw new ModelNotFoundException("El proveedor no existe");
     }
     if($proveedor->tipo_id == 1){
       $payload = $request->validate([
         "nit" => "nullable",
         "ci" => "required",
         "ci_complemento" => "nullable",
-        "apellido_paterno" => "nullable",
-        "apellido_materno" => "required",
+        "apellido_paterno" => "nullable|required_if:apellido_materno,null",
+        "apellido_materno" => "nullable|required_if:apellido_paterno,null",
         "nombres" => "required",
         "especialidad_id" => "required",
         "regional_id" => "required"
