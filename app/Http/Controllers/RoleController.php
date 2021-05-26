@@ -69,13 +69,14 @@ class RoleController extends Controller
             "description" => "nullable",
             "permissions" => "array|required"
         ], [
+            "name.required" => "El nombre es requerido.",
             "name.unique" => "Ya existe un rol con el mismo nombre.",
             "permissions.required" => "Debe indicar al menos un permiso."
         ]);
         $role = DB::transaction(function () use ($payload) {
             $role = Role::create([
                 "name" => $payload["name"],
-                "description" => $payload["description"]
+                "description" => $payload["description"]??null
             ]);
             $role->givePermissionTo($payload["permissions"]);
             return $role;
@@ -125,7 +126,7 @@ class RoleController extends Controller
         }
 
         $role->name = $payload["name"];
-        $role->description = $payload["description"];
+        $role->description = $payload["description"]??null;
 
         $this->authorize("editar", $role);
 

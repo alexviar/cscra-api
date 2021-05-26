@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class BuscarSolicitudAtencionExterna extends TestCase
+class BuscarSolicitudAtencionExternaTest extends TestCase
 {
     use DatabaseTransactions;
     /**

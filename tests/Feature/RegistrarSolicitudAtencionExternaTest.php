@@ -26,7 +26,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
-class SolicitudAtencionExternaTest extends TestCase
+class RegistrarSolicitudAtencionExternaTest extends TestCase
 {
     use DatabaseTransactions;
 

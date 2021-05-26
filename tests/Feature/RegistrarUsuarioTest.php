@@ -11,7 +11,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
-class RegistrarUsuario extends TestCase
+class RegistrarUsuarioTest extends TestCase
 {
     use DatabaseTransactions;
 
