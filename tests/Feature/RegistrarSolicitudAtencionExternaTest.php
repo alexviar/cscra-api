@@ -159,16 +159,12 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->create();
             
         $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
+            ->regionalLaPaz()
             ->for(Especialidad::factory()->create())
             ->create();
 
         $proveedor = Proveedor::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
+            ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
                     ->has(Prestacion::factory()->count(10), "prestaciones")
@@ -1481,6 +1477,8 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
 
         ListaMoraItem::create([
             "empleador_id" => $empleador->id,
+            "numero_patronal" => $empleador->numero_patronal,
+            "nombre" => $empleador->nombre,
             "regional_id" => Regional::mapGalenoIdToLocalId($empleador->regional_id)
         ]);
 
@@ -1519,7 +1517,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "empleador.estado" => "El empleador tiene un estado indeterminado"
+            "empleador.aportes" => "El empleador esta en mora"
         ]);
     }
 

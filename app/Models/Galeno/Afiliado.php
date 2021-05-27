@@ -189,4 +189,8 @@ class Afiliado extends Model {
   static function buscarPorIds($ids){
     return static::whereIn("ID", $ids)->get();
   }
+
+  static function buscarPorMatricula($matricula) {
+      return static::where("MATRICULA", $matricula)->get();
+  }
 }

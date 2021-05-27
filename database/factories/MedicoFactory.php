@@ -29,6 +29,7 @@ class MedicoFactory extends Factory
             "apellido_paterno" => $this->faker->lastName,
             "apellido_materno" => $this->faker->lastName,
             "nombres" => $this->faker->name,
+            "regional_id" => 1,
             "tipo" => 1
         ];
     }

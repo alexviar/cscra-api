@@ -45,7 +45,7 @@ class Proveedor extends Model
 
     function medico()
     {
-        return $this->hasOne(Medico::class, "id", "medico_id");
+        return $this->belongsTo(Medico::class, "medico_id", "id");
     }
 
     function contrato()

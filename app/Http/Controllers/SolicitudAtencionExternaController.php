@@ -79,9 +79,9 @@ class SolicitudAtencionExternaController extends Controller
 
     function verDm11(Request $request, string $numeroSolicitud): BinaryFileResponse
     {
-        //$this->authorize("ver-dm11", SolicitudAtencionExterna::class);
+        $solicitud = SolicitudAtencionExterna::find(intval($numeroSolicitud));
+        $this->authorize("ver-dm11", $solicitud);
         if (!Storage::exists("formularios/dm11/${numeroSolicitud}.pdf")) {
-            $solicitud = SolicitudAtencionExterna::find(intval($numeroSolicitud));
             $dm11Generator = new Dm11Generador();
             $dm11Generator->generar($solicitud);
         }
@@ -90,5 +90,6 @@ class SolicitudAtencionExternaController extends Controller
             "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS",
             "Access-Control-Allow-Headers", "X-Requested-With, Content-Type, X-Token-Auth, Authorization"
         ]);
+        // return response()->stream()
     }
 }

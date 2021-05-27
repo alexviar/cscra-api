@@ -5,6 +5,7 @@ namespace App\Application;
 use App\Http\Controllers\Controller;
 use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador as GalenoEmpleador;
+use App\Models\ListaMoraItem;
 use App\Models\Medico;
 use App\Models\Prestacion;
 use App\Models\Proveedor;
@@ -21,31 +22,33 @@ class SolicitudAtencionExternaService extends Controller
 
     protected function setQueryFilters($query, $filter)
     {
-        if (Arr::has($filter, "regional_id")) {
-            $query->where("regional_id", $filter["regional_id"]);
-        }
-        if (Arr::has($filter, "registrado_por") && ($registradoPor = $filter["registrado_por"])) {
-            $query->where("usuario_id", $registradoPor);
-        }
         if (Arr::has($filter, "numero_patronal")) {
             $empleador = GalenoEmpleador::buscarPorPatronal($filter["numero_patronal"]);
             $query->where("empleador_id", $empleador->id);
         }
-        if (Arr::has($filter, "matricula_asegurado")) {
-            $asegurado = Afiliado::buscarPorMatricula($filter["matricula_asegurado"]);
-            $query->where("asegurado_id", $asegurado->id);
+        else if (Arr::has($filter, "matricula_asegurado")) {
+            $asegurados = Afiliado::buscarPorMatricula($filter["matricula_asegurado"]);
+            $query->whereIn("asegurado_id", $asegurados->pluck("ID"));
         }
-        if (Arr::has($filter, "proveedor_id")) {
-            $query->where("proveedor_id", $filter["proveedor_id"]);
-        }
-        if (Arr::has($filter, "medico_id")) {
-            $query->where("medico_id", $filter["medico_id"]);
-        }
-        if (Arr::has($filter, "desde")) {
-            $query->whereDate("fecha", ">=", $filter["desde"]);
-        }
-        if (Arr::has($filter, "hasta")) {
-            $query->whereDate("fecha", "<=", $filter["hasta"]);
+        else {
+            if (Arr::has($filter, "regional_id") && ($regionalId = $filter["regional_id"])) {
+                $query->where("regional_id", $regionalId);
+            }
+            if (Arr::has($filter, "registrado_por_id") && ($registradoPor = $filter["registrado_por_id"])) {
+                $query->where("usuario_id", $registradoPor);
+            }
+            if (Arr::has($filter, "proveedor_id")) {
+                $query->where("proveedor_id", $filter["proveedor_id"]);
+            }
+            if (Arr::has($filter, "medico_id")) {
+                $query->where("medico_id", $filter["medico_id"]);
+            }
+            if (Arr::has($filter, "desde")) {
+                $query->whereDate("fecha", ">=", $filter["desde"]);
+            }
+            if (Arr::has($filter, "hasta")) {
+                $query->whereDate("fecha", "<=", $filter["hasta"]);
+            }
         }
         return $query;
     }
@@ -137,6 +140,9 @@ class SolicitudAtencionExternaService extends Controller
                 else if ($empleador->fecha_baja->addMonths(2)->lte($hoy)) $errors["empleador.fecha_baja"] = "El seguro ya no tiene validez";
             } else {
                 $errors["empleador.estado"] = "El empleador tiene un estado indeterminado";
+            }
+            if(ListaMoraItem::where("empleador_id", $empleador->id)->exists()){
+                $errors["empleador.aportes"] = "El empleador esta en mora";
             }
         }
 

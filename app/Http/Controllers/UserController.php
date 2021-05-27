@@ -75,12 +75,15 @@ class UserController extends Controller
       "password" => "required",
       "ci" => "required",
       "ci_complemento" => "nullable",
-      "apellido_paterno" => "nullable|required_if:apellido_materno,null",
-      "apellido_materno" => "nullable|required_if:apellido_paterno,null",
+      "apellido_paterno" => "required_without:apellido_materno",
+      "apellido_materno" => "required_without:apellido_paterno",
       "nombres" => "required",
       "regional_id" => "numeric|required|exists:".Regional::class.",id",
       "roles" => "required|array",
       "roles.*" => "exists:".Role::class.",name"
+    ], [
+        "apellido_paterno.required_without" => "Debe indicar al menos un apellido",
+        "apellido_materno.required_without" => "Debe indicar al menos un apellido"
     ]);
 
     $this->authorize("registrar", [User::class, $payload]);

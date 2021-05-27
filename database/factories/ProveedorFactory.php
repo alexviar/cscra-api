@@ -31,7 +31,8 @@ class ProveedorFactory extends Factory
             // "apellido_paterno" => $this->faker->lastName,
             // "apellido_materno" => $this->faker->lastName,
             // "nombres" => $this->faker->name,
-            "tipo_id" => 1
+            "tipo_id" => 1,
+            "regional_id" => 1
         ];
     }
 
@@ -51,10 +52,10 @@ class ProveedorFactory extends Factory
 
     public function empresa()
     {        
-        return [
+        return $this->state([
             "nit" => $this->faker->boolean() ? $this->faker->numerify("###########") : null,
             "nombre" => $this->faker->text($this->faker->numberBetween(10, 80)),
             "tipo_id" => 2
-        ];
+        ]);
     }
 }

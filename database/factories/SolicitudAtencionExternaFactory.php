@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\SolicitudAtencionExterna;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SolicitudAtencionExternaFactory extends Factory
@@ -22,7 +23,18 @@ class SolicitudAtencionExternaFactory extends Factory
     public function definition()
     {
         return [
-          
+            "fecha" => $this->faker->dateTime(),
+            "regional_id" => 1
         ];
+    }
+
+    public function regionalSantaCruz(){
+        return $this->state([
+            "regional_id" => 3
+        ]);
+    }
+
+    public function registradoPor(User $user){
+        return $this->for($user);
     }
 }

@@ -53,11 +53,14 @@ class MedicosController extends Controller {
     $payload = $request->validate([
       "ci" => "required|numeric",
       "ci_complemento" => "nullable",
-      "apellido_paterno" => "nullable|required_if:apellido_materno,null",
-      "apellido_materno" => "nullable|required_if:apellido_paterno,null",
+      "apellido_paterno" => "required_without:apellido_materno",
+      "apellido_materno" => "required_without:apellido_paterno",
       "nombres" => "required",
       "regional_id" => "required|numeric",
       "especialidad_id" => "required|numeric"
+    ], [
+        "apellido_paterno.required_without" => "Debe indicar al menos un apellido",
+        "apellido_materno.required_without" => "Debe indicar al menos un apellido"
     ]);
 
     $this->authorize("registrar", [Medico::class, $payload]);
@@ -72,8 +75,8 @@ class MedicosController extends Controller {
     $payload = $request->validate([
       "ci" => "required|numeric",
       "ci_complemento" => "nullable",
-      "apellido_paterno" => "nullable|required_if:apellido_materno,null",
-      "apellido_materno" => "nullable|required_if:apellido_paterno,null",
+      "apellido_paterno" => "required_without:apellido_materno",
+      "apellido_materno" => "required_without:apellido_paterno",
       "nombres" => "required",
       "regional_id" => "required|numeric",
       "especialidad_id" => "required|numeric"
