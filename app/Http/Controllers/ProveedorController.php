@@ -102,7 +102,7 @@ class ProveedorController extends Controller
                 @["general" => $general, "contacto" => $contacto, "contrato" => $contrato] = $payload;
                 $medico = Medico::create([
                     "ci" => $general["ci"],
-                    "ci_complemento" => $general["ci_complemento"],
+                    "ci_complemento" => $general["ci_complemento"]??null,
                     "apellido_paterno" => $general["apellido_paterno"],
                     "apellido_materno" => $general["apellido_materno"],
                     "nombres" => $general["nombres"],
@@ -112,7 +112,7 @@ class ProveedorController extends Controller
                 ]);
                 $proveedor = Proveedor::create([
                     "tipo_id" => 1,
-                    "nit" => $general["nit"],
+                    "nit" => $general["nit"]??null,
                     "regional_id" => $general["regional_id"],
                     "medico_id" => $medico->id,
                     "municipio_id" => $contacto["municipio_id"] ?? null,
@@ -207,7 +207,7 @@ class ProveedorController extends Controller
             DB::transaction(function () use ($proveedor, $payload) {
                 $proveedor->medico->update([
                     "ci" => $payload["ci"],
-                    "ci_complemento" => $payload["ci_complemento"],
+                    "ci_complemento" => $payload["ci_complemento"] ?? null,
                     "apellido_paterno" => $payload["apellido_paterno"],
                     "apellido_materno" => $payload["apellido_materno"],
                     "nombres" => $payload["nombres"],
@@ -215,7 +215,7 @@ class ProveedorController extends Controller
                     "regional_id" => $payload["regional_id"]
                 ]);
                 $proveedor->update([
-                    "nit" => $payload["nit"],
+                    "nit" => $payload["nit"] ?? null,
                     "regional_id" => $payload["regional_id"],
                 ]);
                 $proveedor->refresh()->load(["medico", "contratos"]);

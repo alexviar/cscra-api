@@ -81,9 +81,9 @@ class ListaMoraController extends Controller {
       "empleador_id" => "required"
     ]);
     $item = ListaMoraItem::buscarPorIdEmpleador($payload["empleador_id"]);
-    $this->authorize("agregar", $item);
     if(!$item)
       throw new ModelNotFoundException();
+    $this->authorize("quitar", [ListaMoraItem::class, $item->empleador]);
     $item->delete();
     return response()->json();
   }

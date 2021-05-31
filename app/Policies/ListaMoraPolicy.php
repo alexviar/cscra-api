@@ -28,11 +28,11 @@ class ListaMoraPolicy
 
     public function agregar(User $user, $empleador) {
       if($user->can(Permisos::AGREGAR_EMPLEADOR_EN_MORA)) return true;
-      if($user->can(Permisos::AGREGAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL) && $user->regional_id == $empleador->regional_id) return true;
+      if($user->can(Permisos::AGREGAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL) && $user->regional_id == $empleador->regional_local_id) return true;
     }
 
-    public function quitar(User $user, $item) {
+    public function quitar(User $user, $empleador) {
       if($user->can(Permisos::QUITAR_EMPLEADOR_EN_MORA)) return true;
-      if($user->can(Permisos::QUITAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL) && $user->regional_id == $item->regional_id) return true;
+      if($user->can(Permisos::QUITAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL) && $user->regional_id == $empleador->regional_local_id) return true;
     }
 }

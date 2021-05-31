@@ -13,7 +13,7 @@ class Medico extends Model {
 
   public $with = ["especialidad"];
 
-  protected $appends = ["especialidad", "nombreCompleto", "ciText", "estadoText"];
+  protected $appends = ["especialidad", "nombre_completo", "ci_text", "estado_text"];
 
   protected $fillable = [
     "ci",
@@ -22,8 +22,9 @@ class Medico extends Model {
     "apellido_materno",
     "nombres",
     "regional_id",
+    "estado",
     "especialidad_id",
-    "es_proveedor"
+    "tipo"
   ];
 
   function getCiTextAttribute(){
@@ -62,7 +63,7 @@ class Medico extends Model {
     $array = parent::toArray();
     $array = array_merge($array, ["especialidad"=>$this->especialidad, "ci" => [
       "raiz" => $array["ci"],
-      "complemento" => $array["ci_complemento"]
+      "complemento" => $array["ci_complemento"] ?? null
     ]]);
     unset($array["ci_complemento"]);
     return $array;

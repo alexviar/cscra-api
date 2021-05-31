@@ -2,6 +2,7 @@
 
 namespace App\Models\Galeno;
 
+use App\Models\Regional;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -99,6 +100,11 @@ class Empleador extends Model
     function getRegionalIdAttribute()
     {
         return $this->getAttribute("ID_RGL");
+    }
+
+    function getRegionalLocalIdAttribute()
+    {
+        return Regional::mapGalenoIdToLocalId($this->getAttribute("ID_RGL"));
     }
 
     function toArray()

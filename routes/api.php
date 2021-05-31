@@ -92,6 +92,7 @@ Route::middleware("auth:sanctum")->put("solicitudes-atencion-externa/{id}/genera
 Route::middleware("auth:sanctum")->get("medicos", [MedicosController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("medicos/{id}", [MedicosController::class, "mostrar"]);
 Route::middleware("auth:sanctum")->post("medicos", [MedicosController::class, "registrar"]);
+Route::middleware("auth:sanctum")->put("medicos/{id}/cambiar-estado", [MedicosController::class, "cambiarEstado"]);
 Route::middleware("auth:sanctum")->put("medicos/{id}", [MedicosController::class, "actualizar"]);
 Route::middleware("auth:sanctum")->delete("medicos/{id}", [MedicosController::class, "eliminar"]);
 

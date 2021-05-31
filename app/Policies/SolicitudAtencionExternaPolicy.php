@@ -34,12 +34,10 @@ class SolicitudAtencionExternaPolicy
     public function ver(User $user, SolicitudAtencionExterna $solicitud, $signature)
     {
         if ($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-        if (((!$user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR)
-            || $solicitud->registrado_por_id == $user->id) &&
-            (!$user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)
-                || $solicitud->regional_id == $user->regional->id))) {
-            return true;
-        }
+        if (($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL))
+        && (!$user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $solicitud->usuario_id == $user->id)
+        && (!$user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL) || $solicitud->regional_id == $user->regional_id)
+        ) return true;
         if ($solicitud->validateSignature($signature)) return true;
     }
 

@@ -38,6 +38,18 @@ class EmpleadorFactory extends Factory
         ];
     }
 
+    function regionalLaPaz(){
+        return $this->state([
+            "ID_RGL" => Regional::mapLocalIdToGalenoId(1)
+        ]);
+    }    
+
+    function regionalSantaCruz(){
+        return $this->state([
+            "ID_RGL" => Regional::mapLocalIdToGalenoId(3)
+        ]);
+    }
+
     function altaConFechaBaja()
     {
         return $this->state([
