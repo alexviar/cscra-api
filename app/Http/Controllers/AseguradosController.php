@@ -2,20 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Application\AseguradoService;
 use App\Models\Galeno\Afiliado;
 use App\Models\ListaMoraItem;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class AseguradosController extends Controller {
-  private $service;
-  // function __construct()
-  // {
-  //   $this->service = new AseguradoService();
-  // }
   
   // function buscar(Request $request): JsonResponse {
   //   [$total, $records] = $this->service->buscar($request->filter, $request->page, explode(",", $request->include));

@@ -84,7 +84,7 @@ class SolicitudAtencionExternaService extends Controller
                 "fecha" => $solicitud->fecha,
                 "asegurado" => $asegurados->where("ID", $solicitud->asegurado_id)->first()->toArray(),
                 "medico" => $solicitud->medico->nombreCompleto,
-                "proveedor" => $solicitud->proveedor->medico?->nombreCompleto ?: $solicitud->proveedor->nombre,
+                "proveedor" => $solicitud->proveedor->medico->nombreCompleto ?? $solicitud->proveedor->nombre,
                 "url_dm11" => $solicitud->url_dm11
             ];
         });
@@ -112,7 +112,7 @@ class SolicitudAtencionExternaService extends Controller
                 if (!$asegurado->fechaValidezSeguro) $errors["asegurado.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
                 else if ($asegurado->fechaValidezSeguro->lte($hoy)) $errors["asegurado.fecha_validez_seguro"] = "El seguro ya no tiene validez";
             }
-            if ($asegurado->fechaExtincion?->lte($hoy)) {
+            if ($asegurado->fechaExtincion->lte($hoy) ?? false) {
                 $errors["asegurado.fecha_extincion"] = "Fecha de extincion alcanzada";
             }
 

@@ -42,17 +42,21 @@ class RoleController extends Controller
             if (Arr::has($page, "current")) {
                 $query->offset(($page["current"] - 1) * $page["size"]);
             }
-            return response()->json($this->buildPaginatedResponseData($total, $query->get()->map(fn ($role) => array_merge($role->toArray(), [
-                "permission_names" => $role->getPermissionNames()
-            ]))));
+            return response()->json($this->buildPaginatedResponseData($total, $query->get()->map(function ($role) {
+                return array_merge($role->toArray(), [
+                    "permission_names" => $role->getPermissionNames()
+                ]);
+            })));
         }
         if (Arr::has($page, "current")) {
             $query->offset($page["current"]);
         }
 
-        return response()->json($query->get()->map(fn ($role) => array_merge($role->toArray(), [
-            "permission_names" => $role->getPermissionNames()
-        ])));
+        return response()->json($query->get()->map(function ($role) {
+            return array_merge($role->toArray(), [
+                "permission_names" => $role->getPermissionNames()
+            ]);
+        }));
     }
 
     /**

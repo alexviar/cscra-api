@@ -224,12 +224,8 @@ class CambiarEstadoMedicoTest extends TestCase
 
     public function test_medico_no_existe(){
         $user = $this->getSuperUser();
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->baja()
-            ->for($especialidad)
-            ->create();
-        $response = $this->actingAs($user)->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
+
+        $response = $this->actingAs($user)->putJson("/api/medicos/1/cambiar-estado", [
             "estado" => 1
         ]);
         $response->assertNotFound();

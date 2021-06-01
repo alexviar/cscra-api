@@ -50,17 +50,21 @@ class AfiliacionBeneficiario extends Model
 
     function getEmpleadorAttribute()
     {
-        return $this->afiliacionDelTitular?->empleador;
+        return $this->afiliacionDelTitular ? $this->afiliacionDelTitular->empleador : null;
     }
 
     function getFechaExtinsionAttribute()
     {
-        return $this->ampliacion?->fecha_extinsion ?: $this->getAttribute("FECHA_EXTINSION_BEN");
+        if($this->ampliacion){
+            return $this->ampliacion->fecha_extinsion;
+        }
+
+        return $this->getAttribute("FECHA_EXTINSION_BEN") ?? null;
     }
 
     function getFechaValidezSeguroAttribute()
     {
-        return $this->baja?->fecha_validez_seguro;
+        return $this->baja ? $this->baja->fecha_validez_seguro : null;
     }
 
     function afiliado()

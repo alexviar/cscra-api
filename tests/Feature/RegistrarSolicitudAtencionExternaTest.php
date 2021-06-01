@@ -82,9 +82,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -132,9 +134,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -178,9 +182,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -228,9 +234,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -282,9 +290,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -335,9 +345,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -388,9 +400,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -437,9 +451,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -461,9 +477,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
@@ -518,9 +536,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -574,9 +594,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -624,9 +646,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -678,9 +702,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -732,9 +758,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -781,9 +809,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -835,9 +865,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -889,9 +921,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -938,9 +972,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -991,9 +1027,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return  [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1044,9 +1082,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return  [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1092,9 +1132,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1144,9 +1186,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return  [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1190,9 +1234,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1234,9 +1280,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1277,9 +1325,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1322,9 +1372,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1367,9 +1419,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1411,9 +1465,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1456,9 +1512,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1508,9 +1566,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1548,9 +1608,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => 0,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1592,9 +1654,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1628,9 +1692,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => 0,
-            "prestaciones_solicitadas" => $prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1672,9 +1738,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "regional_id" => 1,
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(fn ($prestacion) => [
-                "prestacion_id" => $prestacion->id
-            ])
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
         ];
 
         $user = $this->createSuperUser();
@@ -1768,10 +1836,12 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                    "nota" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-                ])
+                ->map(function ($prestacion) {
+                    return[
+                        "prestacion_id" => $prestacion->id,
+                        "nota" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                    ];
+                })
         ];
 
 
@@ -1870,10 +1940,12 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                    "nota" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis"
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                        "nota" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis"
+                    ];
+                })
         ];
 
 
@@ -1917,9 +1989,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                    ];
+                })
         ];
 
         $user = User::factory()
@@ -1965,9 +2039,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                    ];
+                })
         ];
 
         $user = User::factory()
@@ -2014,9 +2090,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                    ];
+                })
         ];
 
         $user = User::factory()
@@ -2062,9 +2140,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                    ];
+                })
         ];
 
         $user = User::factory()
@@ -2113,9 +2193,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                    ];
+                })
         ];
 
         $user = User::factory()
@@ -2160,9 +2242,11 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "medico_id" => $medico->id,
             "proveedor_id" => $proveedor->id,
             "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(fn ($prestacion) => [
-                    "prestacion_id" => $prestacion->id,
-                ])
+                ->map(function ($prestacion) {
+                    return [
+                        "prestacion_id" => $prestacion->id,
+                    ];
+                })
         ];
 
         $response = $this->postJson('/api/solicitudes-atencion-externa', $data);

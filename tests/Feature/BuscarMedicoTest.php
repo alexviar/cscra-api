@@ -26,7 +26,6 @@ class BuscarMedicoTest extends TestCase
             ->for($especialidad)
             ->create();
         $response = $this->actingAs($user)->getJson('/api/medicos');
-        var_dump($response->getContent());
         $response->assertOk(200);
     }
 }

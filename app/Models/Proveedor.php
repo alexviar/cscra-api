@@ -68,7 +68,9 @@ class Proveedor extends Model
 
     function ofrece($prestacionId)
     {
-        return $this->contrato->prestaciones->contains(fn ($prestacion) => $prestacion->id == $prestacionId);
+        return $this->contrato->prestaciones->contains(function ($prestacion) use($prestacionId) {
+            return $prestacion->id == $prestacionId;
+        });
     }
 
     // function toArray()

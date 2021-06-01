@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Especialidad;
+use App\Models\Proveedor;
 use App\Models\Permisos;
 use App\Models\Prestacion;
 use App\Models\User;
@@ -63,10 +64,10 @@ class RegistrarProveedorTest extends TestCase
                 ]
             ]);
 
-        dd($response->getContent());
+        // dd($response->getContent());
         $response->assertOk();
         $this->assertDatabaseHas("proveedores", [
-            "tipo" => 1,
+            "tipo_id" => 1,
             // "ci" => 12345678,
             // "apellido_paterno" => "Paterno",
             // "apellido_materno" => "Materno",
@@ -101,7 +102,7 @@ class RegistrarProveedorTest extends TestCase
 
         $response->assertOk();
         $this->assertDatabaseHas("proveedores", [
-            "tipo" => 1,
+            "tipo_id" => 2,
             "nit" => "12345679019",
             "nombre" => "Nombre",
             // "ci" => 12345679,

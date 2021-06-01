@@ -52,7 +52,7 @@ class AfiliacionTitular extends Model {
   }
 
   function getFechaValidezSeguroAttribute(){
-    return $this->baja?->fecha_validez_seguro;
+    return $this->baja ? $this->baja->fecha_validez_seguro : null;
   }
 
   function baja(){

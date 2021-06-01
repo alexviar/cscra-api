@@ -119,36 +119,40 @@ class Afiliado extends Model {
   }
 
   function getEmpleadorAttribute(){
-    return $this->ultimaAfiliacion?->empleador;
+    return $this->ultimaAfiliacion ? $this->ultimaAfiliacion->empleador : null;
   }
 
   function getTitularAttribute(){
-      return $this->afiliacionDelTitular->afiliado;
+      return $this->afiliacionDelTitular ? $this->afiliacionDelTitular->afiliado : null;
   }
 
   function getAfiliacionDelTitularAttribute(){
     if($this->tipo == 2){
-      return $this->ultimaAfiliacion?->afiliacionDelTitular;
+      return $this->ultimaAfiliacion ? $this->ultimaAfiliacion->afiliacionDelTitular : null;
     }
   }
 
   function getFechaExtincionAttribute(){
     if($this->tipo == 2){
-      return $this->ultimaAfiliacion?->fecha_extinsion;
+      return $this->ultimaAfiliacion ? $this->ultimaAfiliacion->fecha_extinsion : null;
     }
   }
 
   function getFechaValidezSeguroAttribute(){
-    return $this->ultimaAfiliacion?->baja?->fecha_validez_seguro;
+    return ($this->ultimaAfiliacion && $this->ultimaAfiliacion->baja) ? $this->ultimaAfiliacion->baja->fecha_validez_seguro : null;
   }
 
   function getUltimaAfiliacionAttribute(){
     // Log::debug(json_encode([$this->afiliacionesComoBeneficiario, $this->afiliacionesComoTitular]));
     if($this->tipo == 1){
-      return $this->afiliacionesComoTitular->sortByDesc(fn ($afi) => $afi->ID)->first();
+      return $this->afiliacionesComoTitular->sortByDesc(function ($afi) { 
+          return $afi->ID;
+        })->first();
     }
     else if($this->tipo == 2){
-      return $this->afiliacionesComoBeneficiario->sortByDesc(fn ($afi) => $afi->ID)->first();
+      return $this->afiliacionesComoBeneficiario->sortByDesc(function ($afi) { 
+          return $afi->ID;
+        })->first();
     }
   }
 
@@ -162,10 +166,10 @@ class Afiliado extends Model {
 
   function toArray(){
     $array = parent::toArray();
-    $array["fecha_extincion"] = $this->fecha_extincion?->format("Y-m-d");
-    $array["baja"] = $this->ultimaAfiliacion?->baja ? [
+    $array["fecha_extincion"] = $this->fecha_extincion ? $this->fecha_extincion->format("Y-m-d") : null;
+    $array["baja"] = ($this->ultimaAfiliacion && $this->ultimaAfiliacion->baja) ? [
       "reg_date" => $this->ultimaAfiliacion->baja->REG_DATE->format("Y-m-d"),
-      "fecha_validez_seguro" => $this->ultimaAfiliacion->baja->fecha_validez_seguro?->format("Y-m-d")
+      "fecha_validez_seguro" => $this->ultimaAfiliacion->baja->fecha_validez_seguro ? $this->ultimaAfiliacion->baja->fecha_validez_seguro->format("Y-m-d") : null
     ] : null;
     $array["titular"] = $this->afiliacionDelTitular ? [
       "id"  => $this->afiliacionDelTitular->afiliado->id,
@@ -176,7 +180,7 @@ class Afiliado extends Model {
       "estado"  => $this->afiliacionDelTitular->estado,
       "baja" =>  $this->afiliacionDelTitular->baja ? [
         "reg_date" => $this->afiliacionDelTitular->baja->REG_DATE->format("Y-m-d"),
-        "fecha_validez_seguro" => $this->afiliacionDelTitular->baja->fecha_validez_seguro?->format("Y-m-d")
+        "fecha_validez_seguro" => ($this->afiliacionDelTitular->baja && $this->afiliacionDelTitular->baja->fecha_validez_seguro) ? $this->afiliacionDelTitular->baja->fecha_validez_seguro->format("Y-m-d") : null
       ] : null,
     ] : null;
     return $array;

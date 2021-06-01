@@ -11,15 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
 class EmpleadorController extends Controller {
-  /**
-   * @var EmpleadorService
-   */
-  protected $service;
-
-  function __construct(EmpleadorService $service)
-  {
-    $this->service = $service;
-  }
   
   function buscar(Request $request): JsonResponse{
     $filter = $request->filter;

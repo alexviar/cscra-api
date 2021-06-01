@@ -60,7 +60,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 1,
-                "roles" => $roles->map(fn ($r) => $r->name)
+                "roles" => $roles->map(function ($r) {
+                    return $r->name;
+                })
             ]);
         $response->assertStatus(409);
         $response->assertJsonFragment([
@@ -105,7 +107,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 0,
-                "roles" => $roles->map(fn ($rol) => $rol->nombre)
+                "roles" => $roles->map(function ($rol) {
+                    return $rol->nombre;
+                })
             ]);
         $response->assertStatus(422);
         $response->assertJsonValidationErrors([
@@ -151,7 +155,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 1,
-                "roles" => $roles->map(fn ($rol) => $rol->name)
+                "roles" => $roles->map(function ($rol) {
+                    return $rol->name;
+                })
             ]);
         
         $response->assertOk();
@@ -166,7 +172,9 @@ class RegistrarUsuarioTest extends TestCase
         ]);
         $content = json_decode($response->getContent());
         $user = User::where("id", $content->id)->first();
-        $this->assertTrue($user->hasAllRoles($roles->map(fn ($rol) => $rol->name)));
+        $this->assertTrue($user->hasAllRoles($roles->map(function ($rol) {
+            return  $rol->name;
+        })));
         $this->assertTrue(Hash::check("contraseña", $user->password));
     }
     
@@ -191,7 +199,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 1,
-                "roles" => $roles->map(fn ($rol) => $rol->name)
+                "roles" => $roles->map(function ($rol) {
+                    return $rol->name;
+                })
             ]);
         
         $response->assertOk();
@@ -206,7 +216,9 @@ class RegistrarUsuarioTest extends TestCase
         ]);
         $content = json_decode($response->getContent());
         $user = User::where("id", $content->id)->first();
-        $this->assertTrue($user->hasAllRoles($roles->map(fn ($rol) => $rol->name)));
+        $this->assertTrue($user->hasAllRoles($roles->map(function ($rol) {
+            return  $rol->name;
+        })));
         $this->assertTrue(Hash::check("contraseña", $user->password));
     }
     
@@ -231,7 +243,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 1,
-                "roles" => $roles->map(fn ($rol) => $rol->name)
+                "roles" => $roles->map(function ($rol) {
+                    return $rol->name;
+                })
             ]);
         
         $response->assertForbidden();
@@ -254,7 +268,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 1,
-                "roles" => $roles->map(fn ($rol) => $rol->name)
+                "roles" => $roles->map(function ($rol) {
+                    return $rol->name;
+                })
             ]);
         $response->assertForbidden();
     }
@@ -272,7 +288,9 @@ class RegistrarUsuarioTest extends TestCase
                 "username" => "usuario",
                 "password" => "contraseña",
                 "regional_id" => 1,
-                "roles" => $roles->map(fn ($rol) => $rol->name)
+                "roles" => $roles->map(function ($rol) {
+                    return $rol->name;
+                })
             ]);
         $response->assertUnauthorized();
     }
