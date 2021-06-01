@@ -9,6 +9,7 @@ use App\Models\Prestacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 class RegistrarProveedorTest extends TestCase
@@ -22,7 +23,6 @@ class RegistrarProveedorTest extends TestCase
         parent::setUp();
 
         if(!static::$initialized){
-            echo "\nInitialized\n";
             static::$initialized = true;
             static::$especialidad = Especialidad::factory()->create();
             static::$prestaciones = Prestacion::factory()->count(10)->create();
@@ -114,8 +114,77 @@ class RegistrarProveedorTest extends TestCase
         ]);
     }
 
+    private function registrarProveedorEmpresa($user, $data=[])
+    {
+        Arr::set($data, "general", [
+            "tipo_id" => 2,
+            "nit" => Arr::get($data, "general.nit", "12345679019"),
+            "nombre" => Arr::get($data, "general.nombre", "Nombre"),
+            "regional_id" => Arr::get($data, "general.regional_id", 1)
+        ]);
+
+        if(Arr::has($data, "contacto")){
+            Arr::set($data, "contacto", [
+                "municipio_id" => Arr::get($data, "contacto.municipio_id", 1),
+                "direccion" => Arr::get($data, "contacto.direccion", "Av. Los claveles"),
+                "ubicacion" => Arr::get($data, "contacto.ubicacion", [
+                    "latitud" => 0,
+                    "longitud" => 0
+                ]),
+                "telefono1" => Arr::get($data, "contacto.telefono1", 70000000)
+            ]);
+        }
+
+        Arr::set($data, "contrato", [
+            "inicio" => Arr::get($data, "contrato.inicio", "2020/01/01"),
+            "prestacion_ids" => Arr::get($data, "contrato.prestacion_id", static::$prestaciones->random(3)->pluck("id"))
+        ]);
+
+        return $this->postJson("/api/proveedores", $data);
+    }
+
+    private function registrarProveedorMedico($user, $data = [])
+    {
+        Arr::set($data, "general", [
+            "tipo_id" => 2,
+            "nit" => Arr::get($data, "general.nit", "12345679019"),
+            "nombre" => Arr::get($data, "general.nombre", "Nombre"),
+            "regional_id" => Arr::get($data, "general.regional_id", 1)
+        ]);
+
+        if(Arr::has($data, "contacto")){
+            Arr::set($data, "contacto", [
+                "municipio_id" => Arr::get($data, "contacto.municipio_id", 1),
+                "direccion" => Arr::get($data, "contacto.direccion", "Av. Los claveles"),
+                "ubicacion" => Arr::get($data, "contacto.ubicacion", [
+                    "latitud" => 0,
+                    "longitud" => 0
+                ]),
+                "telefono1" => Arr::get($data, "contacto.telefono1", 70000000)
+            ]);
+        }
+
+        Arr::set($data, "contrato", [
+            "inicio" => Arr::get($data, "contrato.inicio", "2020/01/01"),
+            "prestacion_ids" => Arr::get($data, "contrato.prestacion_ids", static::$prestaciones->random(3)->pluck("id"))
+        ]);
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+
+        return $response;
+    }
+
     public function test_usuario_puede_registrar_regionalmente()
     {
-        $this->assertTrue(true);
+        $user = User::factory()
+            ->withPermissions([
+                Permisos::REGISTRAR_PROVEEDORES_REGIONAL,
+            ])
+            ->create();
+
+
+        $response = $this->registrarProveedorMedico($user);
+        
     }
 }

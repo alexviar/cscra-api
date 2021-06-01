@@ -4,6 +4,7 @@
 /storage/*.key
 /storage/formularios
 /vendor
+backend.zip
 .env
 .env.backup
 .phpunit.result.cache
