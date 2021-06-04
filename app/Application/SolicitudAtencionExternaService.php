@@ -11,10 +11,8 @@ use App\Models\Prestacion;
 use App\Models\Proveedor;
 use App\Models\SolicitudAtencionExterna;
 use Carbon\Carbon;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class SolicitudAtencionExternaService extends Controller
@@ -84,7 +82,7 @@ class SolicitudAtencionExternaService extends Controller
                 "fecha" => $solicitud->fecha,
                 "asegurado" => $asegurados->where("ID", $solicitud->asegurado_id)->first()->toArray(),
                 "medico" => $solicitud->medico->nombreCompleto,
-                "proveedor" => $solicitud->proveedor->medico->nombreCompleto ?? $solicitud->proveedor->nombre,
+                "proveedor" => $solicitud->proveedor->nombre ?? $solicitud->proveedor->nombreCompleto,
                 "url_dm11" => $solicitud->url_dm11
             ];
         });
@@ -112,7 +110,7 @@ class SolicitudAtencionExternaService extends Controller
                 if (!$asegurado->fechaValidezSeguro) $errors["asegurado.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
                 else if ($asegurado->fechaValidezSeguro->lte($hoy)) $errors["asegurado.fecha_validez_seguro"] = "El seguro ya no tiene validez";
             }
-            if ($asegurado->fechaExtincion->lte($hoy) ?? false) {
+            if ($asegurado->fechaExtincion && $asegurado->fechaExtincion->lte($hoy)) {
                 $errors["asegurado.fecha_extincion"] = "Fecha de extincion alcanzada";
             }
 

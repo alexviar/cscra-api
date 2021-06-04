@@ -4,8 +4,6 @@ namespace App\Models\Galeno;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class Afiliado extends Model {
   use HasFactory;
@@ -143,7 +141,6 @@ class Afiliado extends Model {
   }
 
   function getUltimaAfiliacionAttribute(){
-    // Log::debug(json_encode([$this->afiliacionesComoBeneficiario, $this->afiliacionesComoTitular]));
     if($this->tipo == 1){
       return $this->afiliacionesComoTitular->sortByDesc(function ($afi) { 
           return $afi->ID;

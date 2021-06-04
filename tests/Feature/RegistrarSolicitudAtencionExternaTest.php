@@ -59,16 +59,12 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->fechaExtinsionVencidaAyer()
             ->create();
         $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
+            ->regionalLaPaz()
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
+        $proveedor = Proveedor::factory()->empresa()
+            ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
                     ->has(Prestacion::factory()->count(10), "prestaciones")
@@ -117,7 +113,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -167,7 +163,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -217,7 +213,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -273,7 +269,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -328,7 +324,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -383,7 +379,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -434,7 +430,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -519,7 +515,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -577,7 +573,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -629,7 +625,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -685,7 +681,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -741,7 +737,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -792,7 +788,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -848,7 +844,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -904,7 +900,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -955,7 +951,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -1010,7 +1006,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -1065,7 +1061,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -1115,7 +1111,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -1169,7 +1165,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->state([
                 "regional_id" => $regional_id
             ])
@@ -1219,7 +1215,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1265,7 +1261,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1310,7 +1306,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1357,7 +1353,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1404,7 +1400,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1450,7 +1446,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1497,7 +1493,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1551,7 +1547,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1593,7 +1589,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1639,7 +1635,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1723,7 +1719,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalSantaCruz()
             ->has(
                 ContratoProveedor::factory()
@@ -1770,7 +1766,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1819,7 +1815,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->create();
 
@@ -1870,7 +1866,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->create();
 
         $prestacionId = 1;
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1921,7 +1917,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->create();
 
         $prestacionId = 1;
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -1973,7 +1969,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalSantaCruz()
             ->has(
                 ContratoProveedor::factory()
@@ -2023,7 +2019,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalSantaCruz()
             ->has(
                 ContratoProveedor::factory()
@@ -2074,7 +2070,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalSantaCruz()
             ->has(
                 ContratoProveedor::factory()
@@ -2124,7 +2120,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalSantaCruz()
             ->has(
                 ContratoProveedor::factory()
@@ -2177,7 +2173,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()
@@ -2226,7 +2222,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for(Especialidad::factory()->create())
             ->create();
 
-        $proveedor = Proveedor::factory()
+        $proveedor = Proveedor::factory()->empresa()
             ->regionalLaPaz()
             ->has(
                 ContratoProveedor::factory()

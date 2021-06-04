@@ -22,7 +22,12 @@ class Proveedor extends Model
     protected $fillable = [
         "tipo_id",
         "nit",
-        "medico_id",
+        "ci",
+        "ci_complemento",
+        "apellido_paterno",
+        "apellido_materno",
+        "nombres",
+        "especialidad_id",
         "nombre",
         "municipio_id",
         "ubicacion",
@@ -36,16 +41,38 @@ class Proveedor extends Model
         'ubicacion',
     ];
 
-    protected $appends = ["tipo"];
+    protected $appends = ["tipo", "nombreCompleto", "ciText"];
 
     function getTipoAttribute()
     {
         return $this->tipo_id == 1 ? "Médico" : "Empresa";
     }
 
-    function medico()
+    // function medico()
+    // {
+    //     return $this->belongsTo(Medico::class, "medico_id", "id");
+    // }
+
+    function getCiTextAttribute()
     {
-        return $this->belongsTo(Medico::class, "medico_id", "id");
+        return $this->ci . ($this->ci_complemento ? "-" .  $this->ci_complemento :  "");
+    }
+    
+    function getNombreCompletoAttribute()
+    {
+        $nombreCompleto = $this->nombres;
+        if($this->apellido_materno){
+          $nombreCompleto = $this->apellido_materno . " " . $nombreCompleto;
+        }
+        if($this->apellido_paterno){
+          $nombreCompleto = $this->apellido_paterno . " " . $nombreCompleto;
+        }
+        return $nombreCompleto;
+    }
+
+    function especialidad()
+    {
+        return $this->belongsTo(Especialidad::class, "especialidad_id", "id");
     }
 
     function contrato()

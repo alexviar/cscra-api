@@ -24,6 +24,7 @@
         "laravel/sanctum": "^2.9",
         "laravel/tinker": "^2.5",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/laravel-http-logger": "^1.7",
         "spatie/laravel-permission": "^4.0"
     },
     "require-dev": {

@@ -5,11 +5,8 @@ namespace App\Http\Controllers;
 use App\Application\SolicitudAtencionExternaService;
 use App\Http\Reports\Dm11Generador;
 use App\Models\SolicitudAtencionExterna;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -29,15 +26,6 @@ class SolicitudAtencionExternaController extends Controller
         $filter = $request->filter ?: [];
         $page = $request->page ?: [];
         $this->authorize("ver-todo", [SolicitudAtencionExterna::class, $filter]);
-
-        if (!$request->user()->can("ver solicitudes de atencion externa")) {
-            if ($request->user()->can("ver unicamente solicitudes de atencion externa registradas por el usuario")) {
-                $filter["usuario_id"] = $request->user()->id;
-            }
-            if ($request->user()->can("ver unicamente solicitudes de atencion externa de la misma regional")) {
-                $filter["regional_id"] = $request->user()->regional_id;
-            }
-        }
 
         [$total, $solicitudes] = $this->solicitudAtencionExternaService->buscar($filter, $page);
         return response()->json([

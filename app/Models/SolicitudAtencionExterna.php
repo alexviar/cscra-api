@@ -6,7 +6,6 @@ use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
 
 class SolicitudAtencionExterna extends Model
 {
@@ -35,7 +34,6 @@ class SolicitudAtencionExterna extends Model
 
     function getContentArrayAttribute()
     {
-        Log::debug(json_encode($this->toArray()));
         $asegurado = Afiliado::buscarPorId($this->asegurado_id);
         $titular = $asegurado->afiliacionDelTitular ? Afiliado::buscarPorId($asegurado->afiliacionDelTitular->ID_AFO) : NULL;
         $empleador = Empleador::buscarPorId($this->empleador_id);
@@ -68,7 +66,7 @@ class SolicitudAtencionExterna extends Model
                 "nombre" => $this->medico->nombre_completo,
                 "especialidad" => $this->medico->especialidad
             ],
-            "proveedor" => $this->proveedor->nombre,
+            "proveedor" => $this->proveedor->nombre ?? $this->proveedor->nombreCompleto,
             "prestaciones" => $this->prestacionesSolicitadas->map(function ($prestacionSolicitada) {
                 return $prestacionSolicitada->prestacion . ($prestacionSolicitada->nota ? " - " . $prestacionSolicitada->nota : "");
             })->chunk(ceil($this->prestacionesSolicitadas->count() / 3))

@@ -21,17 +21,7 @@ class ProveedorFactory extends Factory
      */
     public function definition()
     {
-        $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
         return [
-            // "id" => $this->faker->randomNumber(),
-            "nit" => $this->faker->boolean() ? $this->faker->numerify("###########") : null,
-            // "nombre" => null,
-            // "ci" => $ci[0],
-            // "ci_complemento" => $ci[1],
-            // "apellido_paterno" => $this->faker->lastName,
-            // "apellido_materno" => $this->faker->lastName,
-            // "nombres" => $this->faker->name,
-            "tipo_id" => 1,
             "regional_id" => 1
         ];
     }
@@ -50,12 +40,26 @@ class ProveedorFactory extends Factory
         ]);
     }
 
+    public function medico()
+    {        
+        $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
+        return $this->state([
+            "tipo_id" => 1,
+            "nit" => $this->faker->unique()->numerify("###########"),
+            "ci" => $ci[0],
+            "ci_complemento" => $ci[1],
+            "apellido_paterno" => $this->faker->lastName,
+            "apellido_materno" => $this->faker->lastName,
+            "nombres" => $this->faker->name
+        ]);
+    }
+
     public function empresa()
     {        
         return $this->state([
-            "nit" => $this->faker->boolean() ? $this->faker->numerify("###########") : null,
-            "nombre" => $this->faker->text($this->faker->numberBetween(10, 80)),
-            "tipo_id" => 2
+            "tipo_id" => 2,
+            "nit" => $this->faker->numerify("###########"),
+            "nombre" => $this->faker->text($this->faker->numberBetween(10, 80))
         ]);
     }
 }

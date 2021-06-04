@@ -23,14 +23,14 @@ class ProveedorPolicy
 
     public function registrar(User $user, $payload) {
       if($user->can(Permisos::REGISTRAR_PROVEEDORES)) return true;
-      if($user->can(Permisos::REGISTRAR_PROVEEDORES_REGIONAL) && $user->regional_id == $payload["regional_id"]) return true;
+      if($user->can(Permisos::REGISTRAR_PROVEEDORES_REGIONAL) && $user->regional_id == Arr::get($payload, "general.regional_id")) return true;
     }
 
-    public function actualizar(User $user, $medico, $payload) {
+    public function actualizar(User $user, $proveedor, $payload) {
       if($user->can(Permisos::EDITAR_PROVEEDORES_REGIONAL)) return true;
       if($user->can(Permisos::EDITAR_PROVEEDORES_REGIONAL)
-        && $user->regional_id == $medico->regional_id 
-        && Arr::has($payload, "regional_id") && $user->regional_id == $payload["regional_id"]) return true;
+        && $user->regional_id == $proveedor->regional_id 
+        && (!Arr::has($payload, "regional_id") || $user->regional_id == $payload["regional_id"])) return true;
     }
 
     public function cambiarEstado(User $user, $medico){

@@ -44,28 +44,13 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
         $especialidad = Especialidad::factory()->create();
         $medico = Medico::factory()
             ->for($especialidad)
-            // ->state([
-            //     "apellido_paterno" => "Paterno",
-            //     "apellido_materno" => "Materno",
-            //     "nombres" => "Nombres"
-            // ])
             ->create();
         $proveedor = Proveedor::factory()
             ->empresa()
-            // ->state([
-            //     "nombre" => "Proveedor Empresa"
-            // ])
             ->create();
         $proveedorMedico = Proveedor::factory()
-            ->for(
-                Medico::factory()
-                    ->for($especialidad)
-                // ->state([
-                //     "apellido_paterno" => "Paterno",
-                //     "apellido_materno" => "Materno",
-                //     "nombres" => "Proveedor"
-                // ])
-            )
+            ->medico()
+            ->for($especialidad)
             ->create();
 
         $solicitud1 = SolicitudAtencionExterna::factory()
@@ -117,7 +102,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "matricula" => $afiliado->matricula
                     ],
                     "medico" => $medico->nombreCompleto, //"Paterno Materno Nombres",
-                    "proveedor" => $proveedorMedico->medico->nombreCompleto, //"Paterno Materno Proveedor",
+                    "proveedor" => $proveedorMedico->nombreCompleto, //"Paterno Materno Proveedor",
                     "url_dm11" => $solicitud2->url_dm11
                 ]
             ]

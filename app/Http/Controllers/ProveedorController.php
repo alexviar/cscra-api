@@ -26,7 +26,7 @@ class ProveedorController extends Controller
         $this->authorize("verTodo", [Proveedor::class, $filter]);
 
         $query = Proveedor::query();
-        $query->with("medico.especialidad", "contrato.prestaciones");
+        $query->with("especialidad", "contrato.prestaciones");
 
         if (Arr::get($filter, "activos", 0)) {
             $query->whereHas("contrato");
@@ -64,7 +64,7 @@ class ProveedorController extends Controller
         }
         $this->authorize("ver", $proveedor);
 
-        $proveedor->load(["medico", "contratos"]);
+        $proveedor->load(["contratos"]);
         return response()->json($proveedor);
     }
 
@@ -91,7 +91,6 @@ class ProveedorController extends Controller
                 "contacto.telefono2" => "nullable|numeric",
                 "contrato.inicio" => "date|required",
                 "contrato.fin" => "nullable|date",
-                // "contrato.regional_id" => "numeric|required",
                 "contrato.prestacion_ids" => "array|required"
             ], [
                 "general.apellido_paterno.required_without" => "Debe indicar al menos un apellido",
@@ -100,7 +99,9 @@ class ProveedorController extends Controller
             $this->authorize("registrar", [Proveedor::class, $payload]);
             $proveedor = DB::transaction(function () use ($payload) {
                 @["general" => $general, "contacto" => $contacto, "contrato" => $contrato] = $payload;
-                $medico = Medico::create([
+                $proveedor = Proveedor::create([
+                    "tipo_id" => 1,
+                    "nit" => $general["nit"]??null,
                     "ci" => $general["ci"],
                     "ci_complemento" => $general["ci_complemento"]??null,
                     "apellido_paterno" => $general["apellido_paterno"],
@@ -108,13 +109,6 @@ class ProveedorController extends Controller
                     "nombres" => $general["nombres"],
                     "especialidad_id" => $general["especialidad_id"],
                     "regional_id" => $general["regional_id"],
-                    "tipo" => 2
-                ]);
-                $proveedor = Proveedor::create([
-                    "tipo_id" => 1,
-                    "nit" => $general["nit"]??null,
-                    "regional_id" => $general["regional_id"],
-                    "medico_id" => $medico->id,
                     "municipio_id" => $contacto["municipio_id"] ?? null,
                     "direccion" => $contacto["direccion"] ?? null,
                     "ubicacion" => $contacto ? new Point($contacto["ubicacion"]["latitud"], $contacto["ubicacion"]["longitud"]) : null,
@@ -131,7 +125,7 @@ class ProveedorController extends Controller
                 $contratoModel->prestaciones()->attach($prestacion_ids);
                 return $proveedor;
             });
-            $proveedor->load(["medico", "contratos"]);
+            $proveedor->load(["contratos"]);
             return response()->json($proveedor);
         } else if ($tipo_id == 2) {
             $payload = $request->validate([
@@ -175,7 +169,7 @@ class ProveedorController extends Controller
                 $contratoModel->prestaciones()->attach($prestacion_ids);
                 return $proveedor;
             });
-            $proveedor->load(["medico", "contratos"]);
+            $proveedor->load(["contratos"]);
             return response()->json($proveedor);
         } else {
             abort(400);
@@ -204,22 +198,17 @@ class ProveedorController extends Controller
             ]);
 
             $this->authorize("actualizar", [$proveedor, $payload]);
-            DB::transaction(function () use ($proveedor, $payload) {
-                $proveedor->medico->update([
-                    "ci" => $payload["ci"],
-                    "ci_complemento" => $payload["ci_complemento"] ?? null,
-                    "apellido_paterno" => $payload["apellido_paterno"],
-                    "apellido_materno" => $payload["apellido_materno"],
-                    "nombres" => $payload["nombres"],
-                    "especialidad_id" => $payload["especialidad_id"],
-                    "regional_id" => $payload["regional_id"]
-                ]);
-                $proveedor->update([
-                    "nit" => $payload["nit"] ?? null,
-                    "regional_id" => $payload["regional_id"],
-                ]);
-                $proveedor->refresh()->load(["medico", "contratos"]);
-            });
+            $proveedor->update([
+                "nit" => $payload["nit"] ?? null,
+                "ci" => $payload["ci"],
+                "ci_complemento" => $payload["ci_complemento"] ?? null,
+                "apellido_paterno" => $payload["apellido_paterno"],
+                "apellido_materno" => $payload["apellido_materno"],
+                "nombres" => $payload["nombres"],
+                "especialidad_id" => $payload["especialidad_id"],
+                "regional_id" => $payload["regional_id"]
+            ]);
+            $proveedor->refresh()->load(["contratos"]);
             return response()->json($proveedor);
         } else {
             $payload = $request->validate([
@@ -234,7 +223,7 @@ class ProveedorController extends Controller
                 "nombre" => $payload["nombre"],
                 "regional_id" => $payload["regional_id"],
             ]);
-            $proveedor->refresh()->load(["medico", "contratos"]);
+            $proveedor->refresh()->load(["contratos"]);
             return response()->json($proveedor);
         }
     }

@@ -7,27 +7,73 @@ use App\Models\Proveedor;
 use App\Models\Permisos;
 use App\Models\Prestacion;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
 use Tests\TestCase;
 
 class RegistrarProveedorTest extends TestCase
 {
-    private static $initialized;
-    private static $especialidad;
-    private static $prestaciones;
+    use WithFaker;
+
+    private $especialidad;
+    private $prestaciones;
 
     public function setUp(): void
     {
         parent::setUp();
-
-        if(!static::$initialized){
-            static::$initialized = true;
-            static::$especialidad = Especialidad::factory()->create();
-            static::$prestaciones = Prestacion::factory()->count(10)->create();
-        }
+        $this->especialidad = Especialidad::factory()->create();
+        $this->prestaciones = Prestacion::factory()->count(10)->create();
     }
+
+    private function setDatosProveedor(&$data)
+    {
+        if(Arr::has($data, "contacto")){
+            Arr::set($data, "contacto", [
+                "municipio_id" => Arr::get($data, "contacto.municipio_id", 1),
+                "direccion" => Arr::get($data, "contacto.direccion", $this->faker->address),
+                "ubicacion" => Arr::get($data, "contacto.ubicacion", [
+                    "latitud" => $this->faker->latitude,
+                    "longitud" => $this->faker->longitude
+                ]),
+                "telefono1" => Arr::get($data, "contacto.telefono1", 70000000)
+            ]);
+        }
+        
+        Arr::set($data, "contrato", [
+            "inicio" => Arr::get($data, "contrato.inicio", $this->faker->date()),
+            "prestacion_ids" => Arr::get($data, "contrato.prestacion_id", $this->prestaciones->random(3)->pluck("id"))
+        ]);
+    }
+
+    private function setDatosProveedorEmpresa(&$data)
+    {
+        $this->setDatosProveedor($data);
+
+        Arr::set($data, "general", [
+            "tipo_id" => 2,
+            "nit" => Arr::get($data, "general.nit", $this->faker->numerify("###########")),
+            "nombre" => Arr::get($data, "general.nombre", $this->faker->text(25)),
+            "regional_id" => Arr::get($data, "general.regional_id", 1)
+        ]);
+    }
+
+    private function setDatosProveedorMedico(&$data)
+    {
+        $this->setDatosProveedor($data);
+        $ci = $this->faker->numerify("########");
+        Arr::set($data, "general", [
+            "tipo_id" => 1,
+            "nit" => Arr::get($data, "general.nit", $ci . "016"),
+            "ci" => Arr::get($data, "general.ci", $ci),
+            "apellido_paterno" => Arr::get($data, "general.apellido_paterno", $this->faker->lastName),
+            "apellido_materno" => Arr::get($data, "general.apellido_materno", $this->faker->lastName),
+            "nombres" => Arr::get($data, "general.nombres", $this->faker->name),
+            "especialidad_id" =>  $this->especialidad->id,
+            "regional_id" => Arr::get($data, "general.regional_id", 1)
+        ]);
+    }
+    
 
     public function test_usuario_puede_registrar()
     {
@@ -37,142 +83,169 @@ class RegistrarProveedorTest extends TestCase
             ])
             ->create();
 
-
-        $response = $this->actingAs($user)
-            ->postJson("/api/proveedores", [
-                "general" => [
-                    "tipo_id" => 1,
-                    "ci" => 12345678,
-                    "apellido_paterno" => "Paterno",
-                    "apellido_materno" => "Materno",
-                    "nombres" => "Nombre",
-                    "especialidad_id" =>  static::$especialidad->id,
-                    "regional_id" => 1
-                ],
-                "contacto" => [
-                    "municipio_id" => 1,
-                    "direccion" => "Av. Los claveles",
-                    "ubicacion" => [
-                        "latitud" => 0,
-                        "longitud" => 0
-                    ],
-                    "telefono1" => 60000000
-                ],
-                "contrato" => [
-                    "inicio" => "2020-01-01",
-                    "prestacion_ids" => static::$prestaciones->random(3)->pluck("id")
-                ]
-            ]);
-
-        // dd($response->getContent());
-        $response->assertOk();
-        $this->assertDatabaseHas("proveedores", [
-            "tipo_id" => 1,
-            // "ci" => 12345678,
-            // "apellido_paterno" => "Paterno",
-            // "apellido_materno" => "Materno",
-            // "nombres" => "Nombre",
-            // "especialidad_id" =>  static::$especialidad->id,
-            "regional_id" => 1
-        ]);
-
-        
-        $response = $this->actingAs($user)
-            ->postJson("/api/proveedores", [
-                "general" => [
-                    "tipo_id" => 2,
-                    "nit" => "12345679019",
-                    "nombre" => "Nombre",
-                    "regional_id" => 1
-                ],
-                "contacto" => [
-                    "municipio_id" => 1,
-                    "direccion" => "Av. Los claveles",
-                    "ubicacion" => [
-                        "latitud" => 0,
-                        "longitud" => 0
-                    ],
-                    "telefono1" => 60000000
-                ],
-                "contrato" => [
-                    "inicio" => "2020-01-01",
-                    "prestacion_ids" => static::$prestaciones->random(3)->pluck("id")
-                ]
-            ]);
-
-        $response->assertOk();
-        $this->assertDatabaseHas("proveedores", [
-            "tipo_id" => 2,
-            "nit" => "12345679019",
-            "nombre" => "Nombre",
-            // "ci" => 12345679,
-            // "apellido_paterno" => "Paterno",
-            // "apellido_materno" => "Materno",
-            // "nombres" => "Nombre",
-            // "especialidad_id" =>  static::$especialidad->id,
-            "regional_id" => 1
-        ]);
-    }
-
-    private function registrarProveedorEmpresa($user, $data=[])
-    {
-        Arr::set($data, "general", [
-            "tipo_id" => 2,
-            "nit" => Arr::get($data, "general.nit", "12345679019"),
-            "nombre" => Arr::get($data, "general.nombre", "Nombre"),
-            "regional_id" => Arr::get($data, "general.regional_id", 1)
-        ]);
-
-        if(Arr::has($data, "contacto")){
-            Arr::set($data, "contacto", [
-                "municipio_id" => Arr::get($data, "contacto.municipio_id", 1),
-                "direccion" => Arr::get($data, "contacto.direccion", "Av. Los claveles"),
-                "ubicacion" => Arr::get($data, "contacto.ubicacion", [
-                    "latitud" => 0,
-                    "longitud" => 0
-                ]),
-                "telefono1" => Arr::get($data, "contacto.telefono1", 70000000)
-            ]);
-        }
-
-        Arr::set($data, "contrato", [
-            "inicio" => Arr::get($data, "contrato.inicio", "2020/01/01"),
-            "prestacion_ids" => Arr::get($data, "contrato.prestacion_id", static::$prestaciones->random(3)->pluck("id"))
-        ]);
-
-        return $this->postJson("/api/proveedores", $data);
-    }
-
-    private function registrarProveedorMedico($user, $data = [])
-    {
-        Arr::set($data, "general", [
-            "tipo_id" => 2,
-            "nit" => Arr::get($data, "general.nit", "12345679019"),
-            "nombre" => Arr::get($data, "general.nombre", "Nombre"),
-            "regional_id" => Arr::get($data, "general.regional_id", 1)
-        ]);
-
-        if(Arr::has($data, "contacto")){
-            Arr::set($data, "contacto", [
-                "municipio_id" => Arr::get($data, "contacto.municipio_id", 1),
-                "direccion" => Arr::get($data, "contacto.direccion", "Av. Los claveles"),
-                "ubicacion" => Arr::get($data, "contacto.ubicacion", [
-                    "latitud" => 0,
-                    "longitud" => 0
-                ]),
-                "telefono1" => Arr::get($data, "contacto.telefono1", 70000000)
-            ]);
-        }
-
-        Arr::set($data, "contrato", [
-            "inicio" => Arr::get($data, "contrato.inicio", "2020/01/01"),
-            "prestacion_ids" => Arr::get($data, "contrato.prestacion_ids", static::$prestaciones->random(3)->pluck("id"))
-        ]);
-
+        //Test registro de especialista
+        $data = [];
+        $this->setDatosProveedorMedico($data);
         $response = $this->actingAs($user)
             ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertOk();
+        $id = json_decode($content)->id;
 
-        return $response;
+        $proveedor = Proveedor::find($id);
+        $this->assertTrue(!!$proveedor);
+        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
+        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
+        $this->assertTrue($proveedor->ci == Arr::get($data, "general.ci"));
+        $this->assertTrue($proveedor->ci_complemento == Arr::get($data, "general.ci_complemento"));
+        $this->assertTrue($proveedor->apellido_paterno == Arr::get($data, "general.apellido_paterno"));
+        $this->assertTrue($proveedor->apellido_materno == Arr::get($data, "general.apellido_materno"));
+        $this->assertTrue($proveedor->nombres == Arr::get($data, "general.nombres"));
+        $this->assertTrue($proveedor->especialidad_id == Arr::get($data, "general.especialidad_id"));
+        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
+        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
+        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
+        $this->assertTrue($proveedor->ubicacion == (Arr::get($data, "contacto.ubicacion") ?
+            new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud")) :
+            null)
+        );
+        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
+        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
+
+        $contrato = $proveedor->contrato;
+        $this->assertTrue(!!$contrato);
+        $this->assertTrue($contrato->inicio == Arr::get($data, "contrato.inicio")
+            && $contrato->fin == Arr::get($data, "contrato.fin")
+        );
+
+        $prestaciones = $contrato->prestaciones;
+        $this->assertNotEmpty($prestaciones);
+        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
+            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
+        );
+
+        //Test registro de empresa
+        $data = [];
+        $this->setDatosProveedorEmpresa($data);
+        
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertOk();
+        $id = json_decode($content)->id;
+
+        $proveedor = Proveedor::find($id);
+        $this->assertTrue(!!$proveedor);
+        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
+        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
+        $this->assertTrue($proveedor->nombre == Arr::get($data, "general.nombre"));
+        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
+        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
+        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
+        $this->assertTrue(Arr::get($data, "contacto.ubicacion") ?
+            $proveedor->ubicacion->equals(new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud"))) :
+            $proveedor->ubicacion == null
+        );
+        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
+        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
+
+        $contrato = $proveedor->contrato;
+        $this->assertTrue(!!$contrato);
+        $this->assertTrue($contrato->inicio == Arr::get($data, "contrato.inicio")
+            && $contrato->fin == Arr::get($data, "contrato.fin")
+        );
+
+        $prestaciones = $contrato->prestaciones;
+        $this->assertNotEmpty($prestaciones);
+        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
+            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
+        );
+        
+        //Test registro de especialista en otra regional
+        $data = [
+            "general" => [
+                "regional_id" => 3
+            ]
+        ];
+        $this->setDatosProveedorMedico($data);
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertOk();
+        $id = json_decode($content)->id;
+
+        $proveedor = Proveedor::find($id);
+        $this->assertTrue(!!$proveedor);
+        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
+        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
+        $this->assertTrue($proveedor->ci == Arr::get($data, "general.ci"));
+        $this->assertTrue($proveedor->ci_complemento == Arr::get($data, "general.ci_complemento"));
+        $this->assertTrue($proveedor->apellido_paterno == Arr::get($data, "general.apellido_paterno"));
+        $this->assertTrue($proveedor->apellido_materno == Arr::get($data, "general.apellido_materno"));
+        $this->assertTrue($proveedor->nombres == Arr::get($data, "general.nombres"));
+        $this->assertTrue($proveedor->especialidad_id == Arr::get($data, "general.especialidad_id"));
+        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
+        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
+        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
+        $this->assertTrue($proveedor->ubicacion == (Arr::get($data, "contacto.ubicacion") ?
+            new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud")) :
+            null)
+        );
+        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
+        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
+
+        $contrato = $proveedor->contrato;
+        $this->assertTrue(!!$contrato);
+        $this->assertTrue($contrato->inicio == Arr::get($data, "contrato.inicio")
+            && $contrato->fin == Arr::get($data, "contrato.fin")
+        );
+
+        $prestaciones = $contrato->prestaciones;
+        $this->assertNotEmpty($prestaciones);
+        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
+            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
+        );
+
+        //Test registro de empresa en otra regional
+        $data = [
+            "general" => [
+                "regional_id" => 3
+            ]
+        ];
+        $this->setDatosProveedorEmpresa($data);
+        
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertOk();
+        $id = json_decode($content)->id;
+
+        $proveedor = Proveedor::find($id);
+        $this->assertTrue(!!$proveedor);
+        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
+        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
+        $this->assertTrue($proveedor->nombre == Arr::get($data, "general.nombre"));
+        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
+        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
+        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
+        $this->assertTrue(Arr::get($data, "contacto.ubicacion") ?
+            $proveedor->ubicacion->equals(new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud"))) :
+            $proveedor->ubicacion == null
+        );
+        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
+        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
+
+        $contrato = $proveedor->contrato;
+        $this->assertTrue(!!$contrato);
+        $this->assertTrue($contrato->inicio == Arr::get($data, "contrato.inicio")
+            && $contrato->fin == Arr::get($data, "contrato.fin")
+        );
+
+        $prestaciones = $contrato->prestaciones;
+        $this->assertNotEmpty($prestaciones);
+        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
+            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
+        );
     }
 
     public function test_usuario_puede_registrar_regionalmente()
@@ -183,8 +256,106 @@ class RegistrarProveedorTest extends TestCase
             ])
             ->create();
 
+        //Test registro de especialista
+        $data = [];
+        $this->setDatosProveedorMedico($data);
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertOk();
+        $id = json_decode($content)->id;
 
-        $response = $this->registrarProveedorMedico($user);
+        $proveedor = Proveedor::find($id);
+        $this->assertTrue(!!$proveedor);
+        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
+        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
+        $this->assertTrue($proveedor->ci == Arr::get($data, "general.ci"));
+        $this->assertTrue($proveedor->ci_complemento == Arr::get($data, "general.ci_complemento"));
+        $this->assertTrue($proveedor->apellido_paterno == Arr::get($data, "general.apellido_paterno"));
+        $this->assertTrue($proveedor->apellido_materno == Arr::get($data, "general.apellido_materno"));
+        $this->assertTrue($proveedor->nombres == Arr::get($data, "general.nombres"));
+        $this->assertTrue($proveedor->especialidad_id == Arr::get($data, "general.especialidad_id"));
+        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
+        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
+        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
+        $this->assertTrue($proveedor->ubicacion == (Arr::get($data, "contacto.ubicacion") ?
+            new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud")) :
+            null)
+        );
+        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
+        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
+
+        $contrato = $proveedor->contrato;
+        $this->assertTrue(!!$contrato);
+        $this->assertTrue($contrato->inicio == Arr::get($data, "contrato.inicio")
+            && $contrato->fin == Arr::get($data, "contrato.fin")
+        );
+
+        $prestaciones = $contrato->prestaciones;
+        $this->assertNotEmpty($prestaciones);
+        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
+            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
+        );
+
+        //Test registro de empresa
+        $data = [];
+        $this->setDatosProveedorEmpresa($data);
         
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertOk();
+        $id = json_decode($content)->id;
+
+        $proveedor = Proveedor::find($id);
+        $this->assertTrue(!!$proveedor);
+        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
+        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
+        $this->assertTrue($proveedor->nombre == Arr::get($data, "general.nombre"));
+        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
+        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
+        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
+        $this->assertTrue(Arr::get($data, "contacto.ubicacion") ?
+            $proveedor->ubicacion->equals(new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud"))) :
+            $proveedor->ubicacion == null
+        );
+        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
+        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
+
+        $contrato = $proveedor->contrato;
+        $this->assertTrue(!!$contrato);
+        $this->assertTrue($contrato->inicio == Arr::get($data, "contrato.inicio")
+            && $contrato->fin == Arr::get($data, "contrato.fin")
+        );
+
+        $prestaciones = $contrato->prestaciones;
+        $this->assertNotEmpty($prestaciones);
+        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
+            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
+        );
+        
+        //Test registro de especialista en otra regional
+        $data = [
+            "general" => [
+                "regional_id" => 3
+            ]
+        ];
+        $this->setDatosProveedorMedico($data);
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $response->assertForbidden();
+
+        //Test registro de empresa en otra regional
+        $data = [
+            "general" => [
+                "regional_id" => 3
+            ]
+        ];
+        $this->setDatosProveedorEmpresa($data);
+        
+        $response = $this->actingAs($user)
+            ->postJson("/api/proveedores", $data);
+        $content = $response->getContent();
+        $response->assertForbidden();
     }
 }
