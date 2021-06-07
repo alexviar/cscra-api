@@ -13,6 +13,7 @@ class PrestacionController extends Controller {
   function buscar(Request $request) {
     $filter = $request->filter;
     $page  = $request->page;
+    $this->authorize("verTodo", Prestacion::class);
 
     $query = Prestacion::query();
     if(Arr::has($filter, "nombre")){
@@ -38,12 +39,12 @@ class PrestacionController extends Controller {
     return response()->json($prestaciones);
   }
 
-  function ver(Request $request, int $id){
-    $prestacion = Prestacion::find($id);
-    if($prestacion)
-      return response()->json($prestacion);
-    throw new ModelNotFoundException("Prestacion no encontrada");
-  }
+//   function ver(Request $request, int $id){
+//     $prestacion = Prestacion::find($id);
+//     if($prestacion)
+//       return response()->json($prestacion);
+//     throw new ModelNotFoundException("Prestacion no encontrada");
+//   }
 
   function registrar(Request $request){
     $prestacionClass = Prestacion::class;

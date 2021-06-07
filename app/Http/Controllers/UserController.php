@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
@@ -72,7 +73,7 @@ class UserController extends Controller
   public function store(Request $request){
     $payload = $request->validate([
       "username" => "unique:users|required",
-      "password" => "required",
+      "password" => ["required","min:8","max:256", Password::defaults()],
       "ci" => "required",
       "ci_complemento" => "nullable",
       "apellido_paterno" => "required_without:apellido_materno",
@@ -120,28 +121,35 @@ class UserController extends Controller
       // abort(409, json_encode($user));
       throw new ModelNotFoundException();
     }
-    
-    $this->authorize("editar", $user);
 
     $payload = $request->validate([
       // "username" => ["required", Rule::unique("users")->whereNot("id", $id)],
       "ci" => "required",
       "ci_complemento" => "nullable",
-      "apellido_paterno" => "required",
-      "apellido_materno" => "required",
+      "apellido_paterno" => "required_without:apellido_materno",
+      "apellido_materno" => "required_without:apellido_paterno",
       "nombres" => "required",
+      "regional_id" => "numeric|required|exists:".Regional::class.",id",
       "roles" => "required|array",
       "roles.*" => "exists:".Role::class.",name"
+    ], [
+        "apellido_paterno.required_without" => "Debe indicar al menos un apellido",
+        "apellido_materno.required_without" => "Debe indicar al menos un apellido"
     ]);
 
-    $user2 = User::where("ci_raiz", $payload["ci"])->where("ci_complemento", $payload["ci_complemento"])->where("id", "<>", $user->id)->first();
+    $this->authorize("editar", [$user, $payload]);
+
+    $user2 = User::where("ci_raiz", $payload["ci"])
+        ->where("ci_complemento", $payload["ci_complemento"] ?? null)
+        ->where("id", "<>", $user->id)
+        ->first();
     if($user2){
-      throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado", $user2);
+      throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado", $user2->id);
     }
 
     DB::transaction(function() use($user, $payload) {
       $user->ci_raiz = $payload["ci"];
-      $user->ci_complemento = $payload["ci_complemento"];
+      $user->ci_complemento = $payload["ci_complemento"] ?? null;
       $user->apellido_paterno = $payload["apellido_paterno"];
       $user->apellido_materno = $payload["apellido_materno"];
       $user->nombres = $payload["nombres"];

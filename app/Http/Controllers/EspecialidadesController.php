@@ -11,33 +11,16 @@ use Illuminate\Support\Arr;
 
 class EspecialidadesController extends Controller {
 
-  /** @var  */
-  private $especialidadesService;
-
-  function __construct()
-  {
-    $this->especialidadesService = new EspecialidadesService();
-  }
   function buscar(Request $request): JsonResponse {
     $filter = $request->filter;
     $page = $request->page;
-    // $pageSize = Arr::get($page, "size", 10); 
-    // $currentPage = Arr::get($page, "current", 1);
-    // $pagination=[
-    //   "size" => $pageSize,
-    //   "current" => $currentPage
-    // ];
-    // [$total, $records] = $this->especialidadesService->buscar($filter, $pagination);
-    // return response()->json([
-    //   "meta" => [
-    //     "total" => $total
-    //   ],
-    //   "records" => $records
-    // ]);
+    $this->authorize("verTodo", Especialidad::class);
+
     $query = Especialidad::query();
     // $query->whereRaw("1");
     if(Arr::has($filter, "nombre") && $nombre=$filter["nombre"]){
-      $query->where("nombre", "LIKE", "{$nombre}%");
+    //   $query->where("nombre", "LIKE", "{$nombre}%");
+        $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);
     }
     if($page && Arr::has($page, "size")){
       $total = $query->count();
@@ -53,12 +36,12 @@ class EspecialidadesController extends Controller {
     return response()->json($query->get());
   }
 
-  function ver(Request $request, int $id){
-    $especialidad = Especialidad::find($id);
-    if($especialidad)
-      return response()->json($especialidad);
-    throw new ModelNotFoundException("especialidad no encontrada");
-  }
+//   function ver(Request $request, int $id){
+//     $especialidad = Especialidad::find($id);
+//     if($especialidad)
+//       return response()->json($especialidad);
+//     throw new ModelNotFoundException("especialidad no encontrada");
+//   }
 
   function registrar(Request $request){
     $prestacionClass = Especialidad::class;

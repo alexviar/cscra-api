@@ -32,11 +32,10 @@ class UserPolicy
     }
 
     public function editar(User $user, $model, $payload) {
-      if($user->username !== "admin"){
+        if($model->username === "admin") return false;
         if($user->can(Permisos::EDITAR_USUARIOS)) return true;
         if($user->can(Permisos::EDITAR_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO)
-        && $user->regional_id == Arr::get($payload, "regional_id") && $user->role_id == $model->regional_id) return true;
-      }
+        && $user->regional_id == Arr::get($payload, "regional_id") && $user->regional_id == $model->regional_id) return true;
     }
 
     public function cambiarContrasena(User $user, $model, $payload) {

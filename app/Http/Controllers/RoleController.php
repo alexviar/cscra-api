@@ -69,8 +69,8 @@ class RoleController extends Controller
     {
         $this->authorize("registrar", Role::class);
         $payload = $request->validate([
-            "name" => "required|unique:roles",
-            "description" => "nullable",
+            "name" => "required|unique:roles|max:50",
+            "description" => "nullable|max:250",
             "permissions" => "array|required"
         ], [
             "name.unique" => "Ya existe un rol con el mismo nombre.",
@@ -119,10 +119,14 @@ class RoleController extends Controller
     public function update(Request $request, $id)
     {
         $payload = $request->validate([
-            "name" => "required",
-            "description" => "nullable",
-            "permissions" => "required"
+            "name" => "required|unique:roles,name,$id|max:50",
+            "description" => "nullable|max:250",
+            "permissions" => "array|required"
+        ], [
+            "name.unique" => "Ya existe un rol con el mismo nombre.",
+            "permissions.required" => "Debe indicar al menos un permiso."
         ]);
+
         $role = Role::find($id);
         if (!$role) {
             throw new ModelNotFoundException();
