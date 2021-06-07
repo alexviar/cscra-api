@@ -54,10 +54,10 @@ class EspecialidadesController extends Controller {
   }
 
   function ver(Request $request, int $id){
-    $prestacion = Especialidad::find($id);
-    if($prestacion)
-      return response()->json($prestacion);
-    throw new ModelNotFoundException("Prestacion no encontrada");
+    $especialidad = Especialidad::find($id);
+    if($especialidad)
+      return response()->json($especialidad);
+    throw new ModelNotFoundException("especialidad no encontrada");
   }
 
   function registrar(Request $request){
@@ -66,8 +66,10 @@ class EspecialidadesController extends Controller {
       "nombre" => "required|unique:{$prestacionClass}"
     ]);
 
-    $prestacion = Especialidad::create($payload);
-    return response()->json($prestacion);
+    $this->authorize("registrar", Especialidad::class);
+
+    $especialidad = Especialidad::create($payload);
+    return response()->json($especialidad);
   }
 
   function actualizar(Request $request, int $id){
@@ -76,23 +78,26 @@ class EspecialidadesController extends Controller {
       "nombre" => "required|unique:{$prestacionClass},nombre,{$id}"
     ]);
 
-    $prestacion = Especialidad::find($id);
-    if(!$prestacion)
-      throw new ModelNotFoundException("Prestacion no encontrada");
-    $prestacion->nombre = $payload["nombre"];
-    $prestacion->save();
-    return response()->json($prestacion);
+    $especialidad = Especialidad::find($id);
+    
+    if(!$especialidad)
+        throw new ModelNotFoundException("especialidad no encontrada");
+    $this->authorize("editar", $especialidad);
+    $especialidad->nombre = $payload["nombre"];
+    $especialidad->save();
+    return response()->json($especialidad);
   }
 
   function eliminar(Request $request, int $id){
+    $this->authorize("eliminar", Especialidad::class);
     Especialidad::destroy($id);
     return response()->json();
   }
 
-  function importar(Request $request): JsonResponse {
-    $archivo = $request->file("archivo");
-    // var_dump($archivo, $archivo->getPathname());
-    $this->especialidadesService->importar($archivo->getPathname(), $request->separador, $request->formato);
-    return response()->json();
-  }
+//   function importar(Request $request): JsonResponse {
+//     $archivo = $request->file("archivo");
+//     // var_dump($archivo, $archivo->getPathname());
+//     $this->especialidadesService->importar($archivo->getPathname(), $request->separador, $request->formato);
+//     return response()->json();
+//   }
 }

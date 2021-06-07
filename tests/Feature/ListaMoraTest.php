@@ -26,13 +26,13 @@ class ListaMoraTest extends TestCase
         $response = $this->actingAs($user)
             ->postJson("/api/lista-mora/agregar", []);
         $response->assertJsonValidationErrors([
-            "empleador_id" => "El campo empleador id es requerido."
+            "empleador_id" => "Este campo es requerido."
         ]);
 
         $response = $this->actingAs($user)
             ->postJson("/api/lista-mora/quitar", []);
         $response->assertJsonValidationErrors([
-            "empleador_id" => "El campo empleador id es requerido."
+            "empleador_id" => "Este campo es requerido."
         ]);
     }
 

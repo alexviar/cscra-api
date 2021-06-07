@@ -124,14 +124,14 @@ class RegistrarUsuarioTest extends TestCase
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', []);
         $response->assertJsonValidationErrors([
-            "ci" => "El campo ci es requerido.",
-            "username" => "El campo nombre de usuario es requerido.",
-            "password" => "El campo contraseña es requerido.",
+            "ci" => "Este campo es requerido.",
+            "username" => "Este campo es requerido.",
+            "password" => "Este campo es requerido.",
             "apellido_paterno" => "Debe indicar al menos un apellido",
             "apellido_materno" => "Debe indicar al menos un apellido",
-            "nombres" => "El campo nombres es requerido.",
+            "nombres" => "Este campo es requerido.",
             "regional_id" => "Debe indicar una regional.",
-            "roles" => "El campo roles es requerido.",
+            "roles" => "Este campo es requerido.",
         ]);
     }
 

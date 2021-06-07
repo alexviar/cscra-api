@@ -73,7 +73,6 @@ class RoleController extends Controller
             "description" => "nullable",
             "permissions" => "array|required"
         ], [
-            "name.required" => "El nombre es requerido.",
             "name.unique" => "Ya existe un rol con el mismo nombre.",
             "permissions.required" => "Debe indicar al menos un permiso."
         ]);

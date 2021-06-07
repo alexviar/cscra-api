@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Prestacion;
+use App\Policies\PrestacionPolicy;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -49,6 +50,7 @@ class PrestacionController extends Controller {
     $payload = $request->validate([
       "nombre" => "required|unique:{$prestacionClass}"
     ]);
+    $this->authorize("registrar", Prestacion::class);
 
     $prestacion = Prestacion::create($payload);
     return response()->json($prestacion);
@@ -63,23 +65,25 @@ class PrestacionController extends Controller {
     $prestacion = Prestacion::find($id);
     if(!$prestacion)
       throw new ModelNotFoundException("Prestacion no encontrada");
+    $this->authorize("editar", $prestacion);
     $prestacion->nombre = $payload["nombre"];
     $prestacion->save();
     return response()->json($prestacion);
   }
 
   function eliminar(Request $request, int $id){
+      $this->authorize("eliminar", Prestacion::class);
     Prestacion::destroy($id);
     return response()->json();
   }
 
-  function importar(Request $request){
-    $payload = $request->validate([
-      "archivo" => "required",
-      "separador" => "nullable",
-      "formato" => "nullable"
-    ]);
-    Prestacion::importar($payload["archivo"], $payload["separador"], $payload["formato"]);
-    return response()->json();
-  }
+//   function importar(Request $request){
+//     $payload = $request->validate([
+//       "archivo" => "required",
+//       "separador" => "nullable",
+//       "formato" => "nullable"
+//     ]);
+//     Prestacion::importar($payload["archivo"], $payload["separador"], $payload["formato"]);
+//     return response()->json();
+//   }
 }

@@ -2,11 +2,15 @@
 
 namespace App\Providers;
 
+use App\Models\Especialidad;
 use App\Models\ListaMoraItem;
+use App\Models\Prestacion;
 use App\Models\SolicitudAtencionExterna;
+use App\Policies\EspecialidadPolicy;
 use Spatie\Permission\Models\Role;
 use App\Policies\RolePolicy;
 use App\Policies\ListaMoraPolicy;
+use App\Policies\PrestacionPolicy;
 use App\Policies\SolicitudAtencionExternaPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -22,6 +26,8 @@ class AuthServiceProvider extends ServiceProvider
         'App\Models\User' => 'App\Policies\UserPolicy',
         Role::class => RolePolicy::class,
         ListaMoraItem::class => ListaMoraPolicy::class,
+        Especialidad::class => EspecialidadPolicy::class,
+        Prestacion::class => PrestacionPolicy::class,
         SolicitudAtencionExterna::class => SolicitudAtencionExternaPolicy::class
     ];
 

@@ -35,6 +35,12 @@ return [
     */
 
     'channels' => [
+        'http' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/http.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+        ],
+
         'stack' => [
             'driver' => 'stack',
             'channels' => ['single'],

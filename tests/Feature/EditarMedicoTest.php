@@ -30,10 +30,10 @@ class EditarMedicoTest extends TestCase
             ->putJson("/api/medicos/{$medico->id}", []);
 
         $response->assertJsonValidationErrors([
-            "ci" => "El campo ci es requerido.",
+            "ci" => "Este campo es requerido.",
             "apellido_paterno" => "Debe indicar al menos un apellido",
             "apellido_materno" => "Debe indicar al menos un apellido",
-            "nombres" => "El campo nombres es requerido.",
+            "nombres" => "Este campo es requerido.",
             "regional_id" => "Debe indicar una regional.",
             "especialidad_id" => "Debe indicar una especialidad.",
         ]);

@@ -41,6 +41,8 @@ class Proveedor extends Model
         'ubicacion',
     ];
 
+    protected $with = ["especialidad"];
+
     protected $appends = ["tipo", "nombreCompleto", "ciText"];
 
     function getTipoAttribute()

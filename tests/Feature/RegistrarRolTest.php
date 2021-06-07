@@ -56,7 +56,7 @@ class RegistrarRolTest extends TestCase
             ->postJson("/api/roles", []);
         
         $response->assertJsonValidationErrors([
-            "name" => "El nombre es requerido",
+            "name" => "Este campo es requerido",
             "permissions" => "Debe indicar al menos un permiso"
         ]);
     }
