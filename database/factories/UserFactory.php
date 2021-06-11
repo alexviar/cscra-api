@@ -39,6 +39,13 @@ class UserFactory extends Factory
         ];
     }
 
+    public function bloqueado()
+    {
+        return $this->state([
+            "estado" => 2
+        ]);
+    }
+
     public function regionalSantaCruz()
     {
         return $this->state([

@@ -97,8 +97,8 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(["name" => Permisos::REGISTRAR_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::EDITAR_PROVEEDORES, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::EDITAR_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
-        Permission::create(["name" => Permisos::BAJA_PROVEEDORES, "guard_name" => "sanctum"]);
-        Permission::create(["name" => Permisos::BAJA_PROVEEDORES_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::BAJA_PROVEEDOR, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::BAJA_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
 
         //Prestaciones
         Permission::create(["name" => Permisos::VER_PRESTACIONES, "guard_name" => "sanctum"]);
@@ -107,11 +107,23 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(["name" => Permisos::ELIMINAR_PRESTACIONES, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::IMPORTAR_PRESTACIONES, "guard_name" => "sanctum"]);
 
-        //Prestaciones
+        //Especialidades
         Permission::create(["name" => Permisos::VER_ESPECIALIDADES, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::REGISTRAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::EDITAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::ELIMINAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::IMPORTAR_ESPECIALIDADES, "guard_name" => "sanctum"]);
+
+        //Contrato Proveedor
+        Permission::create(["name" => Permisos::VER_CONTRATOS_PROVEEDOR, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::VER_CONTRATOS_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_CONTRATO_PROVEEDOR, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_CONTRATO_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::CONSUMIR_CONTRATO_PROVEEDOR, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::CONSUMIR_CONTRATO_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EXTENDER_CONTRATO_PROVEEDOR, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::EXTENDER_CONTRATO_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::ANULAR_CONTRATO_PROVEEDOR, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::ANULAR_CONTRATO_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
     }
 }

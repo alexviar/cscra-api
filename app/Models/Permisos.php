@@ -72,8 +72,19 @@ class Permisos {
   const REGISTRAR_PROVEEDORES_REGIONAL = "Registrar proveedores (regional)";
   const EDITAR_PROVEEDORES = "Editar proveedores";
   const EDITAR_PROVEEDORES_REGIONAL = "Editar proveedores (regional)";
-  const BAJA_PROVEEDORES = "Baja proveedores";
-  const BAJA_PROVEEDORES_REGIONAL = "Baja proveedores (regional)";
+  const BAJA_PROVEEDOR = "Baja proveedores";
+  const BAJA_PROVEEDOR_REGIONAL = "Baja proveedores (regional)";
+
+  const VER_CONTRATOS_PROVEEDOR = "Ver contratos de proveedores";
+  const VER_CONTRATOS_PROVEEDOR_REGIONAL = "Ver contratos de proveedores";
+  const REGISTRAR_CONTRATO_PROVEEDOR = "Registrar contratos de proveedores";
+  const REGISTRAR_CONTRATO_PROVEEDOR_REGIONAL = "Registrar contratos de proveedores (regional)";
+  const CONSUMIR_CONTRATO_PROVEEDOR = "Consumir contratos de proveedores";
+  const CONSUMIR_CONTRATO_PROVEEDOR_REGIONAL = "Consumir contratos de proveedores (regional)";
+  const EXTENDER_CONTRATO_PROVEEDOR = "Extender contratos de proveedores";
+  const EXTENDER_CONTRATO_PROVEEDOR_REGIONAL = "Extender contratos de proveedores (regional)";
+  const ANULAR_CONTRATO_PROVEEDOR = "Anular contratos de proveedores";
+  const ANULAR_CONTRATO_PROVEEDOR_REGIONAL = "Anular contratos de proveedores (regional)";
 
   /**
    * Especialidades

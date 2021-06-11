@@ -41,9 +41,9 @@ class Proveedor extends Model
         'ubicacion',
     ];
 
-    protected $with = ["especialidad"];
+    protected $with = ["especialidad", "regional", "municipio.provincia.departamento"];
 
-    protected $appends = ["tipo", "nombreCompleto", "ciText"];
+    protected $appends = ["tipo", "nombre_completo", "ci_text"];
 
     function getTipoAttribute()
     {
@@ -92,7 +92,7 @@ class Proveedor extends Model
 
     function contratos()
     {
-        return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id");
+        return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id")->orderBy("inicio");
     }
 
     function ofrece($prestacionId)
@@ -102,12 +102,22 @@ class Proveedor extends Model
         });
     }
 
-    // function toArray()
-    // {
-    //   $array = parent::toArray();
-    //   $array["ubicacion"] = ["latitude"=>$array["ubicacion"]->getLat(), "longitude"=>$array["ubicacion"]->getLng()];
-    //   return $array;
-    // }
+    function regional()
+    {
+        return $this->belongsTo(Regional::class, "regional_id", "id");
+    }
+
+    function municipio()
+    {
+        return $this->belongsTo(Municipio::class, "municipio_id", "id");
+    }
+
+    function toArray()
+    {
+      $array = parent::toArray();
+      $array["ubicacion"] = $this->ubicacion ? ["latitud"=>$array["ubicacion"]->getLat(), "longitud"=>$array["ubicacion"]->getLng()] : null;
+      return $array;
+    }
 
     static function buscarPorNombre($nombre)
     {

@@ -22,8 +22,10 @@ class ContratoProveedorFactory extends Factory
      */
     public function definition()
     {
+        $hoy = Carbon::now();
         return [
-            "fin" => null,
+            "inicio" => $hoy->subMonth(1),
+            "fin" => $hoy->addMonths(3),
             "estado" => 1
         ];
     }
@@ -55,6 +57,13 @@ class ContratoProveedorFactory extends Factory
     public function iniciaManiana(){
         return $this->state([
             "inicio" => Carbon::now()->addDay()
+        ]);
+    }
+
+    public function indefinido()
+    {
+        return $this->state([
+            "fin" => null
         ]);
     }
 

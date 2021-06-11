@@ -41,14 +41,14 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
         
         Gate::before(function ($user) {
-          if($user->estado === 1){
-              return true;
+          if($user->estado !== 1){
+              return false;
           }
         });
 
         Gate::after(function ($user) {
             // dd("I'm here",$user->hasRole("super user"));
-          if($user->hasRole("super user")){
+          if($user->isSuperUser()){
             //   dd("I'm here");
               return true;
           }

@@ -44,15 +44,15 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-      "nombreCompleto",
+      "nombre_completo",
       "ci",
+      "estado_text",
       "all_permissions"
     ];
 
     protected $casts = [
-      "created_at" =>  'date: d/m/Y h:i:m',
-      "updated_at" =>  'date: d/m/Y h:i:m',
-      "estado" => 'boolean'
+      "created_at" =>  'date:Y-m-d',
+      "updated_at" =>  'date:Y-m-d'
     ];
 
     // /**
@@ -68,8 +68,13 @@ class User extends Authenticatable
     //   $this->setAttribute("password", Hash::make($value));
     // }
 
+    function isSuperUser()
+    {
+        return $this->hasRole("super user");
+    }
+
     function validatePassword($password) {
-      return Hash::check($password);
+      return Hash::check($password, $this->password);
     }
 
     function getAllPermissionsAttribute(): Collection
@@ -79,6 +84,10 @@ class User extends Authenticatable
 
     function getCiAttribute(){
       return $this->ci_raiz . ($this->ci_complemento ? " " .  $this->ci_complemento :  "");
+    }
+
+    function getEstadoTextAttribute(){
+        return $this->estado == 1 ? "Activo" : ($this->estado == 2 ? "Bloqueado" : null);
     }
 
     function getNombreCompletoAttribute(){

@@ -110,7 +110,11 @@ Route::middleware("auth:sanctum")->post("prestaciones/importar", [PrestacionCont
 Route::middleware("auth:sanctum")->get("proveedores", [ProveedorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("proveedores/{id}", [ProveedorController::class, "mostrar"]);
 Route::middleware("auth:sanctum")->post("proveedores", [ProveedorController::class, "registrar"]);
-Route::middleware("auth:sanctum")->post("proveedores/{id}/contratos", [ProveedorController::class, "registrarContrato"]);
+Route::middleware("auth:sanctum")->get("proveedores/{idProveedor}/contratos", [ProveedorController::class, "buscarContrato"]);
+Route::middleware("auth:sanctum")->post("proveedores/{idProveedor}/contratos", [ProveedorController::class, "registrarContrato"]);
+Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/consumir", [ProveedorController::class, "consumirContrato"]);
+Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/extender", [ProveedorController::class, "extenderContrato"]);
+Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/anular", [ProveedorController::class, "anularContrato"]);
 Route::middleware("auth:sanctum")->put("proveedores/{id}", [ProveedorController::class, "actualizar"]);
 Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorController::class, "buscarPorNombre"]);
 

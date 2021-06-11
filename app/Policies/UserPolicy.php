@@ -21,9 +21,17 @@ class UserPolicy
 
     }
 
-    public function verTodo(User $user) {
+    public function verTodo(User $user, $filter) {
       if($user->can(Permisos::VER_USUARIOS)) return true;
+      if($user->can(Permisos::VER_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO)
+      && $user->regional_id == Arr::get($filter, "regional_id")) return true;
     }
+
+    public function ver(User $user, $model) {
+        if($user->can(Permisos::VER_USUARIOS)) return true;
+        if($user->can(Permisos::VER_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO)
+        && $user->regional_id == $model->regional_id) return true;
+     }
     
     public function registrar(User $user, $payload) {
       if($user->can(Permisos::REGISTRAR_USUARIOS)) return true;
@@ -46,16 +54,14 @@ class UserPolicy
     }
 
     public function enable(User $user, $model) {
-      if($user->can(Permisos::CAMBIAR_CONTRASEÑA)) return true;
-      if($user->can(Permisos::CAMBIAR_CONTRASEÑA_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO) && 
+      if($user->can(Permisos::DESBLOQUEAR_USUARIOS)) return true;
+      if($user->can(Permisos::DESBLOQUEAR_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO) && 
       $user->regional_id == $model->regional_id) return true;
-      if($user->id == $model->id) return true;
     }
 
     public function disable(User $user, $model) {
       if($user->can(Permisos::BLOQUEAR_USUARIOS)) return true;
       if($user->can(Permisos::BLOQUEAR_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO) && 
       $user->regional_id == $model->regional_id) return true;
-      if($user->id == $model->id) return true;
     }
   }

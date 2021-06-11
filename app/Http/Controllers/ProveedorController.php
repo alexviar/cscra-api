@@ -91,7 +91,7 @@ class ProveedorController extends Controller
                 "contacto.telefono2" => "nullable|numeric",
                 "contrato.inicio" => "date|required",
                 "contrato.fin" => "nullable|date",
-                "contrato.prestacion_ids" => "array|required"
+                "contrato.prestacion_ids" => "nullable"//"array|required"
             ], [
                 "general.apellido_paterno.required_without" => "Debe indicar al menos un apellido",
                 "general.apellido_materno.required_without" => "Debe indicar al menos un apellido"
@@ -121,7 +121,7 @@ class ProveedorController extends Controller
                     "fin" => $contrato["fin"] ?? null,
                     // "regional_id" => $contrato["regional_id"]
                 ]);
-                $prestacion_ids = $contrato["prestacion_ids"];
+                $prestacion_ids = $contrato["prestacion_ids"]??[];
                 $contratoModel->prestaciones()->attach($prestacion_ids);
                 return $proveedor;
             });
@@ -143,7 +143,7 @@ class ProveedorController extends Controller
                 "contrato.inicio" => "date|required",
                 "contrato.fin" => "nullable|date",
                 // "contrato.regional_id" => "numeric|required",
-                "contrato.prestacion_ids" => "array|required"
+                "contrato.prestacion_ids" => "nullable"//"array|required"
             ]);
 
             $this->authorize("registrar", [Proveedor::class, $payload]);
@@ -165,7 +165,7 @@ class ProveedorController extends Controller
                     "fin" => $contrato["fin"] ?? null,
                     // "regional_id" => $contrato["regional_id"]
                 ]);
-                $prestacion_ids = $contrato["prestacion_ids"];
+                $prestacion_ids = $contrato["prestacion_ids"] ?? [];
                 $contratoModel->prestaciones()->attach($prestacion_ids);
                 return $proveedor;
             });
@@ -228,6 +228,26 @@ class ProveedorController extends Controller
         }
     }
 
+    function buscarContrato(Request $request, $proveedorId){
+        $page = $request->page;
+        $filter = $request->filter;
+
+        $proveedor = Proveedor::find($proveedorId);
+        if(!$proveedor)
+            throw new ModelNotFoundException("El proveedor no existe");
+
+        $query = $proveedor->contratos();
+
+        if ($page && Arr::has($page, "size")) {
+            $total = $query->count();
+            $query->limit($page["size"]);
+            if (Arr::has($page, "current")) {
+                $query->offset(($page["current"] - 1) * $page["size"]);
+            }
+        }
+        return response()->json($this->buildPaginatedResponseData($total, $query->get()));
+    }
+
     function registrarContrato(Request $request, $proveedorId)
     {
         $proveedor = Proveedor::find($proveedorId);
@@ -236,25 +256,106 @@ class ProveedorController extends Controller
             throw new ModelNotFoundException("Proveedor no existe");
         }
 
+        $this->authorize("registrar-contrato", $proveedor);
+
         $payload = $request->validate([
             "inicio" => "required|date",
-            "fin" => "required|date"
+            "fin" => "nullable|date"
         ]);
 
-        $contrato = $proveedor->contratos()->whereDate("inicio", "<=", $payload["fin"])->whereDate("fin", ">=", $payload["fin"])->first();
+        $contrato = $proveedor->contratos()
+            ->whereDate("inicio", "<=", $payload["fin"])
+            ->where(function($query) use($payload) {
+                $query->whereDate("fin", ">=", $payload["fin"])->orWhereNull("fin");
+            })
+            ->where("estado", 1)
+            ->first();
         if ($contrato) {
-            throw ConflictException::withData("Este proveedor tiene un contrato que se superpone al rango de fechas indicado", $contrato);
+            throw ConflictException::withData("Este proveedor tiene un contrato que se superpone al rango de fechas indicado", $contrato->id);
         }
 
         $prestaciones_ids = $request->validate([
-            "prestacion_ids" => "required|array"
-        ])["prestacion_ids"];
+            "prestacion_ids" => "nullable"//"required|array"
+        ])["prestacion_ids"] ?? [];
 
         $contrato = DB::transaction(function () use ($proveedor, $payload, $prestaciones_ids) {
             $contrato = $proveedor->contratos()->create($payload);
             $contrato->prestaciones()->attach($prestaciones_ids);
             return $contrato;
         });
+
+        return response()->json($contrato);
+    }    
+
+    function consumirContrato(Request $request, $proveedorId, $contratoId)
+    {
+        $proveedor = Proveedor::find($proveedorId);
+
+        if (!$proveedor) {
+            throw new ModelNotFoundException("Proveedor no existe");
+        }
+
+        $contrato = $proveedor->contratos()->where("id", $contratoId)->first();
+        if(!$contrato) {
+            throw new ModelNotFoundException("Contrato no existe");
+        }
+        
+        $this->authorize("consumir-contrato", $proveedor);
+
+        abort_if(!!$contrato->fin, 400, "Solo los contratos indefinidos pueden ser consumidos");
+
+        $contrato->estado = ContratoProveedor::CONSUMIDO;
+        $contrato->save();
+
+        return response()->json($contrato);
+    }    
+
+    function extenderContrato(Request $request, $proveedorId, $contratoId)
+    {
+        $proveedor = Proveedor::find($proveedorId);
+        if (!$proveedor) {
+            throw new ModelNotFoundException("Proveedor no existe");
+        }
+        
+        $this->authorize("extender-contrato", $proveedor);
+
+        $contrato = $proveedor->contratos()->where("id", $contratoId)->first();
+        if(!$contrato) {
+            throw new ModelNotFoundException("Contrato no existe");
+        }
+        
+        abort_if($contrato->estado == 3, 400, "No puede extender contratos anulados");
+        $now = Carbon::now();
+        $extensionActual = $contrato->extension ?? $contrato->fin ?? $now;
+        if($contrato->fin) {
+            abort_if($extensionActual->gt($now), 400, "Solo puede extender contratos a partir de su fecha de finalización");
+        }
+        else {
+            abort_if($contrato->extension ? $contrato->extension->gt($now) : !$contrato->consumido, 400, "Solo puede extender contratos ya consumidos");
+        }
+
+        $contrato->extension = $extensionActual->addWeek();
+        $contrato->save();
+
+        return response()->json($contrato);
+    }
+
+    function anularContrato(Request $request, $proveedorId, $contratoId)
+    {
+        $proveedor = Proveedor::find($proveedorId);
+        if (!$proveedor) {
+            throw new ModelNotFoundException("Proveedor no existe");
+        }
+        
+        $this->authorize("anular-contrato", $proveedor);
+
+        $contrato = $proveedor->contratos()->where("id", $contratoId)->first();
+        if(!$contrato) {
+            throw new ModelNotFoundException("Contrato no existe");
+        }
+
+        $contrato->estado = ContratoProveedor::ANULADO;
+        $contrato->save();
 
         return response()->json($contrato);
     }
