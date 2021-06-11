@@ -76,7 +76,7 @@ class Permisos {
   const BAJA_PROVEEDOR_REGIONAL = "Baja proveedores (regional)";
 
   const VER_CONTRATOS_PROVEEDOR = "Ver contratos de proveedores";
-  const VER_CONTRATOS_PROVEEDOR_REGIONAL = "Ver contratos de proveedores";
+  const VER_CONTRATOS_PROVEEDOR_REGIONAL = "Ver contratos de proveedores (regional)";
   const REGISTRAR_CONTRATO_PROVEEDOR = "Registrar contratos de proveedores";
   const REGISTRAR_CONTRATO_PROVEEDOR_REGIONAL = "Registrar contratos de proveedores (regional)";
   const CONSUMIR_CONTRATO_PROVEEDOR = "Consumir contratos de proveedores";
