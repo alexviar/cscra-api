@@ -91,7 +91,7 @@ class ProveedorController extends Controller
                 "contacto.telefono2" => "nullable|numeric",
                 "contrato.inicio" => "date|required",
                 "contrato.fin" => "nullable|date",
-                "contrato.prestacion_ids" => "nullable"//"array|required"
+                "contrato.prestacion_ids" => "array|required"
             ], [
                 "general.apellido_paterno.required_without" => "Debe indicar al menos un apellido",
                 "general.apellido_materno.required_without" => "Debe indicar al menos un apellido"
@@ -143,7 +143,7 @@ class ProveedorController extends Controller
                 "contrato.inicio" => "date|required",
                 "contrato.fin" => "nullable|date",
                 // "contrato.regional_id" => "numeric|required",
-                "contrato.prestacion_ids" => "nullable"//"array|required"
+                "contrato.prestacion_ids" => "array|required"
             ]);
 
             $this->authorize("registrar", [Proveedor::class, $payload]);
@@ -275,7 +275,7 @@ class ProveedorController extends Controller
         }
 
         $prestaciones_ids = $request->validate([
-            "prestacion_ids" => "nullable"//"required|array"
+            "prestacion_ids" => "required|array"
         ])["prestacion_ids"] ?? [];
 
         $contrato = DB::transaction(function () use ($proveedor, $payload, $prestaciones_ids) {
