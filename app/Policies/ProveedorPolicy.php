@@ -45,6 +45,13 @@ class ProveedorPolicy
         if($user->can(Permisos::REGISTRAR_CONTRATO_PROVEEDOR_REGIONAL)
             && $user->regional_id == $proveedor->regional_id) return true;
     }
+
+    public function verContrato(User $user, $proveedor)
+    {
+        if($user->can(Permisos::VER_CONTRATOS_PROVEEDOR)) return true;
+        if($user->can(Permisos::VER_CONTRATOS_PROVEEDOR_REGIONAL)
+            && $user->regional_id == $proveedor->regional_id) return true;
+    }
     
     public function consumirContrato(User $user, $proveedor)
     {

@@ -1822,6 +1822,7 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
         $contrato = ContratoProveedor::factory()
             ->consumido()
             ->inicioAyer()
+            ->indefinido()
             ->for($proveedor)
             ->has(Prestacion::factory()->count(10), "prestaciones")
             ->create();

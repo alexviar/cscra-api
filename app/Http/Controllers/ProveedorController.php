@@ -28,8 +28,29 @@ class ProveedorController extends Controller
         $query = Proveedor::query();
         $query->with("especialidad", "contrato.prestaciones");
 
-        if (Arr::get($filter, "activos", 0)) {
-            $query->whereHas("contrato");
+        if (Arr::has($filter, "activos")) {
+            if($filter["activos"]){
+                $query->whereHas("contrato");
+            }
+            else {
+                $query->whereDoesntHave("contrato");
+            }
+        }
+        if (($tipos = Arr::get($filter, "tipos")) && count($tipos)){
+            $query->whereIn("tipo_id", $tipos);
+        }
+        if ($nombre = Arr::get($filter, "nombre")){
+            $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`, `nombres`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
+        }
+        if (($prestaciones_id = Arr::get($filter, "prestaciones_id")) && count($prestaciones_id)) {
+            $query->whereHas("contrato", function ($query) use($prestaciones_id) {
+                $sub = DB::table('prestaciones_contratadas')
+                    ->select('prestacion_id')
+                    ->whereColumn('contratos_proveedores.id', 'contrato_id');
+                foreach($prestaciones_id as $id){
+                    $query->whereRaw("? IN ({$sub->toSql()})", [$id]);
+                }
+            });
         }
 
         if ($page && Arr::has($page, "size")) {
@@ -236,6 +257,8 @@ class ProveedorController extends Controller
         if(!$proveedor)
             throw new ModelNotFoundException("El proveedor no existe");
 
+        $this->authorize("ver", $proveedor);
+
         $query = $proveedor->contratos();
 
         if ($page && Arr::has($page, "size")) {
@@ -246,6 +269,18 @@ class ProveedorController extends Controller
             }
         }
         return response()->json($this->buildPaginatedResponseData($total, $query->get()));
+    }
+
+    function verContrato(Request $request, $idProveedor, $id){
+        $proveedor = Proveedor::find($idProveedor);
+        if (!$proveedor) {
+            throw new ModelNotFoundException("El proveedor no existe");
+        }
+        $contrato = ContratoProveedor::find($id);
+        $this->authorize("ver", $proveedor);
+
+        $contrato->load(["prestaciones"]);
+        return response()->json($contrato);
     }
 
     function registrarContrato(Request $request, $proveedorId)

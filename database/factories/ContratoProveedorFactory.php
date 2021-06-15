@@ -24,8 +24,8 @@ class ContratoProveedorFactory extends Factory
     {
         $hoy = Carbon::now();
         return [
-            "inicio" => $hoy->subMonth(1),
-            "fin" => $hoy->addMonths(3),
+            "inicio" => $hoy->subMonth(1)->clone(),
+            "fin" => $hoy->addMonths(3)->clone(),
             "estado" => 1
         ];
     }
@@ -37,9 +37,9 @@ class ContratoProveedorFactory extends Factory
     }
 
     public function anulado(){
-        return [
+        return $this->state([
             "estado" => 3
-        ];
+        ]);
     }
 
     public function inicioAyer(){

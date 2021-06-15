@@ -81,18 +81,23 @@ class Proveedor extends Model
     {
         $today = Carbon::today(config("app.timezone"))->toDateString();
         return $this->hasOne(ContratoProveedor::class, "proveedor_id", "id")
-            ->where("estado", 1)->where(function ($query) use ($today) {
-                $query->whereNull("fin")
-                    ->orWhere(function ($query) use ($today) {
-                        $query->whereDate("fin", ">=", $today);
+            ->where("estado", '<>', 3)
+            ->where(function($query) use($today){
+                $query->whereDate("extension", ">=", $today)
+                    ->orWhereNull("extension")
+                    ->where(function ($query) use ($today) {
+                        $query->whereDate("fin", ">=", $today)
+                            ->orWhereNull("fin")
+                            ->where("estado", 1);
                     });
             })
-            ->whereDate("inicio", "<=", $today);
+            ->whereDate("inicio", "<=", $today)
+            ->orderBy("inicio", "DESC");
     }
 
     function contratos()
     {
-        return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id")->orderBy("inicio");
+        return $this->hasMany(ContratoProveedor::class, "proveedor_id", "id")->orderBy("inicio", "DESC");
     }
 
     function ofrece($prestacionId)
@@ -122,8 +127,6 @@ class Proveedor extends Model
     static function buscarPorNombre($nombre)
     {
         $query = static::query();
-
-        // $query->limit(50);
 
         $query->with(["medico.especialidad", "contrato.prestaciones"]);
 

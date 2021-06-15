@@ -20,32 +20,35 @@ class SolicitudAtencionExternaService extends Controller
 
     protected function setQueryFilters($query, $filter)
     {
-        if (Arr::has($filter, "numero_patronal")) {
-            $empleador = GalenoEmpleador::buscarPorPatronal($filter["numero_patronal"]);
-            $query->where("empleador_id", $empleador->id);
-        }
-        else if (Arr::has($filter, "matricula_asegurado")) {
-            $asegurados = Afiliado::buscarPorMatricula($filter["matricula_asegurado"]);
-            $query->whereIn("asegurado_id", $asegurados->pluck("ID"));
+        if(($numero = Arr::get($filter, "numero"))) {
+            $query->where("id", $numero);
         }
         else {
-            if (Arr::has($filter, "regional_id") && ($regionalId = $filter["regional_id"])) {
+            if (($numeroPatronal = Arr::get($filter, "numero_patronal"))) {
+                $empleador = GalenoEmpleador::buscarPorPatronal($numeroPatronal);
+                $query->where("empleador_id", $empleador->id ?? 0);
+            }
+            if (($matricula = Arr::get($filter, "matricula_asegurado"))) {
+                $asegurados = Afiliado::buscarPorMatricula($matricula);
+                $query->whereIn("asegurado_id", $asegurados->pluck("ID"));
+            }
+            if (($regionalId = Arr::get($filter, "regional_id"))) {
                 $query->where("regional_id", $regionalId);
             }
-            if (Arr::has($filter, "registrado_por_id") && ($registradoPor = $filter["registrado_por_id"])) {
+            if (($registradoPor = Arr::get($filter, "registrado_por_id"))) {
                 $query->where("usuario_id", $registradoPor);
             }
-            if (Arr::has($filter, "proveedor_id")) {
-                $query->where("proveedor_id", $filter["proveedor_id"]);
+            if (($proveedorId = Arr::get($filter, "proveedor_id"))) {
+                $query->where("proveedor_id", $proveedorId);
             }
-            if (Arr::has($filter, "medico_id")) {
-                $query->where("medico_id", $filter["medico_id"]);
+            if (($medicoId = Arr::get($filter, "medico_id"))) {
+                $query->where("medico_id", $medicoId);
             }
-            if (Arr::has($filter, "desde")) {
-                $query->whereDate("fecha", ">=", $filter["desde"]);
+            if (($desde = Arr::get($filter, "desde"))) {
+                $query->where("fecha", ">=", $desde);
             }
-            if (Arr::has($filter, "hasta")) {
-                $query->whereDate("fecha", "<=", $filter["hasta"]);
+            if (($hasta = Arr::get($filter, "hasta"))) {
+                $query->where("fecha", "<=", $hasta);
             }
         }
         return $query;

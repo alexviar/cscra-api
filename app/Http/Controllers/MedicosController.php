@@ -27,6 +27,9 @@ class MedicosController extends Controller
         if (Arr::has($filter, "tipo") && $tipo = $filter["tipo"]) {
             $query->where("tipo", $tipo);
         }
+        if (Arr::has($filter, "estado") && $estado = $filter["estado"]) {
+            $query->where("estado", $estado);
+        }
         if ($page && Arr::has($page, "size")) {
             $total = $query->count();
             $query->limit($page["size"]);
