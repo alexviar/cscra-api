@@ -45,6 +45,7 @@ class RegistrarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => $medico->ci,
                 "ci_complemento" => $medico->ci_complemento,
                 "apellido_paterno" => "Paterno",
@@ -66,6 +67,7 @@ class RegistrarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -87,6 +89,7 @@ class RegistrarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -111,6 +114,7 @@ class RegistrarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -156,6 +160,7 @@ class RegistrarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -191,6 +196,7 @@ class RegistrarMedicoTest extends TestCase
         
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => 12345679,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -211,6 +217,7 @@ class RegistrarMedicoTest extends TestCase
         
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/medicos', [
+                "tipo" => 1,
                 "ci" => 12345679,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -224,6 +231,7 @@ class RegistrarMedicoTest extends TestCase
     public function test_guest()
     {
         $response = $this->postJson('/api/medicos', [
+            "tipo" => 1,
             "ci" => 12345679,
             "apellido_paterno" => "Paterno",
             "apellido_materno" => "Materno",

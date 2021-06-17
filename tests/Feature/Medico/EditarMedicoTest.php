@@ -50,6 +50,7 @@ class EditarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => $medico->ci,
                 "ci_complemento" => $medico->ci_complemento,
                 "apellido_paterno" => "Paterno",
@@ -91,6 +92,7 @@ class EditarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => $medico1->ci,
                 "ci_complemento" => $medico1->ci_complemento,
                 "apellido_paterno" => "Paterno",
@@ -111,6 +113,7 @@ class EditarMedicoTest extends TestCase
         $especialidad = Especialidad::factory()->create();
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/1", [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -131,6 +134,7 @@ class EditarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -154,6 +158,7 @@ class EditarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -181,6 +186,7 @@ class EditarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -229,6 +235,7 @@ class EditarMedicoTest extends TestCase
 
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => 12345678,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -264,6 +271,7 @@ class EditarMedicoTest extends TestCase
         
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => 12345679,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -287,6 +295,7 @@ class EditarMedicoTest extends TestCase
         
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/medicos/{$medico->id}", [
+                "tipo" => 1,
                 "ci" => 12345679,
                 "apellido_paterno" => "Paterno",
                 "apellido_materno" => "Materno",
@@ -305,6 +314,7 @@ class EditarMedicoTest extends TestCase
             ->for($especialidad)
             ->create();
         $response = $this->putJson("/api/medicos/{$medico->id}", [
+            "tipo" => 1,
             "ci" => 12345679,
             "apellido_paterno" => "Paterno",
             "apellido_materno" => "Materno",

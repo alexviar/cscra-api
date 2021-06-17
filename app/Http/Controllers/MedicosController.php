@@ -24,6 +24,15 @@ class MedicosController extends Controller
         if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
             $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
         }
+        if (Arr::has($filter, "ci") && $ci = $filter["ci"]) {
+            $query->where("ci", $ci);
+        }
+        if (Arr::has($filter, "ci_complemento") && $ciComplemento = $filter["ci_complemento"]) {
+            $query->where("ci_complemento", $ciComplemento);
+        }
+        if (Arr::has($filter, "especialidad_id") && $especialidad_id = $filter["especialidad_id"]) {
+            $query->where("especialidad_id", $especialidad_id);
+        }
         if (Arr::has($filter, "tipo") && $tipo = $filter["tipo"]) {
             $query->where("tipo", $tipo);
         }
@@ -61,6 +70,7 @@ class MedicosController extends Controller
     function registrar(Request $request)
     {
         $payload = $request->validate([
+            "tipo" => "required|in:1,2",
             "ci" => "required|numeric",
             "ci_complemento" => "nullable",
             "apellido_paterno" => "required_without:apellido_materno",
@@ -94,6 +104,7 @@ class MedicosController extends Controller
     {
 
         $payload = $request->validate([
+            "tipo" => "required|in:1,2",
             "ci" => "required|numeric",
             "ci_complemento" => "nullable",
             "apellido_paterno" => "required_without:apellido_materno",

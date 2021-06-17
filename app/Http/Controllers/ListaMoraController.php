@@ -23,7 +23,7 @@ class ListaMoraController extends Controller {
     $this->authorize("ver", [ListaMoraItem::class, $filter]);
 
     if(Arr::has($filter, "numero_patronal") && ($numero_patronal = $filter["numero_patronal"])){
-      $query->where("numero_patronal", $numero_patronal);
+      $query->where("numero_patronal", "like", $numero_patronal."%");
     }
     else {
       if(Arr::has($filter, "regional_id") && ($regionalId = $filter["regional_id"])){

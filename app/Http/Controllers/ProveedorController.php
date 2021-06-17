@@ -261,6 +261,13 @@ class ProveedorController extends Controller
 
         $query = $proveedor->contratos();
 
+        if($desde = Arr::get($filter, "desde")) {
+            $query->where("inicio", ">=", $desde);
+        }
+        if($hasta = Arr::get($filter, "hasta")) {
+            $query->where("inicio", "<=", $hasta);
+        }
+
         if ($page && Arr::has($page, "size")) {
             $total = $query->count();
             $query->limit($page["size"]);
@@ -393,5 +400,31 @@ class ProveedorController extends Controller
         $contrato->save();
 
         return response()->json($contrato);
+    }
+
+    function actualizarInformacionContacto(Request $request, $proveedorId) {
+        $proveedor = Proveedor::find($proveedorId);
+        if (!$proveedor) {
+            throw new ModelNotFoundException("El proveedor no existe");
+        }
+        $payload = $request->validate([
+            "municipio_id" => "required|numeric",
+            "direccion" => "required",
+            "ubicacion" => "required",
+            "ubicacion.latitud" => "required|numeric",
+            "ubicacion.longitud" => "required|numeric",
+            "telefono1" => "required|numeric",
+            "telefono2" => "nullable|numeric",
+        ]);
+        $this->authorize("editar", [$proveedor, $payload]);
+        $proveedor->municipio_id = $payload["municipio_id"];
+        $proveedor->direccion = $payload["direccion"];
+        $proveedor->ubicacion = new Point($payload["ubicacion"]["latitud"], $payload["ubicacion"]["longitud"]);
+        $proveedor->telefono1 = $payload["telefono1"];
+        $proveedor->telefono2 = $payload["telefono2"] ?? null;
+
+        $proveedor->save();
+
+        return response()->json($proveedor);
     }
 }

@@ -20,7 +20,8 @@ class SolicitudAtencionExternaService extends Controller
 
     protected function setQueryFilters($query, $filter)
     {
-        if(($numero = Arr::get($filter, "numero"))) {
+        if(($numero = Arr::get($filter, "numero")) && is_int($numero)) {
+            var_dump($numero);
             $query->where("id", $numero);
         }
         else {
@@ -48,7 +49,7 @@ class SolicitudAtencionExternaService extends Controller
                 $query->where("fecha", ">=", $desde);
             }
             if (($hasta = Arr::get($filter, "hasta"))) {
-                $query->where("fecha", "<=", $hasta);
+                $query->whereDate("fecha", "<=", $hasta);
             }
         }
         return $query;

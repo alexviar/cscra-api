@@ -116,6 +116,7 @@ Route::middleware("auth:sanctum")->post("proveedores/{idProveedor}/contratos", [
 Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/consumir", [ProveedorController::class, "consumirContrato"]);
 Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/extender", [ProveedorController::class, "extenderContrato"]);
 Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/anular", [ProveedorController::class, "anularContrato"]);
+Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contacto", [ProveedorController::class, "actualizarInformacionContacto"]);
 Route::middleware("auth:sanctum")->put("proveedores/{id}", [ProveedorController::class, "actualizar"]);
 Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorController::class, "buscarPorNombre"]);
 
