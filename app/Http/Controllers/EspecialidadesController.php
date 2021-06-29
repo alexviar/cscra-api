@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Application\EspecialidadesService;
 use App\Models\Especialidad;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
