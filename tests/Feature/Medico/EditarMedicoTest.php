@@ -308,7 +308,6 @@ class EditarMedicoTest extends TestCase
 
     public function test_guest()
     {
-        
         $especialidad = Especialidad::factory()->create();
         $medico = Medico::factory()
             ->for($especialidad)

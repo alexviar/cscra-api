@@ -50,7 +50,7 @@ class UserPolicy
       if($user->can(Permisos::CAMBIAR_CONTRASEÑA)) return true;
       if($user->can(Permisos::CAMBIAR_CONTRASEÑA_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO) && 
       $user->regional_id == $model->regional_id) return true;
-      if($user->id == $model->id && $model->validatePassword(Arr::get($payload, "old_password"))) return true;
+      if($user->id == $model->id/*&& $model->validatePassword(Arr::get($payload, "old_password"))*/) return true;
     }
 
     public function enable(User $user, $model) {

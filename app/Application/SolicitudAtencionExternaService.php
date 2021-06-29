@@ -20,8 +20,7 @@ class SolicitudAtencionExternaService extends Controller
 
     protected function setQueryFilters($query, $filter)
     {
-        if(($numero = Arr::get($filter, "numero")) && is_int($numero)) {
-            var_dump($numero);
+        if(($numero = Arr::get($filter, "numero")) && is_numeric($numero)) {
             $query->where("id", $numero);
         }
         else {

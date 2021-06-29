@@ -12,15 +12,6 @@ class RoleController extends Controller
 {
 
     /**
-     * Create the controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-    }
-
-    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -33,7 +24,7 @@ class RoleController extends Controller
         $query = Role::query();
 
         if (Arr::has($filter, "texto") && ($texto = $filter["texto"])) {
-            $query->whereRaw("MATCH(`name`, `decription`) AGAINST(? IN BOOLEAN MODE)", [$texto . '*']);
+            $query->whereRaw("MATCH(`name`, `description`) AGAINST(? IN BOOLEAN MODE)", [$texto . '*']);
         }
 
         if ($page && Arr::has($page, "size")) {

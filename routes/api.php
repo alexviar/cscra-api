@@ -48,6 +48,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::middleware("auth:sanctum")->get("usuarios", [UserController::class, "index"]);
 Route::middleware("auth:sanctum")->get("usuarios/{id}", [UserController::class, "show"]);
 Route::middleware("auth:sanctum")->post("usuarios", [UserController::class, "store"]);
+// Route::middleware("auth:sanctum")->put("usuarios/cambiar-contrasena", [UserController::class, "changePassword"]);
 Route::middleware("auth:sanctum")->put("usuarios/{id}/cambiar-contrasena", [UserController::class, "changePassword"]);
 Route::middleware("auth:sanctum")->put("usuarios/{id}/bloquear", [UserController::class, "disable"]);
 Route::middleware("auth:sanctum")->put("usuarios/{id}/desbloquear", [UserController::class, "enable"]);

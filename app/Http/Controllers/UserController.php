@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
@@ -33,8 +34,17 @@ class UserController extends Controller
 
         $query = User::query();
 
+        if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
+            $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
+        }
+        if (Arr::has($filter, "ci") && $ci = $filter["ci"]) {
+            $query->where("ci_raiz", $ci);
+        }
+        if (Arr::has($filter, "ci_complemento") && $ciComplemento = $filter["ci_complemento"]) {
+            $query->where("ci_complemento", $ciComplemento);
+        }
         if (Arr::has($filter, "username") && ($username = $filter["username"])) {
-            $query->where("username", $username . "%");
+            $query->where("username", "LIKE", $username . "%");
         }
         if (Arr::has($filter, "estado")) {
             $query->where("estado", $filter["estado"]);
@@ -178,12 +188,15 @@ class UserController extends Controller
             throw new ModelNotFoundException();
         }
 
-        $payload = $request->validate([
-            "old_password" => [Rule::requiredIf(function() use($request) {
-                return !$request->user()->isSuperUser() && !$request->user()->hasPermissionTo(Permisos::CAMBIAR_CONTRASEÑA) && !$request->user()->hasPermissionTo(Permisos::CAMBIAR_CONTRASEÑA_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO);
-            }), "password:sanctum"],
+        $rules = [
             "password" => ["required", "min:8", "max:256", Password::defaults()]
-        ]);
+        ];
+        if(!$request->user()->isSuperUser() && !$request->user()->hasPermissionTo(Permisos::CAMBIAR_CONTRASEÑA) && !$request->user()->hasPermissionTo(Permisos::CAMBIAR_CONTRASEÑA_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO)){
+            $rules["old_password"] = "required|password:sanctum";
+        }
+
+        $payload = $request->only(["password", "old_password"]);
+        Validator::make($payload, $rules)->validate();
 
         $this->authorize("cambiar-contrasena", [$user, $payload]);
 
