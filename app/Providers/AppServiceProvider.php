@@ -32,9 +32,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        // if(App::enviroment("production")){
-        URL::forceScheme(request()->secure() ? "https" : "http");
-        // }
+        // URL::forceScheme(request()->secure() ? "https" : "http");
+        if(config('app.env') == "production"){
+            URL::forceScheme("https");
+        }
         Password::defaults(function () {
             $rule = Password::min(8)
                 // ->letters()
