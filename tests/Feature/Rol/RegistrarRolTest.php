@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Rol;
 
 use App\Models\Permisos;
 use App\Models\Role;

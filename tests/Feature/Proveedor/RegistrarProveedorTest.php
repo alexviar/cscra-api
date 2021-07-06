@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Proveedor;
 
 use App\Models\Especialidad;
 use App\Models\Proveedor;

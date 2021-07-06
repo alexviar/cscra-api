@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Proveedor;
 
 use App\Models\ContratoProveedor;
 use App\Models\Permisos;

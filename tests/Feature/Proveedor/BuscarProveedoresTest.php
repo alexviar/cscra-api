@@ -1,12 +1,13 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Proveedor;
 
 use App\Models\ContratoProveedor;
 use App\Models\Proveedor;
-use Carbon\Carbon;
+// use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 class BuscarProveedoresTest extends TestCase

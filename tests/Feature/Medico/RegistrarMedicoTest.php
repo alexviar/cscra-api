@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Medico;
 
 use App\Models\Especialidad;
 use App\Models\Medico;

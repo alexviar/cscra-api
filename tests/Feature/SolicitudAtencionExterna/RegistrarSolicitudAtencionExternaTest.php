@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\SolicitudAtencionExterna;
 
 use App\Models\ContratoProveedor;
 use App\Models\Especialidad;

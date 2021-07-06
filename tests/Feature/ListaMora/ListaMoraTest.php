@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\ListaMora;
 
 use App\Models\Galeno\Empleador;
 use App\Models\ListaMoraItem;
