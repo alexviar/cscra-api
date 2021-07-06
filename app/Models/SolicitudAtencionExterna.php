@@ -118,4 +118,11 @@ class SolicitudAtencionExterna extends Model
     {
         return $this->hasMany(PrestacionSolicitada::class, "transferencia_id");
     }
+
+    function toArray()
+    {
+        $array = parent::toArray();
+        $array['url_dm11'] = $this->urlDm11;
+        return $array;
+    }
 }

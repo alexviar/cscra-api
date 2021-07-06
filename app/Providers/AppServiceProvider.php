@@ -17,11 +17,11 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         //
-        if(config('app.env') == "production") {
-        //dd(realpath(base_path('../public_html/dm11')));
-            $this->app->bind('path.public', function() {
+        if (config('app.env') == "production") {
+            //dd(realpath(base_path('../public_html/dm11')));
+            $this->app->bind('path.public', function () {
                 return base_path('../public_html/dm11');
-            });   
+            });
         }
     }
 
@@ -32,9 +32,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-      // if(App::enviroment("production")){
+        // if(App::enviroment("production")){
         URL::forceScheme(request()->secure() ? "https" : "http");
-      // }
+        // }
         Password::defaults(function () {
             $rule = Password::min(8)
                 // ->letters()

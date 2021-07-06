@@ -13,7 +13,7 @@ class Medico extends Model {
 
   public $with = ["especialidad"];
 
-  protected $appends = ["especialidad", "nombre_completo", "ci_text", "estado_text"];
+  protected $appends = ["especialidad", "regional", "nombre_completo", "ci_text", "estado_text"];
 
   protected $fillable = [
     "ci",
@@ -53,15 +53,25 @@ class Medico extends Model {
     return $this->belongsTo(Especialidad::class, "especialidad_id");
   }
 
+  public function regional(){
+    return $this->belongsTo(Regional::class, "regional_id");
+  }
+
   public function getEspecialidadAttribute(){
     if(!$this->relationLoaded("especialidad")) $this->load("especialidad");
     $especialidad = $this->getRelation("especialidad");
     return $especialidad->nombre;
   }
 
+  public function getRegionalAttribute() {
+    if(!$this->relationLoaded("regional")) $this->load("regional");
+    $regional = $this->getRelation("regional");
+    return $regional->nombre;
+  }
+
   public function toArray(){
     $array = parent::toArray();
-    $array = array_merge($array, ["especialidad"=>$this->especialidad, "ci" => [
+    $array = array_merge($array, ["especialidad" => $this->especialidad, "regional" => $this->regional, "ci" => [
       "raiz" => $array["ci"],
       "complemento" => $array["ci_complemento"] ?? null
     ]]);
