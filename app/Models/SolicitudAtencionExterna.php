@@ -15,6 +15,12 @@ class SolicitudAtencionExterna extends Model
 
     protected $table = "atenciones_externas";
 
+    function getUrlDm11Attribute() {
+        return route("forms.dm11", [
+            "numero" => $this->numero
+        ]);
+    }
+
     function getNumeroAttribute()
     {
         return str_pad($this->id, 10, '0', STR_PAD_LEFT);

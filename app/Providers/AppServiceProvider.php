@@ -35,14 +35,14 @@ class AppServiceProvider extends ServiceProvider
       // if(App::enviroment("production")){
         URL::forceScheme(request()->secure() ? "https" : "http");
       // }
-      Password::defaults(function () {
-        $rule = Password::min(8)
-            // ->letters()
-            ->mixedCase()
-            ->numbers()
-            ->symbols();
+        Password::defaults(function () {
+            $rule = Password::min(8)
+                // ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols();
 
-        return $rule;
-    });
+            return $rule;
+        });
     }
 }
