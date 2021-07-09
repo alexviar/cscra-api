@@ -103,4 +103,8 @@ class Permisos {
   const EDITAR_PRESTACIONES = "Editar prestaciones";
   const ELIMINAR_PRESTACIONES = "Eliminar prestaciones";
   const IMPORTAR_PRESTACIONES = "Importar prestaciones";
+
+  const VER_PLANES = "Ver planes";
+  const VER_PLANES_REGIONALES = "Ver planes (regional)";
+  const REGISTRAR_PLANES = "Registrar planes";
 }

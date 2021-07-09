@@ -8,7 +8,11 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use App\Models\Plan;
 use App\Models\Area;
+use App\Models\Avance;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class PlanController extends Controller {
 
@@ -26,15 +30,15 @@ class PlanController extends Controller {
         $this->authorize("verTodo", [Plan::class, $filter]);
 
         $query = Plan::query();
-        $this->buildResponse($query, $filter, $page);
+        return $this->buildResponse($query, $filter, $page);
     }
 
-    function ver(Request $request, Plan $plan) {
-        $this->authorize("ver", $plan);
-        // $plan = Plan::find($id);
+    function ver(Request $request, $id) {
+        $plan = Plan::find($id);
         if(!$plan) {
             throw new ModelNotFoundException();
-        }
+        }        
+        $this->authorize("ver", $plan);
         return response()->json($plan);
     }
 
@@ -70,9 +74,49 @@ class PlanController extends Controller {
 
         $plan = DB::transaction(function() use($payload) {
             $plan = Plan::create($payload);
-            $plan->actividades()->create($payload["actividades"]);
+            $plan->actividades()->createMany($payload["actividades"]);
+            return $plan;
         });
 
         return response()->json($plan);
+    }
+
+    function registrarAvance(Request $request, $planId, $actividadId) {
+        $plan = Plan::find($planId);
+        if(!$plan){
+            throw new ModelNotFoundException("Plan con id '{$plan->id}' no existe");
+        }
+        $actividad = $plan->actividades->firstWhere("id", $actividadId);
+        if(!$actividad){
+            throw new ModelNotFoundException("Actividad con id '{$actividadId}' no existe");
+        }
+        $payload = $request->validate([
+            "avance" => "numeric|required|min:0|max:100",
+            "observaciones" => "nullable|max:1000",
+            "informe" => "required|file|mimes:pdf"
+        ]);
+
+        $this->authorize("registrarAvance", $plan);
+
+        $avance = $actividad->actualizarAvance(
+            $payload["avance"],
+            $payload["observaciones"] ?? null,
+            $payload["informe"]
+        );
+
+        return $avance;
+    }
+
+    function descargarInforme(Request $request, string $id): BinaryFileResponse
+    {
+        if (!Storage::exists("seguimiento/informes/${id}.pdf")) {
+            throw new NotFoundHttpException("Informe no encontrado");
+        }
+        return response()->file(storage_path("app/seguimiento/informes/${id}.pdf"), [
+            "Access-Control-Allow-Origin" => "*",
+            "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers", "X-Requested-With, Content-Type, X-Token-Auth, Authorization"
+        ]);
+        // return response()->stream()
     }
 }

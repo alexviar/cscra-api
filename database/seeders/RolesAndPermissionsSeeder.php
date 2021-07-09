@@ -125,5 +125,9 @@ class RolesAndPermissionsSeeder extends Seeder
         Permission::create(["name" => Permisos::EXTENDER_CONTRATO_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::ANULAR_CONTRATO_PROVEEDOR, "guard_name" => "sanctum"]);
         Permission::create(["name" => Permisos::ANULAR_CONTRATO_PROVEEDOR_REGIONAL, "guard_name" => "sanctum"]);
+
+        Permission::create(["name" => Permisos::VER_PLANES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::VER_PLANES_REGIONALES, "guard_name" => "sanctum"]);
+        Permission::create(["name" => Permisos::REGISTRAR_PLANES, "guard_name" => "sanctum"]);
     }
 }

@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\EmpleadorController;
 use App\Http\Controllers\AseguradosController;
 use App\Http\Controllers\EspecialidadesController;
 use App\Http\Controllers\ListaMoraController;
 use App\Http\Controllers\MedicosController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\PrestacionController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RegionalesController;
@@ -124,5 +126,15 @@ Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorCo
 Route::middleware("auth:sanctum")->get("departamentos", [UnidadesTerritorialesController::class, "getDepartamentos"]);
 Route::middleware("auth:sanctum")->get("provincias", [UnidadesTerritorialesController::class, "getProvincias"]);
 Route::middleware("auth:sanctum")->get("municipios", [UnidadesTerritorialesController::class, "getMunicipios"]);
+
+
+Route::middleware("auth:sanctum")->get("areas", [AreaController::class, "buscar"]);
+
+Route::middleware("auth:sanctum")->get("planes", [PlanController::class, "buscar"]);
+Route::middleware("auth:sanctum")->get("planes/{id}", [PlanController::class, "ver"]);
+Route::middleware("auth:sanctum")->post("planes/{planId}/actividades/{actividadId}/avances", [PlanController::class, "registrarAvance"]);
+Route::middleware("auth:sanctum")->post("planes", [PlanController::class, "registrar"]);
+Route::middleware("auth:sanctum")->get("informes/{id}", [PlanController::class, "descargarInforme"])
+  ->where('id', '[0-9]{10}')->name("seguimiento.informes");
 
 
