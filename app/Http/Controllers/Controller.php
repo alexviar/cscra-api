@@ -16,7 +16,7 @@ class Controller extends BaseController
 
     }
 
-    private function buildPaginatedResponseData($total, $records){
+    protected function buildPaginatedResponseData($total, $records){
       return [
         "meta" => ["total" => $total],
         "records" => $records

@@ -18,7 +18,7 @@ class PlanController extends Controller {
 
     function appendFilters($query, $filter)
     {
-        if(($usuario_id = Arr::get($filter, "usuario_id"))) {
+        if(($usuario_id = Arr::get($filter, "creado_por"))) {
             $query->where("usuario_id", $usuario_id);
         }
     }
@@ -117,6 +117,5 @@ class PlanController extends Controller {
             "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS",
             "Access-Control-Allow-Headers", "X-Requested-With, Content-Type, X-Token-Auth, Authorization"
         ]);
-        // return response()->stream()
     }
 }

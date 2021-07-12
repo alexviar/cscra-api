@@ -18,21 +18,26 @@ class RolesAndPermissionsSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         Permission::truncate();
-        Role::truncate();
-        User::truncate();
+        // Role::truncate();
+        // User::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        Role::create([
-            "name" => "super user", 
-            "guard_name" => "sanctum"
-        ]);
-        User::create([
-            "ci_raiz" => 0,
-            "regional_id" => 1,
-            "nombres" => "",
-            "username" => "admin",
-            "password" => '$2y$10$QUnLfz295yFWvgHw0jHFeOinnL91AhgaQxhPEjAzbPSGTNCffrAhq'
-        ])->assignRole("super user");
+        $superUser = "super user";
+        if(!Role::where("name", $superUser)->exists()){
+            Role::create([
+                "name" => $superUser, 
+                "guard_name" => "sanctum"
+            ]);
+        }
+        if(!User::where("username", "admin")->exists()){
+            User::create([
+                "ci_raiz" => 0,
+                "regional_id" => 1,
+                "nombres" => "",
+                "username" => "admin",
+                "password" => '$2y$10$QUnLfz295yFWvgHw0jHFeOinnL91AhgaQxhPEjAzbPSGTNCffrAhq'
+            ])->assignRole("super user");
+        }
         
 
         // user permissions

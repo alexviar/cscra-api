@@ -14,7 +14,7 @@ class PlanPolicy
     public function verTodo(User $user, $filters){
         if($user->can(Permisos::VER_PLANES)) return true;
         if($user->can(Permisos::VER_PLANES_REGIONALES) && Arr::get($filters, "regional_id") == $user->regional_id) return true;
-        if(Arr::get($filters, "usuario_id") == $user->id) return true;
+        if(Arr::get($filters, "creado_por") == $user->id) return true;
     }
 
     public function ver(User $user, $plan) {

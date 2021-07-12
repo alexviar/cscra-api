@@ -2,6 +2,7 @@
     "private": true,
     "scripts": {
         "start": "php artisan serve --host=api.example.com --port=80",
+        "seed:ac": "php artisan db:seed --class=RolesAndPermissionsSeeder",
         "zip": "git archive -o backend.zip HEAD",
         "dev": "npm run development",
         "development": "mix",

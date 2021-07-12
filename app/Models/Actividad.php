@@ -65,7 +65,7 @@ class Actividad extends Model
         return DB::transaction(function() use($avanceModel, $informe){
             $this->historial()->save($avanceModel);
 
-            $filename = str_pad($avanceModel->id, 10, "0", STR_PAD_LEFT);
+            $filename = str_pad($avanceModel->id, 10, "0", STR_PAD_LEFT).'.pdf';
             $informe->move(storage_path("app/seguimiento/informes"), $filename);
 
             return $avanceModel;
