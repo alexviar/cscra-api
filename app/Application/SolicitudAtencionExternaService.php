@@ -117,7 +117,7 @@ class SolicitudAtencionExternaService extends Controller
                 $errors["asegurado.fecha_extincion"] = "Fecha de extincion alcanzada";
             }
 
-            if ($asegurado->tipo == 2) {
+            if ($asegurado->tipo == 2 && $asegurado->PARENTEZCO_BEN != 8) {
                 $titular = $asegurado->titular;
                 if ($titular->estado == 1) {
                     if ($asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
