@@ -1953,6 +1953,57 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             "prestaciones_solicitadas.0.nota" => "Las notas no deben exceder los 60 caracteres"
         ]);
     }
+
+    function test_derechohabiente()
+    {
+        $empleador = Empleador::factory()->create();
+        $titular = Afiliado::factory()->create();
+        $afiliacionTitular = AfiliacionTitular::factory()
+            ->for($titular)
+            ->for($empleador)
+            ->create();
+        BajaAfiliacion::factory()
+            ->for($afiliacionTitular, "afiliacionTitular")
+            ->create();
+        $beneficiario = Afiliado::factory()->beneficiario()->create();
+        AfiliacionBeneficiario::factory()
+            ->derechohabiente()
+            ->for($beneficiario)
+            ->for($afiliacionTitular, "afiliacionDelTitular")
+            ->create();
+
+        $medico = Medico::factory()
+            ->regionalLaPaz()
+            ->for(Especialidad::factory()->create())
+            ->create();
+
+        $proveedor = Proveedor::factory()->empresa()
+            ->regionalLaPaz()
+            ->has(
+                ContratoProveedor::factory()
+                    ->has(Prestacion::factory()->count(10), "prestaciones")
+                    ->inicioAyer(),
+                "contratos"
+            )
+            ->create();
+
+        $data = [
+            "asegurado_id" => $beneficiario->id,
+            "regional_id" => 1,
+            "medico_id" => $medico->id,
+            "proveedor_id" => $proveedor->id,
+            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
+                return [
+                    "prestacion_id" => $prestacion->id
+                ];
+            })
+        ];
+
+        $user = $this->createSuperUser();
+
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertOk();
+    }
     
     public function test_usuario_con_permiso_para_registrar()
     {

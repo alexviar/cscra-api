@@ -2,6 +2,7 @@
 
 namespace App\Models\Galeno;
 
+use App\Models\ListaMoraItem;
 use App\Models\Regional;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -70,6 +71,7 @@ class Empleador extends Model
         "nombre",
         "estado",
         "estadoText",
+        "en_mora",
         "fecha_baja"
     ];
 
@@ -116,6 +118,11 @@ class Empleador extends Model
     function getRegionalLocalIdAttribute()
     {
         return Regional::mapGalenoIdToLocalId($this->getAttribute("ID_RGL"));
+    }
+
+    function getEnMoraAttribute()
+    {
+        return ListaMoraItem::where("empleador_id", $this->ID)->exists();
     }
 
     function toArray()

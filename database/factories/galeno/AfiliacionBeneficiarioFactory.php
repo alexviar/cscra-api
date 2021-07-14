@@ -31,6 +31,12 @@ class AfiliacionBeneficiarioFactory extends Factory
         ];
     }
 
+    public function derechohabiente(){
+        return $this->state([
+            "PARENTESCO_BEN" => 8
+        ]);
+    }
+
     public function fechaExtinsionVencidaAyer(){
         return $this->state([
             "FECHA_EXTINSION_BEN" => Carbon::now()->subDay()
