@@ -23,8 +23,8 @@ class BajaAfiliacion extends Model
     protected $keyType = 'string';
 
     protected $casts = [
-        "REG_DATE" => "date: Y-m-d",
-        "FECHA_VALIDEZ_SEGURO_BAJ" => "date: Y-m-d"
+        "REG_DATE" => "date:Y-m-d",
+        "FECHA_VALIDEZ_SEGURO_BAJ" => "date:Y-m-d"
     ];
 
     protected $hidden = [
