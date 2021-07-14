@@ -11,6 +11,7 @@ use App\Models\Prestacion;
 use App\Models\Proveedor;
 use App\Models\SolicitudAtencionExterna;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -97,28 +98,34 @@ class SolicitudAtencionExternaService extends Controller
         $hoy = Carbon::now("America/La_Paz");
         $errors = [];
         if (!$asegurado) {
-            $errors["asegurado.id"] = "El asegurado no existe";
-        } else if (!$asegurado->ultimaAfiliacion) {
-            $errors["asegurado.id"] = "No se encontraron registros de la afiliacion";
+            throw new Exception("El asegurado no existe");
+        }
+        if (!$asegurado->ultimaAfiliacion) {
+            throw new Exception("No se encontraron registros de la afiliacion");
+        }
+
+        if ($asegurado->estado == 1) {
+            if ($asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
+        } else if ($asegurado->estado == 2) {
+            if (!$asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja";
         } else {
-            if ($asegurado->estado == 1) {
-                if ($asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
-            } else if ($asegurado->estado == 2) {
-                if (!$asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja";
-            } else {
-                $errors["asegurado.estado"] = "El asegurado tiene un estado indeterminado";
-            }
+            $errors["asegurado.estado"] = "El asegurado tiene un estado indeterminado";
+        }
 
-            if ($asegurado->ultimaAfiliacion->baja) {
-                if (!$asegurado->fechaValidezSeguro) $errors["asegurado.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
-                else if ($asegurado->fechaValidezSeguro->lte($hoy)) $errors["asegurado.fecha_validez_seguro"] = "El seguro ya no tiene validez";
-            }
-            if ($asegurado->fechaExtincion && $asegurado->fechaExtincion->lte($hoy)) {
-                $errors["asegurado.fecha_extincion"] = "Fecha de extincion alcanzada";
-            }
+        if ($asegurado->ultimaAfiliacion->baja) {
+            if (!$asegurado->fechaValidezSeguro) $errors["asegurado.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
+            else if ($asegurado->fechaValidezSeguro->lte($hoy)) $errors["asegurado.fecha_validez_seguro"] = "El seguro ya no tiene validez";
+        }
+        if ($asegurado->fechaExtincion && $asegurado->fechaExtincion->lte($hoy)) {
+            $errors["asegurado.fecha_extincion"] = "Fecha de extincion alcanzada";
+        }
 
-            if ($asegurado->tipo == 2 && $asegurado->afiliacion->parentesco != 8) {
-                $titular = $asegurado->titular;
+        if ($asegurado->tipo == 2) {
+            $titular = $asegurado->titular;
+            if(!$titular){
+                throw new Exception("Titular no encontrado");
+            }
+            if($asegurado->afiliacion->parentesco != 8){
                 if ($titular->estado == 1) {
                     if ($asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
                 } else if ($titular->estado == 2) {
@@ -127,24 +134,24 @@ class SolicitudAtencionExternaService extends Controller
                     $errors["titular.estado"] = "El asegurado tiene un estado indeterminado";
                 }
 
-                if ($asegurado->afiliacionDelTitular->baja) {
-                    if (!$asegurado->afiliacionDelTitular->baja->fechaValidezSeguro) $errors["titular.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
-                    else if ($asegurado->afiliacionDelTitular->baja->fechaValidezSeguro->lte($hoy)) $errors["titular.fecha_validez_seguro"] = "El seguro ya no tiene validez";
+                if ($titular->afiliacion->baja) {
+                    if (!$titular->afiliacion->baja->fechaValidezSeguro) $errors["titular.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
+                    else if ($titular->afiliacion->baja->fechaValidezSeguro->lte($hoy)) $errors["titular.fecha_validez_seguro"] = "El seguro ya no tiene validez";
                 }
             }
+        }
 
-            $empleador = $asegurado->empleador;
-            if ($empleador->estado == 1) {
-                if ($empleador->fecha_baja) $errors["empleador.estado"] = "El empleador figura como activo, pero tiene una fecha de baja";
-            } else if ($empleador->estado == 2 || $empleador->estado == 3) {
-                if (!$empleador->fecha_baja) $errors["empleador.fecha_baja"] = "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez";
-                else if ($empleador->fecha_baja->addMonths(2)->lte($hoy)) $errors["empleador.fecha_baja"] = "El seguro ya no tiene validez";
-            } else {
-                $errors["empleador.estado"] = "El empleador tiene un estado indeterminado";
-            }
-            if(ListaMoraItem::where("empleador_id", $empleador->id)->exists()){
-                $errors["empleador.aportes"] = "El empleador esta en mora";
-            }
+        $empleador = $asegurado->empleador;
+        if ($empleador->estado == 1) {
+            if ($empleador->fecha_baja) $errors["empleador.estado"] = "El empleador figura como activo, pero tiene una fecha de baja";
+        } else if ($empleador->estado == 2 || $empleador->estado == 3) {
+            if (!$empleador->fecha_baja) $errors["empleador.fecha_baja"] = "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez";
+            else if ($empleador->fecha_baja->addMonths(2)->lte($hoy)) $errors["empleador.fecha_baja"] = "El seguro ya no tiene validez";
+        } else {
+            $errors["empleador.estado"] = "El empleador tiene un estado indeterminado";
+        }
+        if(ListaMoraItem::where("empleador_id", $empleador->id)->exists()){
+            $errors["empleador.aportes"] = "El empleador esta en mora";
         }
 
         $medico = Medico::find($medico_id);
