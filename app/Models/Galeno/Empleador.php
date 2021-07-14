@@ -69,6 +69,7 @@ class Empleador extends Model
         "numero_patronal",
         "nombre",
         "estado",
+        "estadoText",
         "fecha_baja"
     ];
 
@@ -90,6 +91,16 @@ class Empleador extends Model
     function getEstadoAttribute()
     {
         return $this->getAttribute("ESTADO_EMP");
+    }
+
+    function getEstadoTextAttribute()
+    {
+        switch($this->getAttribute("ESTADO_EMP")){
+            case 1: return "Activo";
+            case 2: return "Baja";
+            case 3: return "Baja temporal";
+            default: return "";
+        }
     }
 
     function getFechaBajaAttribute()
