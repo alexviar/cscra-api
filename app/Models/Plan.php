@@ -21,7 +21,9 @@ class Plan extends Model
     ];
 
     protected $with = [
-        "actividades"
+        "actividades",
+        "regional",
+        "area"
     ];
 
     protected $appends = [
@@ -40,5 +42,13 @@ class Plan extends Model
 
     function actividades() {
         return $this->hasMany(Actividad::class, "plan_id", "id");
+    }
+
+    function regional() {
+        return $this->belongsTo(Regional::class, "regional_id", "id");
+    }
+
+    function area() {
+        return $this->belongsTo(Area::class, "area_id", "id");
     }
 }
