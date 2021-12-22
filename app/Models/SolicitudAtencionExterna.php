@@ -52,7 +52,7 @@ class SolicitudAtencionExterna extends Model
             "qr_data" => base64_encode(pack("N", $this->id) . $signature),
             "fecha" => $this->fecha,
             "regional" => $this->regional->nombre,
-            "proveedor" => $this->proveedor->nombre,
+            "proveedor" => $this->proveedor,
             "titular" => !$titular ? [
                 "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
                 "nombre" => $asegurado->nombre_completo
@@ -69,12 +69,11 @@ class SolicitudAtencionExterna extends Model
             ],
             "empleador" => $empleador->nombre,
             "doctor" => [
-                "nombre" => $this->medico->nombre_completo,
-                "especialidad" => $this->medico->especialidad
+                "nombre" => $this->medico,
+                "especialidad" => $this->especialidad
             ],
-            "proveedor" => $this->proveedor->nombre ?? $this->proveedor->nombreCompleto,
             "prestaciones" => $this->prestacionesSolicitadas->map(function ($prestacionSolicitada) {
-                return $prestacionSolicitada->prestacion . ($prestacionSolicitada->nota ? " - " . $prestacionSolicitada->nota : "");
+                return $prestacionSolicitada->prestacion;
             })->chunk(ceil($this->prestacionesSolicitadas->count() / 3))
         ];
     }

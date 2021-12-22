@@ -85,14 +85,14 @@ class SolicitudAtencionExternaService extends Controller
                 "numero" => $solicitud->numero,
                 "fecha" => $solicitud->fecha,
                 "asegurado" => $asegurados->where("ID", $solicitud->asegurado_id)->first()->toArray(),
-                "medico" => $solicitud->medico->nombreCompleto,
-                "proveedor" => $solicitud->proveedor->nombre ?? $solicitud->proveedor->nombreCompleto,
+                "medico" => $solicitud->medico,
+                "proveedor" => $solicitud->proveedor,
                 "url_dm11" => $solicitud->url_dm11
             ];
         });
     }
 
-    public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $usuario_id, $prestaciones_solicitadas)
+    public function registrar($regional_id, $asegurado_id, $medico, $especialidad, $proveedor, $usuario_id, $prestaciones_solicitadas)
     {
         $asegurado = Afiliado::buscarPorId($asegurado_id);
         $hoy = Carbon::now("America/La_Paz");
@@ -154,41 +154,10 @@ class SolicitudAtencionExternaService extends Controller
             $errors["empleador.aportes"] = "El empleador esta en mora";
         }
 
-        $medico = Medico::find($medico_id);
-        if (!$medico) {
-            $errors["medico"] = "El médico no existe";
-        } else if ($medico->regional_id !== $regional_id) {
-            $errors["medico"] = "El médico pertenece a otra regional";
-        }
-
-        $proveedor = Proveedor::find($proveedor_id);
-        if (!$proveedor) {
-            $errors["proveedor"] = "El proveedor no existe";
-        } else if ($proveedor->regional_id !== $regional_id) {
-            $errors["proveedor"] = "El proveedor pertenece a otra regional";
-        } else if (!$proveedor->contrato) {
-            $errors["proveedor"] = "El proveedor no tiene un contrato activo";
-        } else {
-            if (count($prestaciones_solicitadas) == 0) {
-                $errors["prestaciones_solicitadas"] = "No se solicitaron prestaciones";
-            } elseif (count($prestaciones_solicitadas) > 1) {
-                $errors["prestaciones_solicitadas"] = "Actualmente solo se permite una prestacion por DM 11";
-            } else {
-                // $length = 0;
-                foreach ($prestaciones_solicitadas as $index => $value) {
-                    @["prestacion_id" => $prestacion_id, "nota" => $nota] = $value;
-                    $prestacion = Prestacion::find($prestacion_id);
-                    if (!$prestacion) {
-                        $errors["prestaciones_solicitadas.$index.prestacion"] = "La prestación no existe";
-                    } else if (!$proveedor->ofrece($prestacion_id)) {
-                        $errors["prestaciones_solicitadas.$index.prestacion"] = "El proveedor no ofrece esta prestacion"; //"El proveedor no ofrece la prestacion '{$prestacion->nombre}'";
-                    }
-                    if (strlen($nota) > 60) {
-                        $errors["prestaciones_solicitadas.$index.nota"] = "Las notas no deben exceder los 60 caracteres";
-                    }
-                    // $length += strlen($prestacion->nombre) + strlen($nota) + 3;
-                }
-            }
+        if (count($prestaciones_solicitadas) == 0) {
+            $errors["prestaciones_solicitadas"] = "No se solicitaron prestaciones";
+        } elseif (count($prestaciones_solicitadas) > 1) {
+            $errors["prestaciones_solicitadas"] = "Actualmente solo se permite una prestacion por DM 11";
         }
 
         if (count($errors)) {
@@ -202,8 +171,9 @@ class SolicitudAtencionExternaService extends Controller
         $solicitud->asegurado_id = $asegurado_id;
         // $solicitud->titular_id = $asegurado->titular->id;
         $solicitud->empleador_id = $asegurado->empleador->id;
-        $solicitud->medico_id = $medico_id;
-        $solicitud->proveedor_id = $proveedor_id;
+        $solicitud->medico = $medico;
+        $solicitud->especialidad = $especialidad;
+        $solicitud->proveedor = $proveedor;
         $solicitud->usuario_id = $usuario_id;
 
         foreach ($prestaciones_solicitadas as $prestacion_solicitada) {

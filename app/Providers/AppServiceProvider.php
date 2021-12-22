@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         // URL::forceScheme(request()->secure() ? "https" : "http");
-        if(config('app.env') == "production"){
+        if(config('app.env') !== "local"){
             URL::forceScheme("https");
         }
         Password::defaults(function () {

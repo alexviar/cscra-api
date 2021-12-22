@@ -42,19 +42,19 @@ class SolicitudAtencionExternaController extends Controller
         $payload = $request->validate([
             "regional_id" => "required",
             "asegurado_id" => "required",
-            "medico_id" => "required",
-            "proveedor_id" => "required",
-            "prestaciones_solicitadas" => "array | required",
-            "prestaciones_solicitadas.*.prestacion_id" => "required",
-            "prestaciones_solicitadas.*.nota" => "nullable"
+            "medico" => "required",
+            "especialidad" => "required",
+            "proveedor" => "required",
+            "prestaciones_solicitadas" => "array | required"
         ]);
         $this->authorize("registrar", [SolicitudAtencionExterna::class, $payload]);
         
         $solicitud = $this->solicitudAtencionExternaService->registrar(
             $payload["regional_id"],
             $payload["asegurado_id"],
-            $payload["medico_id"],
-            $payload["proveedor_id"],
+            $payload["medico"],
+            $payload["especialidad"],
+            $payload["proveedor"],
             $request->user()->id,
             $payload["prestaciones_solicitadas"]
         );
