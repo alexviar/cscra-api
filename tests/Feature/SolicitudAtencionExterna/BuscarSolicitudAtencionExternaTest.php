@@ -2,13 +2,10 @@
 
 namespace Tests\Feature\SolicitudAtencionExterna;
 
-use App\Models\Especialidad;
 use App\Models\Galeno\AfiliacionTitular;
 use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador;
-use App\Models\Medico;
 use App\Models\Permisos;
-use App\Models\Proveedor;
 use App\Models\SolicitudAtencionExterna;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -41,23 +38,9 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-        $proveedorMedico = Proveedor::factory()
-            ->medico()
-            ->for($especialidad)
-            ->create();
-
         $solicitud1 = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create()
             ->refresh();
@@ -66,8 +49,6 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
         $solicitud2 = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedorMedico)
             ->for($user, "registradoPor")
             ->create()
             ->refresh();
@@ -89,8 +70,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
                     ],
-                    "medico" => $medico->nombreCompleto, //"Paterno Materno Nombres",
-                    "proveedor" => $proveedor->nombre, //"Nombre Empresa",
+                    "medico" => $solicitud1->medico, //"Paterno Materno Nombres",
+                    "proveedor" => $solicitud1->proveedor, //"Nombre Empresa",
                     "url_dm11" => $solicitud1->url_dm11
                 ],
                 [
@@ -101,8 +82,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
                     ],
-                    "medico" => $medico->nombreCompleto, //"Paterno Materno Nombres",
-                    "proveedor" => $proveedorMedico->nombreCompleto, //"Paterno Materno Proveedor",
+                    "medico" => $solicitud2->medico, //"Paterno Materno Nombres",
+                    "proveedor" => $solicitud2->proveedor, //"Paterno Materno Proveedor",
                     "url_dm11" => $solicitud2->url_dm11
                 ]
             ]
@@ -125,19 +106,9 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitud = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create()
             ->refresh();
@@ -146,8 +117,6 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->regionalSantaCruz()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create()
             ->refresh();
@@ -174,8 +143,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
                     ],
-                    "medico" => $medico->nombreCompleto, //"Paterno Materno Nombres",
-                    "proveedor" => $proveedor->nombre, //"Nombre Empresa",
+                    "medico" => $solicitud->medico, //"Paterno Materno Nombres",
+                    "proveedor" => $solicitud->proveedor, //"Nombre Empresa",
                     "url_dm11" => $solicitud->url_dm11
                 ]
             ]
@@ -216,19 +185,9 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitud = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create()
             ->refresh();
@@ -237,8 +196,6 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->regionalSantaCruz()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($otroUsuario, "registradoPor")
             ->create()
             ->refresh();
@@ -265,8 +222,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
                     ],
-                    "medico" => $medico->nombreCompleto,
-                    "proveedor" => $proveedor->nombre,
+                    "medico" => $solicitud->medico,
+                    "proveedor" => $solicitud->proveedor,
                     "url_dm11" => $solicitud->url_dm11
                 ]
             ]
@@ -311,20 +268,10 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitudes1 = SolicitudAtencionExterna::factory()
             ->count(2)
             ->for($afiliado1, "asegurado")
             ->for($empleador1)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
@@ -333,8 +280,6 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->regionalSantaCruz()
             ->for($afiliado2, "asegurado")
             ->for($afiliado2->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
@@ -352,7 +297,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             "meta" => [
                 "total" => 2
             ],
-            "records" => $solicitudes1->map(function($solicitud) use($afiliado1, $medico, $proveedor) {
+            "records" => $solicitudes1->map(function($solicitud) use($afiliado1) {
                 $solicitud->refresh();
                 return [
                     "id" => $solicitud->id,
@@ -362,8 +307,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado1->id,
                         "matricula" => $afiliado1->matricula
                     ],
-                    "medico" => $medico->nombreCompleto,
-                    "proveedor" => $proveedor->nombre,
+                    "medico" => $solicitud->medico,
+                    "proveedor" => $solicitud->proveedor,
                     "url_dm11" => $solicitud->url_dm11
                 ];
             })->toArray()
@@ -380,7 +325,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             "meta" => [
                 "total" => 2
             ],
-            "records" => $solicitudes2->map(function($solicitud) use($afiliado2, $medico, $proveedor) {
+            "records" => $solicitudes2->map(function($solicitud) use($afiliado2) {
                 $solicitud->refresh();
                 return [
                     "id" => $solicitud->id,
@@ -390,8 +335,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado2->id,
                         "matricula" => $afiliado2->matricula
                     ],
-                    "medico" => $medico->nombreCompleto,
-                    "proveedor" => $proveedor->nombre,
+                    "medico" => $solicitud->medico,
+                    "proveedor" => $solicitud->proveedor,
                     "url_dm11" => $solicitud->url_dm11
                 ];
             })->toArray()
@@ -422,30 +367,18 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitudes1 = SolicitudAtencionExterna::factory()
             ->count(2)
             ->for($afiliado1, "asegurado")
             ->for($empleador1)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
-        $solicitudes2 =SolicitudAtencionExterna::factory()
+        $solicitudes2 = SolicitudAtencionExterna::factory()
             ->count(2)
             ->regionalSantaCruz()
             ->for($afiliado2, "asegurado")
             ->for($afiliado2->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
@@ -462,7 +395,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             "meta" => [
                 "total" => 2
             ],
-            "records" => $solicitudes1->map(function($solicitud) use($afiliado1, $medico, $proveedor) {
+            "records" => $solicitudes1->map(function($solicitud) use($afiliado1) {
                 $solicitud->refresh();
                 return [
                     "id" => $solicitud->id,
@@ -472,8 +405,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado1->id,
                         "matricula" => $afiliado1->matricula
                     ],
-                    "medico" => $medico->nombreCompleto,
-                    "proveedor" => $proveedor->nombre,
+                    "medico" => $solicitud->medico,
+                    "proveedor" => $solicitud->proveedor,
                     "url_dm11" => $solicitud->url_dm11
                 ];
             })->toArray()
@@ -491,7 +424,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
             "meta" => [
                 "total" => 2
             ],
-            "records" => $solicitudes2->map(function($solicitud) use($afiliado2, $medico, $proveedor) {
+            "records" => $solicitudes2->map(function($solicitud) use($afiliado2) {
                 $solicitud->refresh();
                 return [
                     "id" => $solicitud->id,
@@ -501,8 +434,8 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                         "id" => $afiliado2->id,
                         "matricula" => $afiliado2->matricula
                     ],
-                    "medico" => $medico->nombreCompleto,
-                    "proveedor" => $proveedor->nombre,
+                    "medico" => $solicitud->medico,
+                    "proveedor" => $solicitud->proveedor,
                     "url_dm11" => $solicitud->url_dm11
                 ];
             })->toArray()
@@ -511,6 +444,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
 
     public function test_usuario_sin_permiso()
     {
+        /** @var User $user */
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->getJson("/api/solicitudes-atencion-externa");

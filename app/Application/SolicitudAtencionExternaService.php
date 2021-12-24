@@ -39,11 +39,11 @@ class SolicitudAtencionExternaService extends Controller
             if (($registradoPor = Arr::get($filter, "registrado_por_id"))) {
                 $query->where("usuario_id", $registradoPor);
             }
-            if (($proveedorId = Arr::get($filter, "proveedor_id"))) {
-                $query->where("proveedor_id", $proveedorId);
+            if (($proveedorId = Arr::get($filter, "proveedor"))) {
+                $query->where("proveedor", $proveedorId);
             }
-            if (($medicoId = Arr::get($filter, "medico_id"))) {
-                $query->where("medico_id", $medicoId);
+            if (($medicoId = Arr::get($filter, "medico"))) {
+                $query->where("medico", $medicoId);
             }
             if (($desde = Arr::get($filter, "desde"))) {
                 $query->where("fecha", ">=", $desde);
@@ -76,7 +76,7 @@ class SolicitudAtencionExternaService extends Controller
 
     protected function prepareResult($query)
     {
-        $solicitudes = $query->with(["medico", "regional", "proveedor"])->get();
+        $solicitudes = $query->with(["regional"])->get();
         $asegurados = Afiliado::buscarPorIds($solicitudes->pluck("asegurado_id"));
 
         return $solicitudes->map(function ($solicitud) use ($asegurados) {

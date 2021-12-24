@@ -2,8 +2,6 @@
 
 namespace Tests\Feature\SolicitudAtencionExterna;
 
-use App\Models\ContratoProveedor;
-use App\Models\Especialidad;
 use App\Models\Galeno\AfiliacionBeneficiario;
 use App\Models\Galeno\AfiliacionTitular;
 use App\Models\Galeno\Afiliado;
@@ -11,20 +9,11 @@ use App\Models\Galeno\AmpliacionPrestacion;
 use App\Models\Galeno\BajaAfiliacion;
 use App\Models\Galeno\Empleador;
 use App\Models\ListaMoraItem;
-use App\Models\Medico;
 use App\Models\Permisos;
-use App\Models\Prestacion;
-use App\Models\Proveedor;
 use App\Models\Regional;
-use App\Models\Role;
 use App\Models\User;
 use Carbon\Carbon;
-use Database\Factories\Galeno\BajaAfiliacionFactory;
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class RegistrarSolicitudAtencionExternaTest extends TestCase
@@ -58,31 +47,14 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->fechaExtinsionVencidaAyer()
             ->create();
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
 
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -106,35 +78,14 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->fechaExtinsionVencidaHoy()
             ->create();
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
 
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -158,31 +109,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->fechaExtinsionVencidaManiana()
             ->create();
             
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -206,35 +139,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -262,35 +173,14 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionBeneficiario)
             ->vencidaAyer()
             ->create();
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
 
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -317,35 +207,14 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionBeneficiario)
             ->vencidaHoy()
             ->create();
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
 
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -372,35 +241,14 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionBeneficiario)
             ->vencidaManiana()
             ->create();
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
 
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -423,35 +271,14 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($beneficiario)
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
 
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -471,13 +298,10 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
@@ -508,35 +332,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionBeneficiario)
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -566,35 +368,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -618,35 +398,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular)
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $titular->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -674,35 +432,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionBeneficiario)
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -730,35 +466,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -780,36 +494,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
         BajaAfiliacion::factory()->validezVencidaHoy()
             ->for($afiliacionTitular, "afiliacionTitular")
             ->create();
-
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $titular->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -836,36 +527,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
         BajaAfiliacion::factory()->validezVencidaHoy()
             ->for($afiliacionBeneficiario)
             ->create();
-
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -893,35 +561,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -944,35 +590,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular)
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $titular->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -999,35 +623,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionBeneficiario)
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return  [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1054,35 +656,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return  [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1104,35 +684,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular)
             ->create();
 
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $titular->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1157,36 +715,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
         BajaAfiliacion::factory()
             ->for($afiliacionBeneficiario)
             ->create();
-
-        $medico = Medico::factory()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->state([
-                "regional_id" => $regional_id
-            ])
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return  [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1210,31 +745,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1256,31 +773,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1301,31 +800,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1348,31 +829,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1395,31 +858,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1441,31 +886,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1488,31 +915,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1542,31 +951,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -1589,81 +980,50 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => 0,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "medico" => "El médico no existe"
+            "medico" => "Este campo es requerido."
         ]);
     }
 
-    public function test_medico_pertenece_a_otra_regional()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+    // public function test_medico_pertenece_a_otra_regional()
+    // {
+    //     $this->travelTo(Carbon::create(2020));
+    //     $empleador = Empleador::factory()
+    //         ->create();
+    //     $asegurado = Afiliado::factory()->create();
+    //     AfiliacionTitular::factory()
+    //         ->for($empleador)
+    //         ->for($asegurado)
+    //         ->create();
 
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->for(Especialidad::factory()->create())
-            ->create();
+    //     $data = [
+    //         "asegurado_id" => $asegurado->id,
+    //         "regional_id" => 1,
+    //         "medico" => "Medico",
+    //         "proveedor" => "Proveedor",
+    //         "especialidad" => "Especialidad",
+    //         "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
+    //     ];
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
+    //     $user = $this->createSuperUser();
 
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "medico" => "El médico pertenece a otra regional"
-        ]);
-    }
+    //     $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+    //     $response->assertJsonValidationErrors([
+    //         "medico" => "El médico pertenece a otra regional"
+    //     ]);
+    // }
     
     public function test_proveedor_no_existe()
     {
@@ -1676,179 +1036,108 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $prestaciones = Prestacion::factory()->count(10)->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => 0,
-            "prestaciones_solicitadas" => $prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "proveedor" => "El proveedor no existe"
+            "proveedor" => "Este campo es requerido."
         ]);
     }
     
-    public function test_proveedor_pertenece_a_otra_regional()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+    // public function test_proveedor_pertenece_a_otra_regional()
+    // {
+    //     $this->travelTo(Carbon::create(2020));
+    //     $empleador = Empleador::factory()
+    //         ->create();
+    //     $asegurado = Afiliado::factory()->create();
+    //     AfiliacionTitular::factory()
+    //         ->for($empleador)
+    //         ->for($asegurado)
+    //         ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
+    //     $data = [
+    //         "asegurado_id" => $asegurado->id,
+    //         "regional_id" => 1,
+    //         "medico" => "Medico",
+    //         "proveedor" => "Proveedor",
+    //         "especialidad" => "Especialidad",
+    //         "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
+    //     ];
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
+    //     $user = $this->createSuperUser();
 
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "proveedor" => "El proveedor pertenece a otra regional"
-        ]);
-    }
+    //     $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+    //     $response->assertJsonValidationErrors([
+    //         "proveedor" => "El proveedor pertenece a otra regional"
+    //     ]);
+    // }
     
     
-    public function test_proveedor_no_ofrece_las_prestaciones_solicitadas()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+    // public function test_proveedor_no_ofrece_las_prestaciones_solicitadas()
+    // {
+    //     $this->travelTo(Carbon::create(2020));
+    //     $empleador = Empleador::factory()
+    //         ->create();
+    //     $asegurado = Afiliado::factory()->create();
+    //     AfiliacionTitular::factory()
+    //         ->for($empleador)
+    //         ->for($asegurado)
+    //         ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
-        $prestacion = Prestacion::factory()->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => [
-                [
-                    "prestacion_id" => $prestacion->id
-                ]
-            ]
-        ];
+    //     $data = [
+    //         "asegurado_id" => $asegurado->id,
+    //         "regional_id" => 1,
+    //         "medico" => "Medico",
+    //         "proveedor" => "Proveedor",
+    //         "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
+    //     ];
 
 
-        $user = $this->createSuperUser();
+    //     $user = $this->createSuperUser();
 
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "prestaciones_solicitadas.0.prestacion" => "El proveedor no ofrece esta prestacion"
-        ]);
-    }
+    //     $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+    //     $response->assertJsonValidationErrors([
+    //         "prestaciones_solicitadas.0.prestacion" => "El proveedor no ofrece esta prestacion"
+    //     ]);
+    // }
 
-    public function test_proveedor_con_contrato_consumido()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+    // public function test_proveedor_con_contrato_consumido()
+    // {
+    //     $this->travelTo(Carbon::create(2020));
+    //     $empleador = Empleador::factory()
+    //         ->create();
+    //     $asegurado = Afiliado::factory()->create();
+    //     AfiliacionTitular::factory()
+    //         ->for($empleador)
+    //         ->for($asegurado)
+    //         ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $contrato = ContratoProveedor::factory()
-            ->consumido()
-            ->inicioAyer()
-            ->indefinido()
-            ->for($proveedor)
-            ->has(Prestacion::factory()->count(10), "prestaciones")
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return[
-                        "prestacion_id" => $prestacion->id,
-                        "nota" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
-                    ];
-                })
-        ];
+    //     $data = [
+    //         "asegurado_id" => $asegurado->id,
+    //         "regional_id" => 1,
+    //         "medico" => "Medico",
+    //         "proveedor" => "Proveedor",
+    //         "especialidad" => "Especialidad",
+    //         "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
+    //     ];
 
 
-        $user = $this->createSuperUser();
+    //     $user = $this->createSuperUser();
 
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "proveedor" => "El proveedor no tiene un contrato activo"
-        ]);
-    }    
+    //     $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+    //     $response->assertJsonValidationErrors([
+    //         "proveedor" => "El proveedor no tiene un contrato activo"
+    //     ]);
+    // }    
     
     public function test_prestacion_no_existe()
     {
@@ -1861,98 +1150,51 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $prestacionId = 1;
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                                    // ->state(new Sequence(
-                                    //     fn () => ['id' => $prestacionId++],
-                                    // )), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => [
-                [
-                    "prestacion_id" => 0
-                ]
-            ]
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => []
         ];
-
 
         $user = $this->createSuperUser();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "prestaciones_solicitadas.0.prestacion" => "La prestación no existe"
+            "prestaciones_solicitadas" => "Este campo es requerido."
         ]);
     }
     
-    public function test_nota_con_mas_de_60_caracteres()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+    // public function test_nota_con_mas_de_60_caracteres()
+    // {
+    //     $this->travelTo(Carbon::create(2020));
+    //     $empleador = Empleador::factory()
+    //         ->create();
+    //     $asegurado = Afiliado::factory()->create();
+    //     AfiliacionTitular::factory()
+    //         ->for($empleador)
+    //         ->for($asegurado)
+    //         ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $prestacionId = 1;
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                                    // ->state(new Sequence(
-                                    //     fn () => ['id' => $prestacionId++],
-                                    // )), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                        "nota" => "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis"
-                    ];
-                })
-        ];
+    //     $data = [
+    //         "asegurado_id" => $asegurado->id,
+    //         "regional_id" => 1,
+    //         "medico" => "Medico",
+    //         "proveedor" => "Proveedor",
+    //         "especialidad" => "Especialidad",
+    //         "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
+    //     ];
 
 
-        $user = $this->createSuperUser();
+    //     $user = $this->createSuperUser();
 
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "prestaciones_solicitadas.0.nota" => "Las notas no deben exceder los 60 caracteres"
-        ]);
-    }
+    //     $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+    //     $response->assertJsonValidationErrors([
+    //         "prestaciones_solicitadas.0.nota" => "Las notas no deben exceder los 60 caracteres"
+    //     ]);
+    // }
 
     function test_derechohabiente()
     {
@@ -1972,31 +1214,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($afiliacionTitular, "afiliacionDelTitular")
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $beneficiario->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)->map(function ($prestacion) {
-                return [
-                    "prestacion_id" => $prestacion->id
-                ];
-            })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = $this->createSuperUser();
@@ -2016,32 +1240,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                    ];
-                })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = User::factory()
@@ -2066,32 +1271,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                    ];
-                })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = User::factory()
@@ -2117,32 +1303,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                    ];
-                })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = User::factory()
@@ -2167,32 +1334,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                    ];
-                })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = User::factory()
@@ -2220,32 +1368,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                    ];
-                })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $user = User::factory()
@@ -2269,32 +1398,13 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
             ->for($asegurado)
             ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->for(Especialidad::factory()->create())
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->has(
-                ContratoProveedor::factory()
-                    ->has(Prestacion::factory()->count(10), "prestaciones")
-                    ->inicioAyer(),
-                "contratos"
-            )
-            ->create();
-
         $data = [
             "asegurado_id" => $asegurado->id,
             "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestaciones_solicitadas" => $proveedor->contrato->prestaciones->random(1)
-                ->map(function ($prestacion) {
-                    return [
-                        "prestacion_id" => $prestacion->id,
-                    ];
-                })
+            "medico" => "Medico",
+            "proveedor" => "Proveedor",
+            "especialidad" => "Especialidad",
+            "prestaciones_solicitadas" => [["prestacion"=>"Audiometría"]]
         ];
 
         $response = $this->postJson('/api/solicitudes-atencion-externa', $data);

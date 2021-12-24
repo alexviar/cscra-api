@@ -1,0 +1,6 @@
+/*!
+ * Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template/simple-sidebar)
+ * Copyright 2013-2020 Start Bootstrap
+ * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-simple-sidebar/blob/master/LICENSE)
+ */#wrapper{overflow-x:hidden;transition:padding .25s ease-out}#sidebar-wrapper{position:absolute;top:0;bottom:0;z-index:10000;margin-left:-15rem}#sidebar-wrapper .sidebar-heading{padding:.875rem 1.25rem;font-size:1.2rem}#sidebar-wrapper svg{font-size:1.6rem}#sidebar-wrapper .list-group{width:15rem}#page-content-wrapper{min-width:100vw}#wrapper.toggled #sidebar-wrapper{margin-left:0}
+/*# sourceMappingURL=4.73746df8.chunk.css.map */

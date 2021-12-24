@@ -93,19 +93,9 @@ class SolicitudAtencionExterna extends Model
         return $this->belongsTo(Empleador::class, "empleador_id", "ID");
     }
 
-    function medico()
-    {
-        return $this->belongsTo(Medico::class, "medico_id");
-    }
-
     function registradoPor()
     {
         return $this->belongsTo(User::class, "usuario_id", "id");
-    }
-
-    function proveedor()
-    {
-        return $this->belongsTo(Proveedor::class, "proveedor_id");
     }
 
     function regional()

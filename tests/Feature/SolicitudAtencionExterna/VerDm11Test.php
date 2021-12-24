@@ -2,13 +2,10 @@
 
 namespace Tests\Feature\SolicitudAtencionExterna;
 
-use App\Models\Especialidad;
 use App\Models\Galeno\AfiliacionTitular;
 use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador;
-use App\Models\Medico;
 use App\Models\Permisos;
-use App\Models\Proveedor;
 use App\Models\SolicitudAtencionExterna;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,19 +35,9 @@ class VerDm11Test extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();        
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitud = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
@@ -80,19 +67,9 @@ class VerDm11Test extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();        
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitud1 = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
@@ -107,8 +84,6 @@ class VerDm11Test extends TestCase
             ->regionalSantaCruz()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
         
@@ -137,19 +112,9 @@ class VerDm11Test extends TestCase
             ->create()
             ->refresh();
 
-        $especialidad = Especialidad::factory()->create();        
-        $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
         $solicitud1 = SolicitudAtencionExterna::factory()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($user, "registradoPor")
             ->create();
 
@@ -164,8 +129,6 @@ class VerDm11Test extends TestCase
             ->regionalSantaCruz()
             ->for($afiliado, "asegurado")
             ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
             ->for($anotherUser, "registradoPor")
             ->create();
         
