@@ -122,6 +122,18 @@ return [
     'key' => env('APP_KEY'),
 
     'cipher' => 'AES-256-CBC',
+    /*
+    |--------------------------------------------------------------------------
+    | ECDSA Encryption Key
+    |--------------------------------------------------------------------------
+    |
+    | This keys are used for digital signature
+    |
+    */
+    
+    'private_ec_key' => env('APP_PRIVATE_EC_KEY'),
+
+    'public_ec_key' => env('APP_PUBLIC_EC_KEY'),
 
     /*
     |--------------------------------------------------------------------------

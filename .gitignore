@@ -7,12 +7,17 @@
 backend.zip
 .env
 .env.backup
+.env.example
+.env.testing
 .phpunit.result.cache
 docker-compose.override.yml
 Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+
+privateKey.pem
+publicKey.pem
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

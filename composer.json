@@ -23,9 +23,12 @@
         "laravel/framework": "8.x-dev",
         "laravel/sanctum": "^2.9",
         "laravel/tinker": "^2.5",
+        "mhauri/base45": "^0.1.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-http-logger": "^1.7",
-        "spatie/laravel-permission": "^4.0"
+        "spatie/laravel-permission": "^4.0",
+        "spomky-labs/cbor-php": "^3.0",
+        "starkbank/ecdsa": "^0.0.5"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
