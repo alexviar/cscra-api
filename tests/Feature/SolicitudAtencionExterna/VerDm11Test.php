@@ -41,6 +41,10 @@ class VerDm11Test extends TestCase
             ->for($user, "registradoPor")
             ->create();
 
+        $solicitud->prestacionesSolicitadas()->create([
+            "prestacion" => "Quimioterapia",
+        ]);
+
 
         $numero = $solicitud->numero;
         $response = $this->actingAs($user)
@@ -73,6 +77,9 @@ class VerDm11Test extends TestCase
             ->for($user, "registradoPor")
             ->create();
 
+        $solicitud1->prestacionesSolicitadas()->create([
+            "prestacion" => "Quimioterapia",
+        ]);
 
         $numero = $solicitud1->numero;
         $response = $this->actingAs($user)
@@ -117,6 +124,10 @@ class VerDm11Test extends TestCase
             ->for($afiliado->empleador)
             ->for($user, "registradoPor")
             ->create();
+
+        $solicitud1->prestacionesSolicitadas()->create([
+            "prestacion" => "Quimioterapia",
+        ]);
 
 
         $numero = $solicitud1->numero;

@@ -83,7 +83,7 @@ class SolicitudAtencionExternaService extends Controller
             return [
                 "id" => $solicitud->id,
                 "numero" => $solicitud->numero,
-                "fecha" => $solicitud->fecha,
+                "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                 "asegurado" => $asegurados->where("ID", $solicitud->asegurado_id)->first()->toArray(),
                 "medico" => $solicitud->medico,
                 "proveedor" => $solicitud->proveedor,

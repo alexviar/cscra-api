@@ -132,7 +132,9 @@ class SolicitudAtencionExterna extends Model
     function toArray()
     {
         $array = parent::toArray();
+        $array["fecha"] = $this->fecha->format("d/m/y h:i:s");
         $array['url_dm11'] = $this->urlDm11;
+        dd($array);
         return $array;
     }
 }

@@ -65,7 +65,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 [
                     "id" => $solicitud1->id,
                     "numero" => $solicitud1->numero,
-                    "fecha" => $solicitud1->fecha,
+                    "fecha" => $solicitud1->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
@@ -77,7 +77,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 [
                     "id" => $solicitud2->id,
                     "numero" => $solicitud2->numero,
-                    "fecha" => $solicitud2->fecha,
+                    "fecha" => $solicitud2->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
@@ -138,7 +138,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 [
                     "id" => $solicitud->id,
                     "numero" => $solicitud->numero,
-                    "fecha" => $solicitud->fecha,
+                    "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
@@ -217,7 +217,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 [
                     "id" => $solicitud->id,
                     "numero" => $solicitud->numero,
-                    "fecha" => $solicitud->fecha,
+                    "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado->id,
                         "matricula" => $afiliado->matricula
@@ -302,7 +302,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 return [
                     "id" => $solicitud->id,
                     "numero" => $solicitud->numero,
-                    "fecha" => $solicitud->fecha,
+                    "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado1->id,
                         "matricula" => $afiliado1->matricula
@@ -330,7 +330,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 return [
                     "id" => $solicitud->id,
                     "numero" => $solicitud->numero,
-                    "fecha" => $solicitud->fecha,
+                    "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado2->id,
                         "matricula" => $afiliado2->matricula
@@ -400,7 +400,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 return [
                     "id" => $solicitud->id,
                     "numero" => $solicitud->numero,
-                    "fecha" => $solicitud->fecha,
+                    "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado1->id,
                         "matricula" => $afiliado1->matricula
@@ -429,7 +429,7 @@ class BuscarSolicitudAtencionExternaTest extends TestCase
                 return [
                     "id" => $solicitud->id,
                     "numero" => $solicitud->numero,
-                    "fecha" => $solicitud->fecha,
+                    "fecha" => $solicitud->fecha->format("d/m/y h:i:s"),
                     "asegurado" => [
                         "id" => $afiliado2->id,
                         "matricula" => $afiliado2->matricula
