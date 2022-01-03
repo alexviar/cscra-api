@@ -155,7 +155,7 @@ class RegistrarUsuarioTest extends TestCase
         $data["password"] = "aB23456(";
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
-        $response->assertOk();
+        $response->assertJsonMissingValidationErrors(["password"]);
     }
     
     public function test_ci_repetido()
