@@ -51,7 +51,7 @@ class SolicitudAtencionExterna extends Model
             "signature" => base64_encode($signature),
             "qr_data" => base64_encode(pack("N", $this->id) . $signature),
             "fecha" => $this->fecha,
-            "regional" => $this->regional->nombre,
+            "regional" => strtoupper($this->regional->nombre),
             "proveedor" => $this->proveedor,
             "titular" => !$titular ? [
                 "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
