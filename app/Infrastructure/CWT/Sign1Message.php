@@ -3,7 +3,6 @@
 namespace App\Infrastructure\CWT;
 
 use CBOR\ByteStringObject;
-use CBOR\CBORObject;
 use CBOR\Decoder;
 use CBOR\ListObject;
 use CBOR\MapObject;

@@ -12,7 +12,6 @@ use CBOR\MapObject;
 use CBOR\NegativeIntegerObject;
 use CBOR\TextStringObject;
 use CBOR\UnsignedIntegerObject;
-use Dompdf\FrameDecorator\Text;
 use EllipticCurve\PrivateKey;
 use EllipticCurve\PublicKey;
 use Mhauri\Base45;

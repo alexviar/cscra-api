@@ -7,11 +7,7 @@
         "laravel"
     ],
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:alexviar/framework.git"
-        },        
+    "repositories": [     
         {
             "type": "vcs",
             "url": "git@github.com:alexviar/cbor-php.git"
@@ -24,7 +20,7 @@
         "fruitcake/laravel-cors": "^2.0",
         "grimzy/laravel-mysql-spatial": "^5.0",
         "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "8.x-dev",
+        "laravel/framework": "^8.0",
         "laravel/sanctum": "^2.9",
         "laravel/tinker": "^2.5",
         "mhauri/base45": "^0.1.1",
