@@ -92,6 +92,14 @@ class Afiliado extends Model
         return $this->getAttribute("MATRICULA_CO");
     }
 
+    function getMatriculaCompletaAttribute(){
+        $matriculaCompleta = $this->matricula;
+        if($this->matriculaComplemento) {
+            $matriculaCompleta .= "-{$this->matriculaComplemento}";
+        }
+        return $matriculaCompleta;
+    }
+
     function getNombreCompletoAttribute()
     {
         $nombreCompleto = $this->nombres;

@@ -11,6 +11,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:alexviar/framework.git"
+        },        
+        {
+            "type": "vcs",
+            "url": "git@github.com:alexviar/cbor-php.git"
         }
     ],
     "require": {
@@ -27,7 +31,7 @@
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-http-logger": "^1.7",
         "spatie/laravel-permission": "^4.0",
-        "spomky-labs/cbor-php": "^3.0",
+        "spomky-labs/cbor-php": "v3.0.x-dev",
         "starkbank/ecdsa": "^0.0.5"
     },
     "require-dev": {

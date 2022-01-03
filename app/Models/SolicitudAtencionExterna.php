@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Infrastructure\SolicitudAtencionExternaQrSigner;
 use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador;
 use Carbon\Carbon;
@@ -43,84 +44,21 @@ class SolicitudAtencionExterna extends Model
         return str_pad($this->id, 10, '0', STR_PAD_LEFT);
     }
 
-    function _getSignatureStructure($protected, $payload) {
-        return ListObject::create()
-            ->add(TextStringObject::create("Signature1"))
-            ->add($protected)
-            ->add(ByteStringObject::create(""))
-            ->add($payload);
-    }
-
-    function _computeSignature($protected, $payload) {
-        $signature_structure = $this->_getSignatureStructure($protected, $payload);
-
-        $privateKey = PrivateKey::fromPem(config("app.private_ec_key"));
-        return Ecdsa::sign($signature_structure->__toString(), $privateKey)->toDer();
-    }
-
-    function encodeQrData($data, $extra_data)
-    {
-        $protected = \CBOR\ByteStringObject::create(
-            \CBOR\MapObject::create([])
-                ->add(UnsignedIntegerObject::create(1), NegativeIntegerObject::create(-7))
-                ->__toString()
-        );
-
-        $unprotected = \CBOR\MapObject::create();
-
-        $payload = \CBOR\ByteStringObject::create(
-            \CBOR\MapObject::create()
-                ->add(UnsignedIntegerObject::create(2), TextStringObject::create($data["sub"]))
-                ->add(UnsignedIntegerObject::create(3), TextStringObject::create($data["aud"]))
-                ->add(UnsignedIntegerObject::create(4), UnsignedIntegerObject::create($data["exp"]))
-                ->add(UnsignedIntegerObject::create(6), UnsignedIntegerObject::create($data["iat"]))
-                ->add(NegativeIntegerObject::create(-65537), ListObject::create()
-                    ->add(TextStringObject::create($extra_data["paciente"]))
-                    ->add(TextStringObject::create($extra_data["prestacion"]))
-                )
-                ->__toString()
-        );
-
-        $signature = ByteStringObject::create($this->_computeSignature($protected, $payload));
-
-        $token = ListObject::create()
-            ->add($protected)
-            ->add($unprotected)
-            ->add($payload)
-            ->add($signature)->__toString();
-        
-        $compresed = zlib_encode($token, ZLIB_ENCODING_DEFLATE);
-        
-        $base45 = new \Mhauri\Base45();
-
-        return $base45->encode($compresed);
-    }
-
-    function getQrData() {
-        $asegurado = $this->asegurado;
-        return [
-            "data" => [
-                "sub" => $asegurado->matricula . ($asegurado->matricula_complemento !== 0 ? "-" . $asegurado->matricula_complemento : ""),
-                "aud" => $this->proveedor,
-                "exp" => $this->fecha->add(7, "days")->timestamp,
-                "iat" => $this->fecha->timestamp
-            ], 
-            "extra_data" => [
-                "paciente" => $asegurado->nombre_completo,
-                "prestacion" => $this->prestacionesSolicitadas[0]->prestacion
-            ]
-        ];
-    }
-
-    function __get($attr)
-    {
-        if($attr === "asegurado" && !isset($this->relations["asegurado"])){
-            $this->relations["asegurado"] = Afiliado::buscarPorId($this->asegurado_id);
-        } else if ($attr === "empleador" && !isset($this->relations["empleador"])){
-            $this->relations["empleador"] = Empleador::buscarPorId($this->empleador_id);
-        }
-        return parent::__get($attr);
-    }
+    // function __get($attr)
+    // {
+    //     // var_dump($attr);
+    //     // if($attr === "asegurado" && !$this->relationLoaded($attr)){
+    //     //     $model = Afiliado::buscarPorId($this->asegurado_id);
+    //     //     $this->setRelation("asegurado", $model);
+    //     //     return $model;
+    //     // } else if ($attr === "empleador" && !$this->relationLoaded($attr)){
+    //     //     $model = Empleador::buscarPorId($this->empleador_id);
+    //     //     $this->setRelation("empleador", $model);
+    //     //     return $model;
+    //     // }
+    //     var_dump($attr);
+    //     return parent::__get($attr);
+    // }
 
     function getContentArrayAttribute()
     {
@@ -128,13 +66,12 @@ class SolicitudAtencionExterna extends Model
         $titular = $asegurado->titular; //afiliacionDelTitular ? Afiliado::buscarPorId($asegurado->afiliacionDelTitular->ID_AFO) : NULL;
         $empleador = $this->empleador;
 
-        $qr_data = $this->getQrData();
-        $encoded_qr_data = $this->encodeQrData($qr_data["data"], $qr_data["extra_data"]);
+        $encoded_qr_data = (new SolicitudAtencionExternaQrSigner())->sign($this, config("app.private_ec_key"));
 
         return [
             "numero" => $this->numero,
             "qr_data" => $encoded_qr_data,
-            "fecha" => $this->fecha,
+            "fecha" => $this->fecha->format("d/m/y h:i:s"),
             "regional" => $this->regional->nombre,
             "proveedor" => $this->proveedor,
             "titular" => !$titular ? [
