@@ -171,20 +171,18 @@ class SolicitudAtencionExternaService extends Controller
         $solicitud->asegurado_id = $asegurado_id;
         // $solicitud->titular_id = $asegurado->titular->id;
         $solicitud->empleador_id = $asegurado->empleador->id;
-        $solicitud->medico = $medico;
-        $solicitud->especialidad = $especialidad;
-        $solicitud->proveedor = $proveedor;
+        $solicitud->medico = strtoupper($medico);
+        $solicitud->especialidad = strtoupper($especialidad);
+        $solicitud->proveedor = strtoupper($proveedor);
         $solicitud->usuario_id = $usuario_id;
 
-        foreach ($prestaciones_solicitadas as $prestacion_solicitada) {
-            $solicitud->prestacionesSolicitadas()->create($prestacion_solicitada, true);
-        }
-        DB::transaction(function () use ($solicitud) {
+        DB::transaction(function () use ($solicitud, $prestaciones_solicitadas) {
             $solicitud->save();
-            $solicitud->url_dm11 = route("forms.dm11", [
-                "numero" => $solicitud->numero
-            ]);
-            $solicitud->save();
+            foreach ($prestaciones_solicitadas as $prestacion_solicitada) {
+                $solicitud->prestacionesSolicitadas()->create([
+                    "prestacion" => strtoupper($prestacion_solicitada["prestacion"])
+                ]);
+            }
         });
 
         return $solicitud;

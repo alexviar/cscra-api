@@ -72,7 +72,7 @@ class SolicitudAtencionExterna extends Model
             "numero" => $this->numero,
             "qr_data" => $encoded_qr_data,
             "fecha" => $this->fecha->format("d/m/y h:i:s"),
-            "regional" => $this->regional->nombre,
+            "regional" => strtoupper($this->regional->nombre),
             "proveedor" => $this->proveedor,
             "titular" => !$titular ? [
                 "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
