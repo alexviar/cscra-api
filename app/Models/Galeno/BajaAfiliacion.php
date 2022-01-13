@@ -23,8 +23,9 @@ class BajaAfiliacion extends Model
     protected $keyType = 'string';
 
     protected $casts = [
-        "REG_DATE" => "date:Y-m-d",
-        "FECHA_VALIDEZ_SEGURO_BAJ" => "date:Y-m-d"
+        "REG_DATE" => "date:d/m/Y",
+        "FECHA_REG_BAJ" => "date:d/m/Y",
+        "FECHA_VALIDEZ_SEGURO_BAJ" => "date:d/m/Y"
     ];
 
     protected $hidden = [
@@ -46,7 +47,8 @@ class BajaAfiliacion extends Model
     ];
 
     protected $appends = [
-        "fecha_validez_seguro"
+        "fecha_validez_seguro",
+        "fecha_registro"
     ];
 
     function afiliacionTitular(){
@@ -60,5 +62,10 @@ class BajaAfiliacion extends Model
     function getFechaValidezSeguroAttribute()
     {
         return $this->getAttribute("FECHA_VALIDEZ_SEGURO_BAJ");
+    }
+
+    function getFechaRegistroAttribute()
+    {
+        return ($this->getAttribute("FECHA_REG_BAJ") ?? $this->getAttribute("REG_DATE"))->format("d/m/Y");
     }
 }

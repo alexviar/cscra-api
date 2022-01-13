@@ -43,12 +43,14 @@ class SolicitudAtencionExternaQrSigner {
             MapObject::create(),
             ByteStringObject::create(
                 MapObject::create()
-                ->add(UnsignedIntegerObject::create(CWT::SUB_KEY), TextStringObject::create($solicitud->asegurado->matriculaCompleta))
+                ->add(UnsignedIntegerObject::create(CWT::SUB_KEY), TextStringObject::create($solicitud->asegurado->id))
                 ->add(UnsignedIntegerObject::create(CWT::AUD_KEY), TextStringObject::create($solicitud->proveedor))
                 ->add(UnsignedIntegerObject::create(CWT::EXP_KEY), UnsignedIntegerObject::create($solicitud->fecha->add(7, "days")->timestamp))
                 ->add(UnsignedIntegerObject::create(CWT::IAT_KEY), UnsignedIntegerObject::create($solicitud->fecha->timestamp))
                 ->add(NegativeIntegerObject::create(-65537), 
                     ListObject::create()
+                        ->add(UnsignedIntegerObject::create($solicitud->id))
+                        ->add(TextStringObject::create($solicitud->asegurado->matriculaCompleta))
                         ->add(TextStringObject::create($solicitud->asegurado->nombreCompleto))
                         ->add(TextStringObject::create($solicitud->prestacionesSolicitadas[0]->prestacion))
                 )

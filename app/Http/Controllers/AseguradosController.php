@@ -45,19 +45,19 @@ class AseguradosController extends Controller {
       }
 
       $records = $query->get();
-      $enMora = ListaMoraItem::buscarPorIdEmpleadores($records->pluck("empleador.id"));
+    //   $enMora = ListaMoraItem::buscarPorIdEmpleadores($records->pluck("empleador.id"));
 
-      $records = $records->map(function($asegurado) use($enMora){
-        $array = $asegurado->toArray();
+    //   $records = $records->map(function($asegurado) use($enMora){
+    //     $array = $asegurado->toArray();
         
-        if($array["empleador"]){
-          $array["empleador"]["aportes"] = $enMora->contains(function ($item) use($asegurado){
-            return $item->empleador_id == $asegurado->empleador->id;
-          }) ? 2 : 1;
-        }
+    //     if($array["empleador"]){
+    //       $array["empleador"]["estado_aportes"] = $enMora->contains(function ($item) use($asegurado){
+    //         return $item->empleador_id == $asegurado->empleador->id;
+    //       }) ? 2 : 1;
+    //     }
           
-        return $array;
-      });
+    //     return $array;
+    //   });
 
       return response()->json($this->buildPaginatedResponseData($total, $records));
     }
@@ -65,20 +65,19 @@ class AseguradosController extends Controller {
       $query->offset($page["current"]);
     }
     $records = $query->get();
-      var_dump($records->pluck("empleador.id"));
-      $enMora = ListaMoraItem::buscarPorIdEmpleadores($records->pluck("empleador.id"));
+    // $enMora = ListaMoraItem::buscarPorIdEmpleadores($records->pluck("empleador.id"));
 
-      $records = $records->map(function($asegurado) use($enMora){
-        $array = $asegurado->toArray();
+    // $records = $records->map(function($asegurado) use($enMora){
+    //     $array = $asegurado->toArray();
         
-        if($array["empleador"]){
-          $array["empleador"]["aportes"] = $enMora->contains(function ($item) use($asegurado){
-            return $item->empleador_id == $asegurado->empleador->id;
-          }) ? 2 : 1;
-        }
-          
-        return $array;
-      });
+    //     if($array["empleador"]){
+    //         $array["empleador"]["estado_aportes"] = $enMora->contains(function ($item) use($asegurado){
+    //         return $item->empleador_id == $asegurado->empleador->id;
+    //         }) ? 2 : 1;
+    //     }
+            
+    //     return $array;
+    // });
 
     return response()->json($records);
   }

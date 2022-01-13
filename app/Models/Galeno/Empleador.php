@@ -128,7 +128,7 @@ class Empleador extends Model
     function toArray()
     {
         $array = parent::toArray();
-        $array["fecha_baja"] = $this->fecha_baja ? $this->fecha_baja->format("Y-m-d") : null;
+        $array["fecha_baja"] = $this->fecha_baja ? $this->fecha_baja->format("d/m/Y") : null;
         return $array;
     }
 
