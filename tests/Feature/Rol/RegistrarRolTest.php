@@ -5,31 +5,34 @@ namespace Tests\Feature\Rol;
 use App\Models\Permisos;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Spatie\Permission\Models\Permission;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class RegistrarRolTest extends TestCase
 {
     use WithFaker;
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+    
+    private function assertInsert(TestResponse $response, $data)
+    {
+        $response->assertOk();
+        $this->assertDatabaseHas("roles", [
+            "name" => $data["name"],
+            "guard_name" => "sanctum"
+        ]);
+        $createdRole = Role::where("name", $data["name"])->first();
+        $this->assertTrue($createdRole->hasAllPermissions($data["permissions"]));
+    }
+
     public function test_nombre_repetido()
     {
-        $nombre = "rol";
-        Role::factory()->state([
-            "name" => $nombre
-        ])->create();
+        $existingRole = Role::factory()->create();
 
-        $user = $this->getSuperUser();
+        $login = $this->getSuperUser();
 
-        $response = $this->actingAs($user, "sanctum")
+        $response = $this->actingAs($login, "sanctum")
             ->postJson('/api/roles', [
-                "name" => $nombre
+                "name" => $existingRole->name
             ]);
 
         $response->assertJsonValidationErrors([
@@ -39,23 +42,17 @@ class RegistrarRolTest extends TestCase
 
     public function test_nombre_demasiado_largo()
     {
-        $user = $this->getSuperUser();
+        $login = $this->getSuperUser();
 
-        $response = $this->actingAs($user, "sanctum")
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
-                "name" => $this->faker->lexify(str_repeat('?', 50)),
-                "permissions" => [
-                    Permisos::AGREGAR_EMPLEADOR_EN_MORA
-                ]
+                "name" => $this->faker->lexify(str_repeat('?', 50))
             ]);
-        $response->assertOk();
+        $response->assertJsonMissingValidationErrors(["name"]);
 
-        $response = $this->actingAs($user, "sanctum")
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
-                "name" => $this->faker->lexify(str_repeat('?', 51)),
-                "permissions" => [
-                    Permisos::AGREGAR_EMPLEADOR_EN_MORA
-                ]
+                "name" => $this->faker->lexify(str_repeat('?', 51))
             ]);
         $response->assertJsonValidationErrors([
             "name" => "Este campo no debe exceder los 50 caracteres"
@@ -64,35 +61,30 @@ class RegistrarRolTest extends TestCase
 
     public function test_descripcion_demasiado_larga()
     {
-        $user = $this->getSuperUser();
+        $login = $this->getSuperUser();
 
-        $response = $this->actingAs($user, "sanctum")
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
                 "name" => $this->faker->text(50),
-                "description" => $this->faker->lexify(str_repeat('?', 250)),
-                "permissions" => [
-                    Permisos::AGREGAR_EMPLEADOR_EN_MORA
-                ]
+                "description" => $this->faker->lexify(str_repeat('?', 255))
             ]);
-        $response->assertOk();
+        $response->assertJsonMissingValidationErrors(["description"]);
 
-        $response = $this->actingAs($user, "sanctum")
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
                 "name" => $this->faker->text(50),
-                "description" => $this->faker->lexify(str_repeat('?', 251)),
-                "permissions" => [
-                    Permisos::AGREGAR_EMPLEADOR_EN_MORA
-                ]
+                "description" => $this->faker->lexify(str_repeat('?', 256))
             ]);
         $response->assertJsonValidationErrors([
-            "description" => "Este campo no debe exceder los 250 caracteres"
+            "description" => "Este campo no debe exceder los 255 caracteres"
         ]);
     }
 
-    public function test_sin_permisos()
+    public function test_roles_deben_tener_al_menos_un_permisos()
     {
-        $user = $this->getSuperUser();
-        $response = $this->actingAs($user, "sanctum")
+        $login = $this->getSuperUser();
+        
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
                 "name" => "Test rol",
                 "permissions" => []
@@ -104,8 +96,8 @@ class RegistrarRolTest extends TestCase
 
     public function test_campos_requeridos()
     {
-        $user = $this->getSuperUser();
-        $response = $this->actingAs($user, "sanctum")
+        $login = $this->getSuperUser();
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", []);
         
         $response->assertJsonValidationErrors([
@@ -114,33 +106,85 @@ class RegistrarRolTest extends TestCase
         ]);
     }
 
-    public function test_usuario_con_permiso_para_registrar()
+    public function test_usuario_con_permisos()
     {
-        $user = User::factory()
+        $login = User::factory()
             ->withPermissions([
                 Permisos::REGISTRAR_ROLES
             ])
             ->create();
 
-        $permisos = [
-            Permisos::REGISTRAR_USUARIOS,
-            Permisos::EDITAR_USUARIOS,
-            Permisos::BLOQUEAR_USUARIOS,
-            Permisos::DESBLOQUEAR_USUARIOS,
-            Permisos::CAMBIAR_CONTRASEÑA
-        ];
+        $allPermisos = Permisos::toArray();
+        $permisos = $this->faker->randomElements($allPermisos, $this->faker->numberBetween(1, count($allPermisos)));
 
-        $response = $this->actingAs($user, "sanctum")
+        $data = [
+            "name" => "Test rol",
+            "permissions" => $permisos
+        ];
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/roles", $data);
+        
+        $this->assertInsert($response, $data);
+    }
+    
+    public function test_usuario_sin_permisos()
+    {
+        $login = User::factory()
+            ->withPermissions([])
+            ->create();
+
+        $allPermisos = Permisos::toArray();
+        $permisos = $this->faker->randomElements($allPermisos, $this->faker->numberBetween(1, count($allPermisos)));
+
+        $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
                 "name" => "Test rol",
                 "permissions" => $permisos
             ]);
-        
-        $response->assertOk();
-        $this->assertDatabaseHas("roles", [
-            "name" => "Test rol"
-        ]);
-        $createdRole = Role::where("name", "Test rol")->first();
-        $this->assertTrue($createdRole->hasAllPermissions($permisos));
+        $response->assertForbidden();
+    }
+
+    public function test_super_usuario()
+    {
+        $login = User::factory()->superUser()->create();
+
+        $allPermisos = Permisos::toArray();
+        $permisos = $this->faker->randomElements($allPermisos, $this->faker->numberBetween(1, count($allPermisos)));
+
+        $data = [
+            "name" => "Test rol",
+            "permissions" => $permisos
+        ];
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/roles", $data);
+        $this->assertInsert($response, $data);
+    }
+
+    public function test_usuario_bloqueado()
+    {
+        $login = User::factory()
+            ->bloqueado()
+            ->withPermissions([Permisos::REGISTRAR_USUARIOS])
+            ->create();
+
+        $allPermisos = Permisos::toArray();
+        $permisos = $this->faker->randomElements($allPermisos, $this->faker->numberBetween(1, count($allPermisos)));
+
+        $data = [
+            "name" => "Test rol",
+            "permissions" => $permisos
+        ];
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/roles", $data);
+        $response->assertForbidden();
+    }
+
+
+    public function test_usuario_no_autenticado()
+    {
+        $response = $this->postJson("/api/usuarios", []);
+        $response->assertUnauthorized();
     }
 }

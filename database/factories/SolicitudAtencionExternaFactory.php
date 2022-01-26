@@ -24,6 +24,7 @@ class SolicitudAtencionExternaFactory extends Factory
     {
         return [
             "fecha" => $this->faker->dateTime(),
+            "prestacion" => $this->faker->text(100),
             "regional_id" => 1
         ];
     }

@@ -75,15 +75,8 @@ Route::middleware("auth:sanctum")->get("empleadores/buscar-por-patronal", [Emple
 Route::middleware("auth:sanctum")->get("asegurados", [AseguradosController::class, "buscar"]);
 
 Route::middleware("auth:sanctum")->get("lista-mora", [ListaMoraController::class, "buscar"]);
-Route::middleware("auth:sanctum")->post("lista-mora/agregar", [ListaMoraController::class, "agregar"]);
-Route::middleware("auth:sanctum")->post("lista-mora/quitar", [ListaMoraController::class, "quitar"]);
-
-Route::middleware("auth:sanctum")->get("especialidades", [EspecialidadesController::class, "buscar"]);
-Route::middleware("auth:sanctum")->get("especialidades/{id}", [EspecialidadesController::class, "ver"]);
-Route::middleware("auth:sanctum")->post("especialidades", [EspecialidadesController::class, "registrar"]);
-Route::middleware("auth:sanctum")->put("especialidades/{id}", [EspecialidadesController::class, "actualizar"]);
-Route::middleware("auth:sanctum")->delete("especialidades/{id}", [EspecialidadesController::class, "eliminar"]);
-Route::middleware("auth:sanctum")->post("especialidades/importar", [EspecialidadesController::class, "importar"]);
+Route::middleware("auth:sanctum")->post("lista-mora", [ListaMoraController::class, "agregar"]);
+Route::middleware("auth:sanctum")->delete("lista-mora/{id}", [ListaMoraController::class, "quitar"]);
 
 Route::middleware("auth:sanctum")->get("solicitudes-atencion-externa", [SolicitudAtencionExternaController::class, "buscar"]);
 Route::middleware("auth:sanctum")->post("solicitudes-atencion-externa", [SolicitudAtencionExternaController::class, "registrar"]);
@@ -95,46 +88,17 @@ Route::middleware("auth:sanctum")->put("solicitudes-atencion-externa/{id}/genera
 Route::middleware("auth:sanctum")->get("medicos", [MedicosController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("medicos/{id}", [MedicosController::class, "mostrar"]);
 Route::middleware("auth:sanctum")->post("medicos", [MedicosController::class, "registrar"]);
-Route::middleware("auth:sanctum")->put("medicos/{id}/cambiar-estado", [MedicosController::class, "cambiarEstado"]);
+Route::middleware("auth:sanctum")->put("medicos/{id}/actualizar-estado", [MedicosController::class, "actualizarEstado"]);
 Route::middleware("auth:sanctum")->put("medicos/{id}", [MedicosController::class, "actualizar"]);
-Route::middleware("auth:sanctum")->delete("medicos/{id}", [MedicosController::class, "eliminar"]);
-
-Route::middleware("auth:sanctum")->get("regionales", [RegionalesController::class, "obtener"]);
-
-Route::middleware("auth:sanctum")->get("prestaciones", [PrestacionController::class, "buscar"]);
-Route::middleware("auth:sanctum")->get("prestaciones/buscar-nombre", [PrestacionController::class, "buscarPorNombre"]);
-Route::middleware("auth:sanctum")->get("prestaciones/{id}", [PrestacionController::class, "ver"]);
-Route::middleware("auth:sanctum")->post("prestaciones", [PrestacionController::class, "registrar"]);
-Route::middleware("auth:sanctum")->put("prestaciones/{id}", [PrestacionController::class, "actualizar"]);
-Route::middleware("auth:sanctum")->delete("prestaciones/{id}", [PrestacionController::class, "eliminar"]);
-Route::middleware("auth:sanctum")->post("prestaciones/importar", [PrestacionController::class, "importar"]);
-
 
 Route::middleware("auth:sanctum")->get("proveedores", [ProveedorController::class, "buscar"]);
 Route::middleware("auth:sanctum")->get("proveedores/{id}", [ProveedorController::class, "mostrar"]);
 Route::middleware("auth:sanctum")->post("proveedores", [ProveedorController::class, "registrar"]);
-Route::middleware("auth:sanctum")->get("proveedores/{idProveedor}/contratos", [ProveedorController::class, "buscarContrato"]);
-Route::middleware("auth:sanctum")->get("proveedores/{idProveedor}/contratos/{id}", [ProveedorController::class, "verContrato"]);
-Route::middleware("auth:sanctum")->post("proveedores/{idProveedor}/contratos", [ProveedorController::class, "registrarContrato"]);
-Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/consumir", [ProveedorController::class, "consumirContrato"]);
-Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/extender", [ProveedorController::class, "extenderContrato"]);
-Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contratos/{id}/anular", [ProveedorController::class, "anularContrato"]);
-Route::middleware("auth:sanctum")->put("proveedores/{idProveedor}/contacto", [ProveedorController::class, "actualizarInformacionContacto"]);
+Route::middleware("auth:sanctum")->put("proveedores/{id}/actualizar-estado", [ProveedorController::class, "actualizarEstado"]);
 Route::middleware("auth:sanctum")->put("proveedores/{id}", [ProveedorController::class, "actualizar"]);
-Route::middleware("auth:sanctum")->get("proveedores/buscar-nombre", [ProveedorController::class, "buscarPorNombre"]);
 
-Route::middleware("auth:sanctum")->get("departamentos", [UnidadesTerritorialesController::class, "getDepartamentos"]);
-Route::middleware("auth:sanctum")->get("provincias", [UnidadesTerritorialesController::class, "getProvincias"]);
-Route::middleware("auth:sanctum")->get("municipios", [UnidadesTerritorialesController::class, "getMunicipios"]);
+Route::middleware("auth:sanctum")->get("regionales", [RegionalesController::class, "obtener"]);
 
 
-Route::middleware("auth:sanctum")->get("areas", [AreaController::class, "buscar"]);
-
-Route::middleware("auth:sanctum")->get("planes", [PlanController::class, "buscar"]);
-Route::middleware("auth:sanctum")->get("planes/{id}", [PlanController::class, "ver"]);
-Route::middleware("auth:sanctum")->post("planes/{planId}/actividades/{actividadId}/avances", [PlanController::class, "registrarAvance"]);
-Route::middleware("auth:sanctum")->post("planes", [PlanController::class, "registrar"]);
-Route::middleware("auth:sanctum")->get("informes/{id}", [PlanController::class, "descargarInforme"])
-  ->where('id', '[0-9]{10}')->name("seguimiento.informes");
 
 

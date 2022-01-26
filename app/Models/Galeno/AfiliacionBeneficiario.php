@@ -23,9 +23,9 @@ class AfiliacionBeneficiario extends Model
     protected $keyType = 'string';
 
     protected $casts = [
-        "FECHA_EXTINSION_BEN" => "date: d/m/Y",
-        "fecha_extinsion" => "date: Y-m-d",
-        "fecha_validez_seguro" => "date: Y-m-d",
+        "FECHA_EXTINSION_BEN" => "date:Y-m-d",
+        "fecha_extinsion" => "date:Y-m-d",
+        "fecha_validez_seguro" => "date:Y-m-d",
     ];
 
     protected $hidden = [
@@ -44,7 +44,8 @@ class AfiliacionBeneficiario extends Model
     ];
 
     protected $appends = [
-        "fecha_extinsion",
+        "parentesco",
+        "fecha_extincion",
         "fecha_validez_seguro"
     ];
 
@@ -53,10 +54,15 @@ class AfiliacionBeneficiario extends Model
         return $this->afiliacionDelTitular ? $this->afiliacionDelTitular->empleador : null;
     }
 
-    function getFechaExtinsionAttribute()
+    function getParentescoAttribute()
+    {
+        return $this->PARENTESCO_BEN;
+    }
+
+    function getFechaExtincionAttribute()
     {
         if($this->ampliacion){
-            return $this->ampliacion->fecha_extinsion;
+            return $this->ampliacion->fecha_extincion;
         }
 
         return $this->getAttribute("FECHA_EXTINSION_BEN") ?? null;

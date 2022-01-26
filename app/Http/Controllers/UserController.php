@@ -2,46 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Application\TransferenciaExternaService;
-use App\Application\UserService;
-use App\Exceptions\ConflictException;
-use App\Models\Permisos;
 use App\Models\Regional;
 use App\Models\User;
-use Barryvdh\DomPDF\Facade as PDF;
+use App\Models\ValueObjects\CarnetIdentidad;
 use Illuminate\Http\Request;
-use Cog\Laravel\Optimus\OptimusManager;
-use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-
-    public function index(Request $request)
+    protected function appendFilters($query, $filter)
     {
-
-        $filter = $request->filter;
-        $page =  $request->page;
-
-        $this->authorize("ver-todo", [User::class, $filter]);
-
-        $query = User::query();
-
         if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
-            $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
+            $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [Str::upper($nombre) . "*"]);
+            // $query->where("nombre","like", Str::upper($nombre) . "%");
         }
-        if (Arr::has($filter, "ci") && $ci = $filter["ci"]) {
-            $query->where("ci_raiz", $ci);
-        }
-        if (Arr::has($filter, "ci_complemento") && $ciComplemento = $filter["ci_complemento"]) {
-            $query->where("ci_complemento", $ciComplemento);
+        if (Arr::has($filter, "ci.raiz") && $ci = Arr::get($filter, "ci.raiz")) {
+            $query->where("ci", $ci);
+            if($ciComplemento = Arr::get($filter, "ci.complemento")) $query->where("ci_complemento", $ciComplemento);
         }
         if (Arr::has($filter, "username") && ($username = $filter["username"])) {
             $query->where("username", "LIKE", $username . "%");
@@ -52,24 +34,16 @@ class UserController extends Controller
         if (Arr::has($filter, "regional_id")) {
             $query->where("regional_id", $filter["regional_id"]);
         }
+    }
 
-        if ($page && Arr::has($page, "size")) {
-            $total = $query->count();
-            $query->limit($page["size"]);
-            if (Arr::has($page, "current")) {
-                $query->offset(($page["current"] - 1) * $page["size"]);
-            }
-            $records = $query->get();
-            $records->makeVisible("role_names");
-            return response()->json($this->buildPaginatedResponseData($total, $records));
-        }
-        if (Arr::has($page, "current")) {
-            $query->offset($page["current"]);
-        }
+    public function index(Request $request)
+    {
+        $filter = $request->filter;
+        $page =  $request->page;
 
-        $records = $query->get();
-        $records->makeVisible("role_names");
-        return response()->json($records);
+        $this->authorize("ver-todo", [User::class, $filter]);
+
+        return $this->buildResponse(User::query(), $filter, $page);
     }
 
     public function show(Request $request, $id)
@@ -79,10 +53,9 @@ class UserController extends Controller
         if (!$user) {
             throw new ModelNotFoundException();
         }
-
+        
         $this->authorize("ver", $user);
 
-        $user->append("role_names");
         return response()->json($user);
     }
 
@@ -90,44 +63,46 @@ class UserController extends Controller
     {
         $payload = $request->validate([
             "username" => "unique:users|required|min:6|max:32",
-            "password" => ["required", "min:8", "max:256", Password::defaults()],
-            "ci" => "required",
-            "ci_complemento" => "nullable",
-            "apellido_paterno" => "required_without:apellido_materno",
-            "apellido_materno" => "required_without:apellido_paterno",
-            "nombres" => "required",
+            "password" => ["required", "min:8", Password::defaults()],
+            "ci" => [function ($attribute, $value, $fail) use($request){
+                $user = User::where("ci", $value["raiz"])
+                    ->where("ci_complemento", $value["complemento"] ?? "")
+                    ->where("regional_id", $request->regional_id)
+                    ->first();
+                if ($user) {
+                    $fail("Ya existe un usuario registrado con este carnet de identidad.");
+                }
+            }],
+            "ci.raiz" => "required|integer",
+            "ci.complemento" => "nullable|regex:/^[1-9][A-Z]$/",
+            "apellido_paterno" => "required_without:apellido_materno|max:25",
+            "apellido_materno" => "required_without:apellido_paterno|max:25",
+            "nombre" => "required|max:50",
             "regional_id" => "numeric|required|exists:" . Regional::class . ",id",
             "roles" => "required|array",
             "roles.*" => "exists:" . Role::class . ",name"
         ], [
             "apellido_paterno.required_without" => "Debe indicar al menos un apellido",
-            "apellido_materno.required_without" => "Debe indicar al menos un apellido"
+            "apellido_materno.required_without" => "Debe indicar al menos un apellido",
+            "ci.complemento.regex" => "Complemento invalido."
         ]);
 
         $this->authorize("registrar", [User::class, $payload]);
 
-        $user = User::where("ci_raiz", $payload["ci"])->where("ci_complemento", $payload["ci_complemento"] ?? null)->first();
-        if ($user) {
-            throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado", $user->id);
-        }
-
         $user = DB::transaction(function () use ($payload) {
             $model = User::create([
                 "username" => $payload["username"],
-                "password" => Hash::make($payload["password"]),
-                "ci_raiz" => $payload["ci"],
-                "ci_complemento" => $payload["ci_complemento"] ?? null,
+                "password" => $payload["password"],
+                "ci" => new CarnetIdentidad(Arr::get($payload, "ci.raiz"), Arr::get($payload, "ci.complemento") ?? ""),
                 "apellido_paterno" => $payload["apellido_paterno"] ?? null,
                 "apellido_materno" => $payload["apellido_materno"] ?? null,
-                "nombres" => $payload["nombres"],
+                "nombre" => $payload["nombre"],
                 "regional_id" => $payload["regional_id"],
                 "estado" => 1,
             ]);
             $model->syncRoles($payload["roles"]);
             return $model;
         });
-
-        $user->append("role_names");
         return response()->json($user);
     }
 
@@ -141,41 +116,41 @@ class UserController extends Controller
         }
 
         $payload = $request->validate([
-            // "username" => ["required", Rule::unique("users")->whereNot("id", $id)],
-            "ci" => "required",
-            "ci_complemento" => "nullable",
-            "apellido_paterno" => "required_without:apellido_materno",
-            "apellido_materno" => "required_without:apellido_paterno",
-            "nombres" => "required",
+            "ci" => [function ($attribute, $value, $fail) use($request, $user){
+                if (User::where("ci", $value["raiz"])
+                    ->where("ci_complemento", $value["complemento"] ?? "")
+                    ->where("regional_id", $request->regional_id)
+                    ->where("id", "<>", $user->id)
+                    ->exists()) {
+                    $fail("Ya existe un usuario registrado con este carnet de identidad.");
+                }
+            }],
+            "ci.raiz" => "required|integer",
+            "ci.complemento" => "nullable|regex:/^[1-9][A-Z]$/",
+            "apellido_paterno" => "required_without:apellido_materno|max:25",
+            "apellido_materno" => "required_without:apellido_paterno|max:25",
+            "nombre" => "required|max:50",
             "regional_id" => "numeric|required|exists:" . Regional::class . ",id",
             "roles" => "required|array",
             "roles.*" => "exists:" . Role::class . ",name"
         ], [
             "apellido_paterno.required_without" => "Debe indicar al menos un apellido",
-            "apellido_materno.required_without" => "Debe indicar al menos un apellido"
+            "apellido_materno.required_without" => "Debe indicar al menos un apellido",
+            "ci.complemento.regex" => "Complemento invalido."
         ]);
 
         $this->authorize("editar", [$user, $payload]);
 
-        $user2 = User::where("ci_raiz", $payload["ci"])
-            ->where("ci_complemento", $payload["ci_complemento"] ?? null)
-            ->where("id", "<>", $user->id)
-            ->first();
-        if ($user2) {
-            throw ConflictException::withData("ya existe un usuario con el carnet de identidad proporcionado", $user2->id);
-        }
-
         DB::transaction(function () use ($user, $payload) {
-            $user->ci_raiz = $payload["ci"];
-            $user->ci_complemento = $payload["ci_complemento"] ?? null;
+            $user->ci = new CarnetIdentidad(Arr::get($payload, "ci.raiz"), Arr::get($payload, "ci.complemento") ?? "");
             $user->apellido_paterno = $payload["apellido_paterno"];
             $user->apellido_materno = $payload["apellido_materno"];
-            $user->nombres = $payload["nombres"];
+            $user->nombre = $payload["nombre"];
+            $user->regional_id = $payload["regional_id"];
             $user->syncRoles($payload["roles"]);
             $user->save();
         });
 
-        $user->append("role_names");
         return response()->json($user);
     }
 
@@ -184,23 +159,17 @@ class UserController extends Controller
         /** @var User $user */
         $user = User::find($id);
         if (!$user) {
-            // abort(409, json_encode($user));
             throw new ModelNotFoundException();
         }
 
-        $rules = [
-            "password" => ["required", "min:8", "max:256", Password::defaults()]
-        ];
-        if(!$request->user()->isSuperUser() && !$request->user()->hasPermissionTo(Permisos::CAMBIAR_CONTRASEÑA) && !$request->user()->hasPermissionTo(Permisos::CAMBIAR_CONTRASEÑA_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO)){
-            $rules["old_password"] = "required|password:sanctum";
-        }
-
-        $payload = $request->only(["password", "old_password"]);
-        Validator::make($payload, $rules)->validate();
+        $payload = $request->validate([
+            "password" => ["required", "min:8", Password::defaults()],
+            "old_password" => "nullable|password:sanctum"
+        ]);
 
         $this->authorize("cambiar-contrasena", [$user, $payload]);
 
-        $user->password = Hash::make($payload["password"]);
+        $user->password = $payload["password"];
         $user->save();
 
         return response()->json();

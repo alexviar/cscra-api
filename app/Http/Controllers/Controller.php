@@ -8,34 +8,37 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Arr;
 
-class Controller extends BaseController
+abstract class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    protected function appendFilters ($query, $filter) {
+    protected function appendFilters ($query, $filter) { }
 
-    }
-
-    protected function buildPaginatedResponseData($total, $records){
+    protected function buildPaginatedResponseData($meta, $records){
       return [
-        "meta" => ["total" => $total],
+        "meta" => $meta,
         "records" => $records
       ];
     }
 
     protected function buildResponse($query, $filter, $page) {
+
         $this->appendFilters($query, $filter);
-        if ($page && Arr::has($page, "size")) {
+
+        $current = Arr::get($page, "current", 1);
+        $size = Arr::get($page, "size");
+        if ($size) {
             $total = $query->count();
-            $query->limit($page["size"]);
-            if (Arr::has($page, "current")) {
-                $query->offset(($page["current"] - 1) * $page["size"]);
-            }
-            return response()->json($this->buildPaginatedResponseData($total, $query->get()));
+            $query->limit($size);
+            $query->offset(($current - 1) * $size);
+
+            $meta = ["total" => $total];
+            if($current * $size < $total) $meta["nextPage"] = $current + 1;
+            if($current > 1) $meta["previousPage"] = $current - 1;
+
+            return response()->json($this->buildPaginatedResponseData($meta, $query->get()));
         }
-        if (Arr::has($page, "current")) {
-            $query->offset($page["current"]);
-        }
+
         return response()->json($query->get());
     }
 }

@@ -21,28 +21,8 @@ Route::get('/', function () {
 });
 */
 
-Route::get("/env", function(){
-  dd($_ENV);
-});
-
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
-
-Route::get("/log", function(){
-  return response()->download(storage_path("/logs/laravel.log"));
-});
-
-Route::get("/phpinfo", function(){
-  phpinfo();
-});
-
-Route::get("host", function(Request $request){
-  return $request->getHost();
-});
-
-Route::get("sanctum-config", function(Request $request){
-  return config("sanctum");
-});
 
 Route::fallback(function () {
   //return view('react.index.html')

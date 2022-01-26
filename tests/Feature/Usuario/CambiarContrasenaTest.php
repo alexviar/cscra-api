@@ -7,109 +7,23 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class CambiarContrasenaTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function test_usuario_puede_cambiar_contrasena()
-    {
-        $loggedUser = User::factory()
-            ->withPermissions([
-                Permisos::CAMBIAR_CONTRASEÑA
-            ])
-            ->create();
-        $usuario = User::factory()->create();
 
-        $data = [
-            "password" => "asQW12#$"
-        ];
-        $response = $this->actingAs($loggedUser)
-            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
+    private function assertPasswordChanged(TestResponse $response, $user, $password){
         $response->assertOk();
-        $usuario->refresh();
-        $this->assertTrue($usuario->validatePassword($data["password"]));
+        $this->assertTrue($user->validatePassword($password));
     }
 
-    public function test_usuario_puede_cambiar_contrasena_regionalmente()
+    public function test_usuario_no_existe()
     {
-        $loggedUser = User::factory()
-            ->withPermissions([
-                Permisos::CAMBIAR_CONTRASEÑA_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO
-            ])
-            ->create();
-        $usuario = User::factory()->create();
+        $user = $this->getSuperUser();
 
-        $data = [
-            "password" => "asQW12#$"
-        ];
-        $response = $this->actingAs($loggedUser)
-            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
-        Log::info($response->getContent());
-        $response->assertOk();
-        $usuario->refresh();
-        $this->assertTrue($usuario->validatePassword($data["password"]));
-
-        
-        $usuario = User::factory()
-            ->regionalSantaCruz()
-            ->create();
-
-        $response = $this->actingAs($loggedUser)
-            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
-
-        $response->assertForbidden();
-    }
-
-    public function test_usuario_puede_cambiar_su_contrasena()
-    {
-        $usuario = User::factory()->create();
-
-        $data = [
-            "password" => "asQW12#$"
-        ];
-        $response = $this->actingAs($usuario)
-            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
-
-        $response->assertJsonValidationErrors([
-            "old_password" => "Este campo es requerido"
-        ]);
-
-        $data["old_password"] = "asdfñlkj";
-        $response = $this->actingAs($usuario)
-            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
-        $response->assertJsonValidationErrors([
-            "old_password" => "La contraseña es incorrecta"
-        ]);
-            
-        $data["old_password"] = "password";
-        $response = $this->actingAs($usuario)
-            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
-
-        $response->assertOk();
-        $usuario->refresh();
-        $this->assertTrue($usuario->validatePassword($data["password"]));
-    }
-
-    public function test_usuario_sin_permisos()
-    {
-        $loggedUser = User::factory()->create();
-
-        $user = User::factory()->create();
-
-
-        $data = [
-            "old_password" => "password",
-            "password" => "asQW12#$"
-        ];
-        $response = $this->actingAs($loggedUser)
-            ->putJson("/api/usuarios/{$user->id}/cambiar-contrasena", $data);
-        $response->assertForbidden();
-
+        $response = $this->actingAs($user)->putJson("/api/usuarios/100/cambiar-contrasena", []);
+        $response->assertNotFound();
     }
 
     public function test_password()
@@ -151,6 +65,166 @@ class CambiarContrasenaTest extends TestCase
         $data["password"] = "aB23456(";
         $response = $this->actingAs($user, "sanctum")
             ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
-        $response->assertOk();
+        $this->assertPasswordChanged($response, $usuario->fresh(), $data["password"]);
+    }
+
+    public function test_usuario_puede_cambiar_contrasena()
+    {
+        $login = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::CAMBIAR_CONTRASEÑAS
+            ])
+            ->create();
+
+        //A un usuario de la misma regional
+        $usuario = User::factory()
+        ->regionalLaPaz()
+        ->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
+        $this->assertPasswordChanged($response, $usuario->fresh(), $data["password"]);
+        
+        //A un usuario de distinta regional
+        $usuario = User::factory()
+        ->regionalSantaCruz()
+        ->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
+        $this->assertPasswordChanged($response, $usuario->fresh(), $data["password"]);
+    }
+
+    public function test_usuario_puede_cambiar_contrasena_regionalmente()
+    {
+        $login = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::CAMBIAR_CONTRASEÑAS_MISMA_REGIONAL
+            ])
+            ->create();
+
+        //A un usuario de la misma regional
+        $usuario = User::factory()
+        ->regionalLaPaz()
+        ->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
+        $this->assertPasswordChanged($response, $usuario->fresh(), $data["password"]);
+        
+        //A un usuario de distinta regional
+        $usuario = User::factory()
+        ->regionalSantaCruz()
+        ->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
+        $response->assertForbidden();
+
+        //El permiso regional tiene mayor prioridad
+        $login = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::CAMBIAR_CONTRASEÑAS,
+                Permisos::CAMBIAR_CONTRASEÑAS_MISMA_REGIONAL
+            ])
+            ->create();
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$usuario->id}/cambiar-contrasena", $data);
+        $response->assertForbidden();
+    }
+
+    public function test_usuario_puede_cambiar_su_contrasena()
+    {
+        /** @var User $login */
+        $login = User::factory()->state(["password" => "password"])->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$login->id}/cambiar-contrasena", $data);
+
+        // $response->assertJsonValidationErrors([
+        //     "old_password" => "Este campo es requerido"
+        // ]);
+        $response->assertForbidden();
+
+        $data["old_password"] = "asdfñlkj";
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$login->id}/cambiar-contrasena", $data);
+        $response->assertJsonValidationErrors([
+            "old_password" => "La contraseña es incorrecta"
+        ]);
+            
+        $data["old_password"] = "password";
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$login->id}/cambiar-contrasena", $data);
+        $this->assertPasswordChanged($response, $login->fresh(), $data["password"]);
+    }
+
+    public function test_usuario_sin_permisos()
+    {
+        /** @var User $login */
+        $login = User::factory()->create();
+
+        $user = User::factory()->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$user->id}/cambiar-contrasena", $data);
+        $response->assertForbidden();
+    }
+
+    public function test_super_usuario()
+    {
+        /** @var User $login */
+        $login = User::factory()->superUser()->create();
+
+        $user = User::factory()->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$user->id}/cambiar-contrasena", $data);
+        $this->assertPasswordChanged($response, $user->fresh(), $data["password"]);
+    }
+
+    public function test_usuario_bloqueado()
+    {
+        /** @var User $login */
+        $login = User::factory()->create();
+
+        $user = User::factory()->create();
+
+        $data = [
+            "password" => "asQW12#$"
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/usuarios/{$user->id}/cambiar-contrasena", $data);
+        $response->assertForbidden();
+    }
+
+    public function test_usuario_no_authenticado()
+    {
+        $response = $this->putJson("/api/usuarios/100/cambiar-contrasena", []);
+        $response->assertUnauthorized();
     }
 }

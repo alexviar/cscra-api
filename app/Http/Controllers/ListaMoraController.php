@@ -9,82 +9,76 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class ListaMoraController extends Controller {
+class ListaMoraController extends Controller
+{
+    protected function appendFilters($query, $filter)
+    {
+        if($busqueda = Arr::get($filter, "_busqueda")){
+            // $query->whereRaw("MATCH(`numero_patronal`, `nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda."*"]);
+            $query->where(function ($query) use($busqueda){
+                $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda."*"])
+                      ->orWhere("numero_patronal", "like", "{$busqueda}%");
+            });
+        }
+        else{
+            if($patronal = Arr::get($filter, "numero_patronal")){
+                $query->where("numero_patronal", $patronal);
+            }
+            if ($nombre = Arr::get($filter, "nombre")) {
+                // $query->where("nombre", "like", "%$nombre%");
+                $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$nombre."*"]);
+            }
+        }
+        if ($regionalId = Arr::get($filter, "regional_id")) {
+            $query->where("regional_id", $regionalId);
+        }
+    }            
 
-  function buscar(Request $request): JsonResponse{
+    function buscar(Request $request): JsonResponse
+    {
+        $page =  $request->page;
+        $filter = $request->filter;
 
-    $query = ListaMoraItem::query();
+        $this->authorize("ver", [ListaMoraItem::class, $filter]);
 
-    $page =  $request->page;
-    $filter = $request->filter;
-
-    $this->authorize("ver", [ListaMoraItem::class, $filter]);
-
-    if(Arr::has($filter, "numero_patronal") && ($numero_patronal = $filter["numero_patronal"])){
-      $query->where("numero_patronal", "like", $numero_patronal."%");
+        return $this->buildResponse(ListaMoraItem::query(), $filter, $page);
     }
-    else {
-      if(Arr::has($filter, "regional_id") && ($regionalId = $filter["regional_id"])){
-        $query->where("regional_id", $regionalId);
-      }
-      if(Arr::has($filter, "nombre") && ($nombre = $filter["nombre"])){
-        $query->where("nombre", "like", "%$nombre%");
-      }
+
+    function agregar(Request $request): JsonResponse
+    {
+        $payload = $request->validate([
+            "empleador_id" => ["required", "exists:" . Empleador::class . ",ID", Rule::unique(ListaMoraItem::class)]
+        ], [
+            "empleador_id.exists" => "El empleador no existe.",
+            "empleador_id.unique" => "El empleador ya se encuentra en la lista de mora."
+        ]);
+        $empleador = Empleador::buscarPorId($payload["empleador_id"]);
+
+        $this->authorize("agregar", [ListaMoraItem::class, $empleador]);
+
+        $item = ListaMoraItem::create([
+            "empleador_id" => $payload["empleador_id"],
+            "numero_patronal" => $empleador->numero_patronal,
+            "nombre" => $empleador->nombre,
+            "regional_id" => Regional::mapGalenoIdToLocalId($empleador->ID_RGL)
+        ]);
+
+        return response()->json($item);
     }
 
-    if($page && Arr::has($page, "size")){
-      $total = $query->count();
-      $query->limit($page["size"]);
-      if(Arr::has($page, "current")){
-        $query->offset(($page["current"] - 1) * $page["size"]);
-      }
-      $records = $query->get();
-      return response()->json($this->buildPaginatedResponseData($total, $records));
+    function quitar(Request $request, $id): JsonResponse
+    {
+        $item = ListaMoraItem::find($id);
+        if (!$item)
+            throw new ModelNotFoundException();
+
+        $this->authorize("quitar", [ListaMoraItem::class, $item]);
+
+        $item->delete();
+
+        return response()->json();
     }
-    if(Arr::has($page, "current")){
-      $query->offset($page["current"]);
-    }
-
-    $records = $query->get();
-    return response()->json($records);
-  }
-
-  function agregar(Request $request): JsonResponse {
-    $payload = $request->validate([
-      "empleador_id" => "required"
-    ]);
-    $empleador = Empleador::buscarPorId($payload["empleador_id"]);
-
-    $this->authorize("agregar", [ListaMoraItem::class, $empleador]);
-
-    if(!$empleador)
-      throw new ModelNotFoundException("El empleador no existe");
-    if($item = ListaMoraItem::where("empleador_id", $payload["empleador_id"])->first()){
-      throw ValidationException::withMessages([
-        "empleador_id" => "El empleador ya fue agregado a la lista de mora"
-      ]);//ConflictException::withData("El empleador ya fue agregado a la lista de mora", $item);
-    }
-    $item = ListaMoraItem::create([
-      "empleador_id" => $payload["empleador_id"],
-      "numero_patronal" => $empleador->numero_patronal,
-      "nombre" => $empleador->nombre,
-      "regional_id" => Regional::mapGalenoIdToLocalId($empleador->ID_RGL)
-    ]);
-
-    return response()->json($item);
-  }
-
-  function quitar(Request $request): JsonResponse {
-    $payload = $request->validate([
-      "empleador_id" => "required"
-    ]);
-    $item = ListaMoraItem::buscarPorIdEmpleador($payload["empleador_id"]);
-    if(!$item)
-      throw new ModelNotFoundException();
-    $this->authorize("quitar", [ListaMoraItem::class, $item->empleador]);
-    $item->delete();
-    return response()->json();
-  }
 }

@@ -2,18 +2,36 @@
 
 namespace App\Models;
 
+use App\Infrastructure\SolicitudAtencionExternaQrSigner;
 use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador;
+use Carbon\Carbon;
+use CBOR\ByteStringObject;
+use CBOR\ListObject;
+use CBOR\NegativeIntegerObject;
+use CBOR\TextStringObject;
+use CBOR\UnsignedIntegerObject;
+use EllipticCurve\Ecdsa;
+use EllipticCurve\PrivateKey;
+use Faker\Provider\Base;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 
+/**
+ * @property Carbon $fecha Fecha de emision de la solicitud de atencion externa
+ */
 class SolicitudAtencionExterna extends Model
 {
     use HasFactory;
     
     public $timestamps = false;
 
-    protected $table = "atenciones_externas";
+    protected $table = "solicitudes_atencion_externa";
+
+    protected $casts = [
+        "fecha" => "datetime:d/m/y H:i:s"
+    ];
 
     function getUrlDm11Attribute() {
         return route("forms.dm11", [
@@ -26,62 +44,9 @@ class SolicitudAtencionExterna extends Model
         return str_pad($this->id, 10, '0', STR_PAD_LEFT);
     }
 
-    function getSignatureAttribute()
+    function paciente()
     {
-        $payload = pack("N", $this->id);
-        $key = app()->make('config')->get('app.key');
-        return hash_hmac("sha256", $payload, $key);
-    }
-
-    function validateSignature($signature)
-    {
-        return $this->signature == $signature;
-    }
-
-    function getContentArrayAttribute()
-    {
-        $asegurado = Afiliado::buscarPorId($this->asegurado_id);
-        $titular = $asegurado->afiliacionDelTitular ? Afiliado::buscarPorId($asegurado->afiliacionDelTitular->ID_AFO) : NULL;
-        $empleador = Empleador::buscarPorId($this->empleador_id);
-
-        $signature = $this->signature;
-
-        return [
-            "numero" => $this->numero,
-            "signature" => base64_encode($signature),
-            "qr_data" => base64_encode(pack("N", $this->id) . $signature),
-            "fecha" => $this->fecha,
-            "regional" => $this->regional->nombre,
-            "proveedor" => $this->proveedor->nombre,
-            "titular" => !$titular ? [
-                "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
-                "nombre" => $asegurado->nombre_completo
-            ] : [
-                "matricula" => [$titular->matricula, $titular->matricula_complemento],
-                "nombre" => $titular->nombre_completo
-            ],
-            "beneficiario" => !$titular ? [
-                "matricula" => ["", ""],
-                "nombre" => ""
-            ] : [
-                "matricula" => [$asegurado->matricula, $asegurado->matricula_complemento],
-                "nombre" => $asegurado->nombre_completo
-            ],
-            "empleador" => $empleador->nombre,
-            "doctor" => [
-                "nombre" => $this->medico->nombre_completo,
-                "especialidad" => $this->medico->especialidad
-            ],
-            "proveedor" => $this->proveedor->nombre ?? $this->proveedor->nombreCompleto,
-            "prestaciones" => $this->prestacionesSolicitadas->map(function ($prestacionSolicitada) {
-                return $prestacionSolicitada->prestacion . ($prestacionSolicitada->nota ? " - " . $prestacionSolicitada->nota : "");
-            })->chunk(ceil($this->prestacionesSolicitadas->count() / 3))
-        ];
-    }
-
-    function asegurado()
-    {
-        return $this->belongsTo(Afiliado::class, "asegurado_id", "ID");
+        return $this->belongsTo(Afiliado::class, "paciente_id", "ID");
     }
 
     function titular()
@@ -96,17 +61,17 @@ class SolicitudAtencionExterna extends Model
 
     function medico()
     {
-        return $this->belongsTo(Medico::class, "medico_id");
-    }
-
-    function registradoPor()
-    {
-        return $this->belongsTo(User::class, "usuario_id", "id");
+        return $this->belongsTo(Medico::class);
     }
 
     function proveedor()
     {
-        return $this->belongsTo(Proveedor::class, "proveedor_id");
+        return $this->belongsTo(Proveedor::class);
+    }
+
+    function registradoPor()
+    {
+        return $this->belongsTo(User::class, "login", "id");
     }
 
     function regional()
@@ -114,14 +79,10 @@ class SolicitudAtencionExterna extends Model
         return $this->belongsTo(Regional::class, "regional_id");
     }
 
-    function prestacionesSolicitadas()
-    {
-        return $this->hasMany(PrestacionSolicitada::class, "transferencia_id");
-    }
-
     function toArray()
     {
         $array = parent::toArray();
+        $array["fecha"] = $this->fecha->format("d/m/y H:i:s");
         $array['url_dm11'] = $this->urlDm11;
         return $array;
     }

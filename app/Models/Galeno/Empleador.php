@@ -2,6 +2,7 @@
 
 namespace App\Models\Galeno;
 
+use App\Models\ListaMoraItem;
 use App\Models\Regional;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -69,6 +70,8 @@ class Empleador extends Model
         "numero_patronal",
         "nombre",
         "estado",
+        "estadoText",
+        "en_mora",
         "fecha_baja"
     ];
 
@@ -92,25 +95,40 @@ class Empleador extends Model
         return $this->getAttribute("ESTADO_EMP");
     }
 
+    function getEstadoTextAttribute()
+    {
+        switch($this->getAttribute("ESTADO_EMP")){
+            case 1: return "Activo";
+            case 2: return "Baja";
+            case 3: return "Baja temporal";
+            default: return "";
+        }
+    }
+
     function getFechaBajaAttribute()
     {
         return $this->getAttribute("FECHA_BAJA_EMP");
     }
 
-    function getRegionalIdAttribute()
+    function getRegionalGalenoIdAttribute()
     {
         return $this->getAttribute("ID_RGL");
     }
 
-    function getRegionalLocalIdAttribute()
+    function getRegionalIdAttribute()
     {
         return Regional::mapGalenoIdToLocalId($this->getAttribute("ID_RGL"));
+    }
+
+    function getEnMoraAttribute()
+    {
+        return ListaMoraItem::where("empleador_id", $this->ID)->exists();
     }
 
     function toArray()
     {
         $array = parent::toArray();
-        $array["fecha_baja"] = $this->fecha_baja ? $this->fecha_baja->format("Y-m-d") : null;
+        $array["fecha_baja"] = $this->fecha_baja ? $this->fecha_baja->format("d/m/Y") : null;
         return $array;
     }
 

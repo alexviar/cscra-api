@@ -7,25 +7,254 @@ use App\Models\Medico;
 use App\Models\Permisos;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class BuscarMedicoTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function test_usuario_puede_ver_medicos()
+    private function assertSucces(TestResponse $response, $meta, $data)
     {
-        $user = $this->getSuperUser();
-        
-        $especialidad = Especialidad::factory()->create();
-        Medico::factory()->count(10)
-            ->for($especialidad)
+        $response->assertOk();
+        $response->assertJson([
+            "meta" => $meta,
+            "records" => $data->toArray()
+        ]);
+    }
+
+    public function test_usuario_puede_buscar()
+    {
+        $login = User::factory()
+            ->withPermissions([
+                Permisos::VER_MEDICOS
+            ])
             ->create();
-        $response = $this->actingAs($user)->getJson('/api/medicos');
-        $response->assertOk(200);
+
+        Medico::factory()->count(20)->create();
+        
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => [ "current" => 1, "size" => 10]
+        ]));
+        $this->assertSucces($response, [
+            "total" => 20,
+            "nextPage" => 2
+        ], Medico::limit(10)->get());
+    }
+
+    public function test_usuario_puede_buscar_dentro_de_su_regional()
+    {
+        $login = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::VER_MEDICOS_REGIONAL
+            ])
+            ->create();
+
+        $medicoLaPaz = Medico::factory()->regionalLaPaz()->create();
+        Medico::factory()->regionalSantaCruz()->create();
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => [ "current" => 1, "size" => 10]
+        ]));
+        $response->assertForbidden();
+        
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => [ "current" => 1, "size" => 10],
+            "filter" => [ "regional_id" => 3 ]
+        ]));
+        $response->assertForbidden();
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => [ "current" => 1, "size" => 10],
+            "filter" => [ "regional_id" => 1 ]
+        ]));
+        $this->assertSucces($response, [
+            "total" => 1
+        ], collect([$medicoLaPaz]));
+    }
+
+    public function test_filter_by_nombre_completo()
+    {
+        $login = $this->getSuperUser();
+
+        $lorena = Medico::factory()->state([
+            "nombre" => "Lorena",
+            "apellido_materno" => "Fulanito",
+            "apellido_paterno" => "Fulanito"
+        ])->create();
+        $lorem =  Medico::factory()->state([
+            "nombre" => "Cosme",
+            "apellido_materno" => "Lörem",
+            "apellido_paterno" => "Fulanito"
+        ])->create();
+        $lord = Medico::factory()->state([
+            "nombre" => "Cosme",
+            "apellido_materno" => "Fulanito",
+            "apellido_paterno" => "Lord"
+        ])->create();
+        Medico::factory()->state([
+            "nombre" => "Cosme",
+            "apellido_materno" => "Fulanito",
+            "apellido_paterno" => "Fulanito"
+        ])->create();
+
+        DB::commit();
+
+        $page = [
+            "current" => 1,
+            "size" => 10
+        ];
+        $filter = [
+            "nombre_completo" => "lor"
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => $filter
+        ]));
+        $this->assertSucces($response, [
+            "total" => 3
+        ], collect([$lorena, $lorem, $lord]));
+        
+        RefreshDatabaseState::$migrated = false;
+        $this->refreshDatabase();
+    }
+
+    public function test_filter_by_ci()
+    {
+        $login = $this->getSuperUser();
+
+        $medico = Medico::factory()->create();
+        Medico::factory()->count(10)->create();
+
+        $page = [
+            "current" => 1,
+            "size" => 10
+        ];
+        $filter = [
+            "ci" => $medico->ci->toArray()
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => $filter
+        ]));
+        $this->assertSucces($response, [
+            "total" => 1
+        ], collect([$medico]));
+    }
+
+    public function test_filter_by_especialidad()
+    {
+        $login = $this->getSuperUser();
+
+        $medico = Medico::factory([
+            "especialidad" => "Esta sí"
+        ])->create();
+
+        Medico::factory([
+            "especialidad" => "Esta no"
+        ])->create();
+
+        $page = [
+            "current" => 1,
+            "size" => 10
+        ];
+        $filter = [
+            "especialidad" => $medico->especialidad
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => $filter
+        ]));
+        $this->assertSucces($response, [
+            "total" => 1
+        ], collect([$medico]));
+    }
+
+    public function test_filter_by_estado()
+    {
+        $login = $this->getSuperUser();
+
+        $activo = Medico::factory()->create();
+        $baja = Medico::factory()->baja()->create();
+
+        $page = [
+            "current" => 1,
+            "size" => 10
+        ];
+        $filter = [
+            "estado" => 1
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => $filter
+        ]));
+        $this->assertSucces($response, [
+            "total" => 1
+        ], collect([$activo]));
+        
+        $filter = [
+            "estado" => 2
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => $filter
+        ]));
+        $this->assertSucces($response, [
+            "total" => 1
+        ], collect([$baja]));
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page
+        ]));
+        $this->assertSucces($response,[
+            "total" => 2
+        ],collect([$activo, $baja]));
+    }
+
+    public function test_filter_by_regional()
+    {
+        $login = $this->getSuperUser();
+
+        $medicoLaPaz = Medico::factory()->regionalLaPaz()->create();
+        $medicoSantaCruz = Medico::factory()->regionalSantaCruz()->create();
+
+        $page = [
+            "current" => 1,
+            "size" => 10
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => [
+                "regional_id" => $medicoLaPaz->regional_id
+            ]
+        ]));
+        $this->assertSucces($response,[
+            "total" => 1
+        ], collect([$medicoLaPaz]));
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => [
+                "regional_id" => $medicoSantaCruz->regional_id
+            ]
+        ]));
+        $this->assertSucces($response,[
+            "total" => 1
+        ], collect([$medicoSantaCruz]));
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page
+        ]));
+        $this->assertSucces($response,[
+            "total" => 2
+        ], collect([$medicoLaPaz, $medicoSantaCruz]));
     }
 }

@@ -2,278 +2,388 @@
 
 namespace Tests\Feature\Proveedor;
 
-use App\Models\Especialidad;
 use App\Models\Proveedor;
 use App\Models\Permisos;
-use App\Models\Prestacion;
 use App\Models\User;
-use Grimzy\LaravelMysqlSpatial\Types\Point;
+use App\Models\ValueObjects\CarnetIdentidad;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class RegistrarProveedorTest extends TestCase
 {
     use WithFaker;
 
-    private $especialidad;
-    private $prestaciones;
-
-    public function setUp(): void
+    private function assertSuccess(TestResponse $response, $data)
     {
-        parent::setUp();
-        $this->especialidad = Especialidad::factory()->create();
-        $this->prestaciones = Prestacion::factory()->count(10)->create();
-    }
-
-    private function setDatosProveedor(&$data)
-    {
-        if(Arr::has($data, "contacto")){
-            Arr::set($data, "contacto", [
-                "municipio_id" => Arr::get($data, "contacto.municipio_id", 1),
-                "direccion" => Arr::get($data, "contacto.direccion", $this->faker->address),
-                "ubicacion" => Arr::get($data, "contacto.ubicacion", [
-                    "latitud" => $this->faker->latitude,
-                    "longitud" => $this->faker->longitude
-                ]),
-                "telefono1" => Arr::get($data, "contacto.telefono1", 70000000)
+        $response->assertOk();
+        if ($data["tipo"] == 1) {
+            $this->assertDatabaseHas("proveedores", [
+                "tipo" => 1,
+                "estado" => 1,
+                "nit" => $data["nit"],
+                "ci" => Arr::get($data, "ci.raiz"),
+                "ci_complemento" => Arr::get($data, "ci.complemento"),
+                "apellido_paterno" => $data["apellido_paterno"],
+                "apellido_materno" => $data["apellido_materno"],
+                "nombre" => $data["nombre"],
+                "especialidad" => $data["especialidad"],
+                "regional_id" => $data["regional_id"],
+                "direccion" => $data["direccion"],
+                "ubicacion" => DB::raw("point(" . Arr::get($data, "ubicacion.longitud") . "," . Arr::get($data, "ubicacion.latitud") . ")"),
+                "telefono1" => $data["telefono1"],
+                "telefono2" => $data["telefono2"]
+            ]);
+        } else {
+            $this->assertDatabaseHas("proveedores", [
+                "tipo" => 2,
+                "estado" => 1,
+                "nit" => $data["nit"],
+                "nombre" => $data["nombre"],
+                "regional_id" => $data["regional_id"],
+                "direccion" => $data["direccion"],
+                "ubicacion" => DB::raw("point(" . Arr::get($data, "ubicacion.longitud") . "," . Arr::get($data, "ubicacion.latitud") . ")"),
+                "telefono1" => $data["telefono1"],
+                "telefono2" => $data["telefono2"]
             ]);
         }
+        $proveedor = Proveedor::find($response->json("id"));
+        // if($proveedor == null) dd($response->json("id"), $proveedor);
+        $response->assertJson($proveedor->toArray());
+    }
+
+    private function prepareData($data)
+    {
+        if ($data["tipo"] == 1) $data["ci"] = $data["ci"]->toArray();
+        $data["ubicacion"] = [
+            "latitud" => $data["ubicacion"]->getLat(),
+            "longitud" => $data["ubicacion"]->getLng()
+        ];
+        return $data;
+    }
+
+    public function test_campos_requeridos()
+    {
+        $login = $this->getSuperUser();
+
+        $response = $this->actingAs($login)
+            ->postJson("/api/proveedores", [
+                "tipo" => 1
+            ]);
+
+        $response->assertJsonValidationErrors([
+            "nit" => "Este campo es requerido.",
+            "ci.raiz" => "Este campo es requerido",
+            "apellido_paterno" => "Debe indicar al menos un apellido",
+            "apellido_materno" => "Debe indicar al menos un apellido",
+            "nombre" => "Este campo es requerido",
+            "especialidad" => "Este campo es requerido",
+            "regional_id" => "Debe indicar una regional",
+            "ubicacion.latitud" => "Este campo es requerido",
+            "ubicacion.longitud" => "Este campo es requerido",
+            "direccion" => "Este campo es requerido",
+            "telefono1" => "Este campo es requerido"
+        ]);
+
+        $response = $this->actingAs($login)->postJson("/api/proveedores", [
+            "tipo" => 2
+        ]);
+
+        $response->assertJsonValidationErrors([
+            "nit" => "Este campo es requerido.",
+            "nombre" => "Este campo es requerido",
+            "regional_id" => "Debe indicar una regional",
+            "direccion" => "Este campo es requerido",
+            "ubicacion.latitud" => "Este campo es requerido",
+            "ubicacion.longitud" => "Este campo es requerido",
+            "telefono1" => "Este campo es requerido"
+        ]);
+
+        $response->assertJsonMissingValidationErrors(["ci", "ci.raiz", "ci.complemento", "apellido_paterno", "apellido_materno", "especialidad"]);
+    }
+
+    public function test_ci_repetido()
+    {
+        $login = $this->getSuperUser();
+
+        $existingProveedor1 = Proveedor::factory()->medico()->state([
+            "ci" => new CarnetIdentidad(12345678, "")
+        ])->regionalLaPaz()->create();
+        $existingProveedor2 = Proveedor::factory()->medico()->state([
+            "ci" => new CarnetIdentidad(2345678, "1A")
+        ])->regionalLaPaz()->create();
+
+        // Carnet repetido, pero en otra regional
+        $data = Proveedor::factory()->medico()->state([
+            "ci" => $existingProveedor1->ci
+        ])->regionalSantaCruz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonMissingValidationErrors(["ci"]);
+
+        $data = Proveedor::factory()->medico()->state([
+            "ci" => $existingProveedor2->ci
+        ])->regionalSantaCruz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonMissingValidationErrors(["ci"]);
+
+        // Carnet repetido con diferente complemento
+        $data = Proveedor::factory()->medico()->state([
+            "ci" => (new CarnetIdentidad(12345678, "1A"))
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonMissingValidationErrors(["ci"]);
+
+        $data = Proveedor::factory()->medico()->state([
+            "ci" => (new CarnetIdentidad(2345678, "1B"))
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonMissingValidationErrors(["ci"]);
+
+        //Carnet repetido
+        $data = Proveedor::factory()->medico()->state([
+            "ci" => $existingProveedor1->ci
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonValidationErrors(["ci" => "Ya existe un proveedor registrado con este carnet de identidad."]);
+
+        $data = Proveedor::factory()->medico()->state([
+            "ci" => $existingProveedor2->ci
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonValidationErrors(["ci" => "Ya existe un proveedor registrado con este carnet de identidad."]);
+    }
+
+    public function test_nit_repetido()
+    {
+        $login = $this->getSuperUser();
+
+        $existingProveedor1 = Proveedor::factory()->medico()->state([
+            "nit" => "123456789012"
+        ])->regionalLaPaz()->create();
+        $existingProveedor2 = Proveedor::factory()->empresa()->state([
+            "nit" => "234567890123"
+        ])->regionalLaPaz()->create();
+
+        // Carnet repetido, pero en otra regional
+        $data = Proveedor::factory()->empresa()->state([
+            "nit" => $existingProveedor1->nit
+        ])->regionalSantaCruz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonMissingValidationErrors(["nit"]);
+
+        $data = Proveedor::factory()->empresa()->state([
+            "nit" => $existingProveedor2->nit
+        ])->regionalSantaCruz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonMissingValidationErrors(["nit"]);
+
+        // Carnet repetido
+        $data = Proveedor::factory()->empresa()->state([
+            "nit" => $existingProveedor1->nit
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonValidationErrors(["nit" => "Ya existe un proveedor registrado con este NIT."]);
+
+        $data = Proveedor::factory()->empresa()->state([
+            "nit" => $existingProveedor2->nit
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson("/api/proveedores", $data);
+        $response->assertJsonValidationErrors(["nit" => "Ya existe un proveedor registrado con este NIT."]);        
+    }
         
-        Arr::set($data, "contrato", [
-            "inicio" => Arr::get($data, "contrato.inicio", $this->faker->date()),
-            "prestacion_ids" => Arr::get($data, "contrato.prestacion_id", $this->prestaciones->random(3)->pluck("id"))
-        ]);
-    }
-
-    private function setDatosProveedorEmpresa(&$data)
+    public function test_regional_no_existe()
     {
-        $this->setDatosProveedor($data);
+        $login = $this->getSuperUser();
 
-        Arr::set($data, "general", [
-            "tipo_id" => 2,
-            "nit" => Arr::get($data, "general.nit", $this->faker->numerify("###########")),
-            "nombre" => Arr::get($data, "general.nombre", $this->faker->text(25)),
-            "regional_id" => Arr::get($data, "general.regional_id", 1)
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson('/api/proveedores', [
+                "tipo" => 1,
+                "regional_id" => 0
+            ]);
+        $response->assertJsonValidationErrors([
+            "regional_id" => "Regional inválida.",
         ]);
-    }
 
-    private function setDatosProveedorMedico(&$data)
-    {
-        $this->setDatosProveedor($data);
-        $ci = $this->faker->numerify("########");
-        Arr::set($data, "general", [
-            "tipo_id" => 1,
-            "nit" => Arr::get($data, "general.nit", $ci . "016"),
-            "ci" => Arr::get($data, "general.ci", $ci),
-            "apellido_paterno" => Arr::get($data, "general.apellido_paterno", $this->faker->lastName),
-            "apellido_materno" => Arr::get($data, "general.apellido_materno", $this->faker->lastName),
-            "nombres" => Arr::get($data, "general.nombres", $this->faker->name),
-            "especialidad_id" =>  $this->especialidad->id,
-            "regional_id" => Arr::get($data, "general.regional_id", 1)
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson('/api/proveedores', [
+                "tipo" => 2,
+                "regional_id" => 0
+            ]);
+        $response->assertJsonValidationErrors([
+            "regional_id" => "Regional inválida.",
         ]);
-    }
-    
-    private function assertProveedor($proveedor, $data){
-        $this->assertTrue(!!$proveedor);
-        $this->assertTrue($proveedor->tipo_id == Arr::get($data, "general.tipo_id"));
-        $this->assertTrue($proveedor->nit == Arr::get($data, "general.nit"));
-        if($proveedor->tipo_id == 1){
-            $this->assertTrue($proveedor->ci == Arr::get($data, "general.ci"));
-            $this->assertTrue($proveedor->ci_complemento == Arr::get($data, "general.ci_complemento"));
-            $this->assertTrue($proveedor->apellido_paterno == Arr::get($data, "general.apellido_paterno"));
-            $this->assertTrue($proveedor->apellido_materno == Arr::get($data, "general.apellido_materno"));
-            $this->assertTrue($proveedor->nombres == Arr::get($data, "general.nombres"));
-            $this->assertTrue($proveedor->especialidad_id == Arr::get($data, "general.especialidad_id"));
-        }
-        else {
-            $this->assertTrue($proveedor->nombre == Arr::get($data, "general.nombre"));
-        }
-
-        $this->assertTrue($proveedor->regional_id == Arr::get($data, "general.regional_id"));
-        $this->assertTrue($proveedor->municipio_id == Arr::get($data, "contacto.municipio"));
-        $this->assertTrue($proveedor->direccion == Arr::get($data, "contacto.direccion"));
-        $this->assertTrue($proveedor->ubicacion == (Arr::get($data, "contacto.ubicacion") ?
-            new Point(Arr::get($data, "contacto.ubicacion.latitud"), Arr::get($data, "contacto.ubicacion.longitud")) :
-            null)
-        );
-        $this->assertTrue($proveedor->telefono1 == Arr::get($data, "contacto.telefono1"));
-        $this->assertTrue($proveedor->telefono2 == Arr::get($data, "contacto.telefono2"));
-
-        $contrato = $proveedor->contratos[0];
-        $this->assertTrue(!!$contrato);
-        $this->assertTrue($contrato->inicio->format("Y-m-d") == Arr::get($data, "contrato.inicio"));
-        $this->assertTrue(($contrato->fin ? $contrato->fin->format("Y-m-d") : null) == Arr::get($data, "contrato.fin"));
-
-        $prestaciones = $contrato->prestaciones;
-        $this->assertNotEmpty($prestaciones);
-        $this->assertTrue($prestaciones->count() == count(Arr::get($data, "contrato.prestacion_ids", []))
-            && $prestaciones->pluck("id")->diff(collect(Arr::get($data, "contrato.prestacion_ids", [])))->isEmpty()
-        );
     }
 
     public function test_usuario_puede_registrar()
     {
-        $user = User::factory()
+        $login = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
                 Permisos::REGISTRAR_PROVEEDORES,
             ])
             ->create();
 
-        //Test registro de especialista
-        $data = [];
-        $this->setDatosProveedorMedico($data);
-        $response = $this->actingAs($user)
+        //Misma regional
+        //Especialista
+        $data = Proveedor::factory()->regionalLaPaz()->medico()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
-        $response->assertOk();
-        $id = json_decode($content)->id;
+        $this->assertSuccess($response, $data);
 
-        $proveedor = Proveedor::find($id);
-        $this->assertProveedor($proveedor, $data);
-
-        //Test registro de empresa
-        $data = [];
-        $this->setDatosProveedorEmpresa($data);
-        
-        $response = $this->actingAs($user)
+        //Empresa
+        $data = Proveedor::factory()->regionalLaPaz()->empresa()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
-        $response->assertOk();
-        $id = json_decode($content)->id;
+        $this->assertSuccess($response, $data);
 
-        $proveedor = Proveedor::find($id);
-        $this->assertProveedor($proveedor, $data);
-        
-        //Test registro de especialista en otra regional
-        $data = [
-            "general" => [
-                "regional_id" => 3
-            ]
-        ];
-        $this->setDatosProveedorMedico($data);
-        $response = $this->actingAs($user)
+        //Distinta regional
+        //Especialista
+        $data = Proveedor::factory()->regionalSantaCruz()->medico()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
-        $response->assertOk();
-        $id = json_decode($content)->id;
+        $this->assertSuccess($response, $data);
 
-        $proveedor = Proveedor::find($id);
-        $this->assertProveedor($proveedor, $data);
-
-        //Test registro de empresa en otra regional
-        $data = [
-            "general" => [
-                "regional_id" => 3
-            ]
-        ];
-        $this->setDatosProveedorEmpresa($data);
-        
-        $response = $this->actingAs($user)
+        //Empresa
+        $data = Proveedor::factory()->regionalSantaCruz()->empresa()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
-        $response->assertOk();
-        $id = json_decode($content)->id;
-
-        $proveedor = Proveedor::find($id);
-        $this->assertProveedor($proveedor, $data);
+        $this->assertSuccess($response, $data);
     }
 
     public function test_usuario_puede_registrar_regionalmente()
     {
-        $user = User::factory()
+        $login = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
                 Permisos::REGISTRAR_PROVEEDORES_REGIONAL,
             ])
             ->create();
 
-        //Test registro de especialista
-        $data = [];
-        $this->setDatosProveedorMedico($data);
-        $response = $this->actingAs($user)
+
+        //Misma regional
+        //Especialista
+        $data = Proveedor::factory()->regionalLaPaz()->medico()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
-        $response->assertOk();
-        $id = json_decode($content)->id;
+        $this->assertSuccess($response, $data);
 
-        $proveedor = Proveedor::find($id);
-        $this->assertProveedor($proveedor, $data);
-
-        //Test registro de empresa
-        $data = [];
-        $this->setDatosProveedorEmpresa($data);
-        
-        $response = $this->actingAs($user)
+        //Empresa
+        $data = Proveedor::factory()->regionalLaPaz()->empresa()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
-        $response->assertOk();
-        $id = json_decode($content)->id;
+        $this->assertSuccess($response, $data);
 
-        $proveedor = Proveedor::find($id);
-        $this->assertProveedor($proveedor, $data);
-        
-        //Test registro de especialista en otra regional
-        $data = [
-            "general" => [
-                "regional_id" => 3
-            ]
-        ];
-        $this->setDatosProveedorMedico($data);
-        $response = $this->actingAs($user)
+        //Distinta regional
+        //Especialista
+        $data = Proveedor::factory()->regionalSantaCruz()->medico()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
         $response->assertForbidden();
 
-        //Test registro de empresa en otra regional
-        $data = [
-            "general" => [
-                "regional_id" => 3
-            ]
-        ];
-        $this->setDatosProveedorEmpresa($data);
-        
-        $response = $this->actingAs($user)
+        //Empresa
+        $data = Proveedor::factory()->regionalSantaCruz()->empresa()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
             ->postJson("/api/proveedores", $data);
-        $content = $response->getContent();
+        $response->assertForbidden();
+
+        //Precedencia de los permisos regionales
+        $login = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::REGISTRAR_PROVEEDORES,
+                Permisos::REGISTRAR_PROVEEDORES_REGIONAL,
+            ])
+            ->create();
+
+        //Especialista
+        $data = Proveedor::factory()->regionalSantaCruz()->medico()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
+            ->postJson("/api/proveedores", $data);
+        $response->assertForbidden();
+
+        //Empresa
+        $data = Proveedor::factory()->regionalSantaCruz()->empresa()->raw();
+        $data = $this->prepareData($data);
+        $response = $this->actingAs($login)
+            ->postJson("/api/proveedores", $data);
+        $response->assertForbidden();
+    }
+    
+    public function test_usuario_sin_permisos()
+    {
+        $login = User::factory()
+            ->withPermissions([])
+            ->create();
+        
+        $data = Proveedor::factory()->empresa()->raw();
+        $data = $this->prepareData($data);
+        
+        $response = $this->actingAs($login, "sanctum")
+            ->postJson('/api/proveedores', $data);
+        $response->assertForbidden();
+    }    
+
+    public function test_super_usuario()
+    {
+        $login = User::factory()->superUser()->create();
+
+        $data = Proveedor::factory()->empresa()->raw();
+        $data = $this->prepareData($data);
+
+        $response = $this->actingAs($login)
+            ->postJson("/api/proveedores", $data);
+        $this->assertSuccess($response, $data);
+    }
+
+    public function test_usuario_bloqueado()
+    {
+        $login = User::factory()
+            ->bloqueado()
+            ->withPermissions([Permisos::REGISTRAR_PROVEEDORES])
+            ->create();
+
+        $data = Proveedor::factory()->empresa()->raw();
+        $data = $this->prepareData($data);
+
+        $response = $this->actingAs($login)
+            ->postJson("/api/proveedores", $data);
         $response->assertForbidden();
     }
 
-    public function test_campos_requeridos(){
-        $user = $this->getSuperUser();
-
-        $response = $this->actingAs($user)
-        ->postJson("/api/proveedores", [
-            "general" => [
-                "tipo_id" => 1
-            ]
-        ]);
-        
-        $response->assertJsonValidationErrors([
-            "general.ci" => "Este campo es requerido",
-            "general.apellido_paterno" => "Debe indicar al menos un apellido",
-            "general.apellido_materno" => "Debe indicar al menos un apellido",
-            "general.nombres" => "Este campo es requerido",
-            "general.especialidad_id" => "Este campo es requerido",
-            "general.regional_id" => "Este campo es requerido",
-            "contrato.inicio" => "Este campo es requerido",
-            "contrato.prestacion_ids" => "Este campo es requerido"
-        ]);
-
-        $response = $this->postJson("/api/proveedores", [
-            "general" => [
-                "tipo_id" => 2
-            ]
-        ]);
-        
-        $response->assertJsonValidationErrors([
-            "general.nombre" => "Este campo es requerido",
-            "general.regional_id" => "Este campo es requerido",
-            "contrato.inicio" => "Este campo es requerido",
-            "contrato.prestacion_ids" => "Este campo es requerido"
-        ]);
+    public function test_usuario_no_autenticado()
+    {
+        $response = $this->postJson('/api/proveedores', []);
+        $response->assertUnauthorized();
     }
-
-    // function test_informacion_de_contacto_incompleta()
-    // {
-
-    // }
 }

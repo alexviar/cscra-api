@@ -9,30 +9,23 @@ use Illuminate\Support\Arr;
 
 class ListaMoraPolicy
 {
-    use HandlesAuthorization;
+  use HandlesAuthorization;
 
-    /**
-     * Create a new policy instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
+  public function ver(User $user, $filter)
+  {
+    if ($user->hasPermissionTo(Permisos::VER_LISTA_DE_MORA_REGIONAL)) return $user->regional_id == Arr::get($filter, "regional_id");
+    if ($user->hasPermissionTo(Permisos::VER_LISTA_DE_MORA)) return true;
+  }
 
-    public function ver(User $user, $filter){
-      if($user->can(Permisos::VER_LISTA_DE_MORA)) return true;
-      if($user->can(Permisos::VER_LISTA_DE_MORA_REGIONAL) && Arr::get($filter, "regional_id") == $user->regional_id) return true;
-    }
+  public function agregar(User $user, $empleador)
+  {
+    if ($user->hasPermissionTo(Permisos::AGREGAR_A_LA_LISTA_DE_MORA_MISMA_REGIONAL)) return $user->regional_id == $empleador->regional_id;
+    if ($user->hasPermissionTo(Permisos::AGREGAR_A_LA_LISTA_DE_MORA)) return true;
+  }
 
-    public function agregar(User $user, $empleador) {
-      if($user->can(Permisos::AGREGAR_EMPLEADOR_EN_MORA)) return true;
-      if($user->can(Permisos::AGREGAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL) && $user->regional_id == $empleador->regional_local_id) return true;
-    }
-
-    public function quitar(User $user, $empleador) {
-      if($user->can(Permisos::QUITAR_EMPLEADOR_EN_MORA)) return true;
-      if($user->can(Permisos::QUITAR_EMPLEADOR_EN_MORA_DE_LA_MISMA_REGIONAL) && $user->regional_id == $empleador->regional_local_id) return true;
-    }
+  public function quitar(User $user, $empleador)
+  {
+    if ($user->hasPermissionTo(Permisos::QUITAR_DE_LA_LISTA_DE_MORA_MISMA_REGIONAL)) return $user->regional_id == $empleador->regional_id;
+    if ($user->hasPermissionTo(Permisos::QUITAR_DE_LA_LISTA_DE_MORA)) return true;
+  }
 }

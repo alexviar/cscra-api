@@ -7,12 +7,39 @@ use App\Http\Controllers\Controller;
 use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Models\Regional;
+use App\Models\ValueObjects\CarnetIdentidad;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
 class MedicosController extends Controller
 {
+    protected function appendFilters($query, $filter)
+    {
+        if ($busqueda = Arr::get($filter, "_busqueda")) {
+            $query->where(function ($query) use ($busqueda) {
+                $query->whereRaw("MATCH(`apellido_paterno`, `apellido_materno`, `nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda . "*"]);
+                $query->orWhere("especialidad", $busqueda);
+            });
+        } else {
+            if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
+                $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
+            }
+            if (Arr::has($filter, "ci.raiz") && $ci = Arr::get($filter, "ci.raiz")) {
+                $query->where("ci", $ci);
+                if($ciComplemento = Arr::get($filter, "ci.complemento")) $query->where("ci_complemento", $ciComplemento);
+            }
+            if (Arr::has($filter, "especialidad") && $especialidad = $filter["especialidad"]) {
+                $query->where("especialidad", "LIKE", "%".$especialidad."%");
+            }
+        }
+        if (Arr::has($filter, "estado") && $estado = $filter["estado"]) {
+            $query->where("estado", $estado);
+        }
+        if (Arr::has($filter, "regional_id")) {
+            $query->where("regional_id", $filter["regional_id"]);
+        }        
+    }
     function buscar(Request $request)
     {
         $query = Medico::query();
@@ -21,40 +48,7 @@ class MedicosController extends Controller
 
         $this->authorize("verTodo", [Medico::class, $filter]);
 
-        if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
-            $query->whereRaw("MATCH(`nombres`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
-        }
-        if (Arr::has($filter, "ci") && $ci = $filter["ci"]) {
-            $query->where("ci", $ci);
-        }
-        if (Arr::has($filter, "ci_complemento") && $ciComplemento = $filter["ci_complemento"]) {
-            $query->where("ci_complemento", $ciComplemento);
-        }
-        if (Arr::has($filter, "especialidad_id") && $especialidad_id = $filter["especialidad_id"]) {
-            $query->where("especialidad_id", $especialidad_id);
-        }
-        if (Arr::has($filter, "tipo") && $tipo = $filter["tipo"]) {
-            $query->where("tipo", $tipo);
-        }
-        if (Arr::has($filter, "estado") && $estado = $filter["estado"]) {
-            $query->where("estado", $estado);
-        }
-        if ($page && Arr::has($page, "size")) {
-            $total = $query->count();
-            $query->limit($page["size"]);
-            if (Arr::has($page, "current")) {
-                $query->offset(($page["current"] - 1) * $page["size"]);
-            }
-            $records = $query->get();
-            $records->makeVisible("nombre_completo");
-            return response()->json($this->buildPaginatedResponseData($total, $records));
-        }
-        if (Arr::has($page, "current")) {
-            $query->offset($page["current"]);
-        }
-        $records = $query->get();
-        $records->makeVisible("nombre_completo");
-        return response()->json($records);
+        return $this->buildResponse($query, $filter, $page);
     }
 
     function mostrar(Request $request, $id)
@@ -70,79 +64,98 @@ class MedicosController extends Controller
     function registrar(Request $request)
     {
         $payload = $request->validate([
-            "tipo" => "required|in:1,2",
-            "ci" => "required|numeric",
-            "ci_complemento" => "nullable",
-            "apellido_paterno" => "required_without:apellido_materno",
-            "apellido_materno" => "required_without:apellido_paterno",
-            "nombres" => "required",
-            "regional_id" => "required|exists:".Regional::class.",id",
-            "especialidad_id" => "required|exists:".Especialidad::class.",id"
+            "ci" => [function ($attribute, $value, $fail) use($request){
+                $user = Medico::where("ci", $value["raiz"])
+                    ->where("ci_complemento", $value["complemento"] ?? "")
+                    ->where("regional_id", $request->regional_id)
+                    ->first();
+                if ($user) {
+                    $fail("Ya existe un médico registrado con este carnet de identidad.");
+                }
+            }],
+            "ci.raiz" => "required|integer",
+            "ci.complemento" => "nullable|regex:/^[1-9][A-Z]$/",
+            "apellido_paterno" => "required_without:apellido_materno|max:25",
+            "apellido_materno" => "required_without:apellido_paterno|max:25",
+            "nombre" => "required|max:50",
+            "especialidad" => "required",
+            "regional_id" => "required|exists:".Regional::class.",id"
         ], [
             "apellido_paterno.required_without" => "Debe indicar al menos un apellido.",
             "apellido_materno.required_without" => "Debe indicar al menos un apellido.",
             "regional_id.required" => "Debe indicar una regional.",
             "regional_id.exists" => "La regional no es válida.",
-            "especialidad_id.required" => "Debe indicar una especialidad.",
-            "especialidad_id.exists" => "La especialidad no es válida."
+            "especialidad.required" => "Debe indicar una especialidad.",
         ]);
 
         $this->authorize("registrar", [Medico::class, $payload]);
 
-        $exists = Medico::where("ci", $payload["ci"])
-            ->where("ci_complemento", $payload["ci_complemento"] ?? null)
-            ->first();
-        if($exists){
-            throw ConflictException::withData("Existe un registro con el mismo carnet de identidad.", $exists);
-        }
-
-        $medico = Medico::create($payload+["estado" => 1, "tipo" => 1]);
+        /** @var Medico $medico */
+        $medico = Medico::create(
+            array_merge($payload, [
+                "estado" => 1,
+                "ci" => new CarnetIdentidad(Arr::get($payload, "ci.raiz"), Arr::get($payload, "ci.complemento") ?? "")
+            ])
+        );
+        $medico->load("regional");
         return response()->json($medico);
     }
 
     function actualizar(Request $request, $id)
     {
-
-        $payload = $request->validate([
-            "tipo" => "required|in:1,2",
-            "ci" => "required|numeric",
-            "ci_complemento" => "nullable",
-            "apellido_paterno" => "required_without:apellido_materno",
-            "apellido_materno" => "required_without:apellido_paterno",
-            "nombres" => "required",
-            "regional_id" => "required|exists:".Regional::class.",id",
-            "especialidad_id" => "required|exists:".Especialidad::class.",id"
-        ], [
-            "apellido_paterno.required_without" => "Debe indicar al menos un apellido.",
-            "apellido_materno.required_without" => "Debe indicar al menos un apellido.",
-            "regional_id.required" => "Debe indicar una regional.",
-            "regional_id.exists" => "La regional no es válida.",
-            "especialidad_id.required" => "Debe indicar una especialidad.",
-            "especialidad_id.exists" => "La especialidad no es válida."
-        ]);
-
+        /** @var Medico $medico */
         $medico = Medico::find($id);
         if (!$medico) {
             throw new ModelNotFoundException("Medico no existe");
         }
 
-        $exists = Medico::where("ci", $payload["ci"])
-            ->where("ci_complemento", $payload["ci_complemento"] ?? null)
-            ->where("id", "<>", $id)
-            ->first();
-        if($exists){
-            throw ConflictException::withData("Existe un registro con el mismo carnet de identidad.", $exists);
-        }
+        $payload = $request->validate([
+            "ci" => [function ($attribute, $value, $fail) use($request, $medico){
+                $user = Medico::where("ci", $value["raiz"])
+                    ->where("ci_complemento", $value["complemento"] ?? "")
+                    ->where("regional_id", $request->regional_id)
+                    ->where("id", "<>", $medico->id)
+                    ->first();
+                if ($user) {
+                    $fail("Ya existe un médico registrado con este carnet de identidad.");
+                }
+            }],
+            "ci.raiz" => "required|integer",
+            "ci.complemento" => "nullable|regex:/^[1-9][A-Z]$/",
+            "apellido_paterno" => "required_without:apellido_materno|max:25",
+            "apellido_materno" => "required_without:apellido_paterno|max:25",
+            "nombre" => "required|max:50",
+            "especialidad" => "required",
+            "regional_id" => "required|exists:".Regional::class.",id"
+        ], [
+            "apellido_paterno.required_without" => "Debe indicar al menos un apellido.",
+            "apellido_materno.required_without" => "Debe indicar al menos un apellido.",
+            "regional_id.required" => "Debe indicar una regional.",
+            "regional_id.exists" => "La regional no es válida.",
+            "especialidad.required" => "Debe indicar una especialidad.",
+        ]);
 
         $this->authorize("editar", [$medico, $payload]);
 
-        $medico->fill($payload);
-        $medico->save();
-        return response()->json($medico);
+        $medico->update(
+            array_merge($payload, [
+                "estado" => $medico->estado,
+                "ci" => new CarnetIdentidad(Arr::get($payload, "ci.raiz"), Arr::get($payload, "ci.complemento") ?? "")
+            ])
+        );
+
+        //Fresh model to refresh regional relationship
+        $medico->load("regional");
+        return response()->json($medico->fresh());
     }
 
-    function cambiarEstado(Request $request, $id)
+    function actualizarEstado(Request $request, $id)
     {
+        $medico = Medico::find($id);
+        if (!$medico) {
+            throw new ModelNotFoundException("Medico no existe");
+        }
+        
         $payload = $request->validate([
             "estado" => "required|in:1,2"
         ], [
@@ -150,10 +163,6 @@ class MedicosController extends Controller
             "estado.required" => "El estado es requerido"
         ]);
 
-        $medico = Medico::find($id);
-        if (!$medico) {
-            throw new ModelNotFoundException("Medico no existe");
-        }
         $this->authorize("cambiar-estado", [$medico, $payload["estado"]]);
 
         $medico->update($payload);

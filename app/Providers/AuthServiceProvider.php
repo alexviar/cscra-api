@@ -6,12 +6,14 @@ use App\Models\Especialidad;
 use App\Models\ListaMoraItem;
 use App\Models\Prestacion;
 use App\Models\SolicitudAtencionExterna;
+use App\Models\User;
 use App\Policies\EspecialidadPolicy;
 use Spatie\Permission\Models\Role;
 use App\Policies\RolePolicy;
 use App\Policies\ListaMoraPolicy;
 use App\Policies\PrestacionPolicy;
 use App\Policies\SolicitudAtencionExternaPolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -23,7 +25,7 @@ class AuthServiceProvider extends ServiceProvider
      * @var array
      */
     protected $policies = [
-        'App\Models\User' => 'App\Policies\UserPolicy',
+        User::class => UserPolicy::class,
         Role::class => RolePolicy::class,
         ListaMoraItem::class => ListaMoraPolicy::class,
         Especialidad::class => EspecialidadPolicy::class,
@@ -47,9 +49,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::after(function ($user) {
-            // dd("I'm here",$user->hasRole("super user"));
           if($user->isSuperUser()){
-            //   dd("I'm here");
               return true;
           }
         });

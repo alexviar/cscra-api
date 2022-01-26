@@ -8,6 +8,14 @@ use Spatie\Permission\Models\Role as ModelsRole;
 class Role extends ModelsRole {
     use HasFactory;
 
+    protected $with = [ "permissions" ];
+
+    protected $hidden = [
+        "permissions.pivot",
+        "pivot",
+        "guard_name"
+    ];
+
     // public static function boot() {
     //     parent::boot();
 

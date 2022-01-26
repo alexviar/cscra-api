@@ -10,73 +10,122 @@ use Tests\TestCase;
 
 class VerUsuarioTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function test_usuario_puede_ver()
-    {
-        $loggedUser = User::factory()
-            ->withPermissions([
-                Permisos::VER_USUARIOS
-            ])
-            ->create();
 
-        $usuario = User::factory()
-                ->create();
-        $usuario->refresh();
-        $response = $this->actingAs($loggedUser)->getJson("/api/usuarios/{$usuario->id}");
-        $response->assertOk();
-        $response->assertJson([
-            "id" => $usuario->id,
-            "ci_raiz" => $usuario->ci_raiz,
-            "ci_complemento" => $usuario->ci_complemento,
-            "ci" => $usuario->ci,
-            "apellido_paterno" => $usuario->apellido_paterno,
-            "apellido_materno" => $usuario->apellido_materno,
-            "nombres" => $usuario->nombres,
-            "nombre_completo" => $usuario->nombre_completo,
-            "username" => $usuario->username,
-            "estado" => $usuario->estado,
-            "estado_text" => $usuario->estadoText,
-            "roles" => $usuario->roles->toArray(),
-            "all_permissions" => $usuario->getAllPermissions()->toArray(),
-            "created_at" => $usuario->created_at->format("Y-m-d"),
-            "updated_at" => $usuario->created_at->format("Y-m-d")
-        ]);
+    public function test_usuario_no_existe()
+    {
+        $user = $this->getSuperUser();
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/2");
+        $response->assertNotFound();
     }
 
-    public function test_usuario_puede_ver_regionalmente()
+    public function test_usuario_puede_ver()
     {
-        $loggedUser = User::factory()
-            ->withPermissions([
-                Permisos::VER_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO
-            ])
+        $user = User::factory()
+            ->withPermissions([Permisos::VER_USUARIOS])
+            ->regionalLaPaz()
+            ->activo()
             ->create();
 
         $usuario = User::factory()
+            ->regionalLaPaz()
             ->create();
-        $usuario->refresh();
-        $response = $this->actingAs($loggedUser)->getJson("/api/usuarios/{$usuario->id}");
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
         $response->assertOk();
         $response->assertJson($usuario->toArray());
 
         $usuario = User::factory()
             ->regionalSantaCruz()
             ->create();
-        $response = $this->actingAs($loggedUser)->getJson("/api/usuarios/{$usuario->id}");
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
+        $response->assertOk();
+        $response->assertJson($usuario->toArray());
+    }
+
+    public function test_usuario_puede_ver_regionalmente()
+    {
+        $user = User::factory()
+            ->regionalLaPaz()
+            ->activo()
+            ->withPermissions([
+                Permisos::VER_USUARIOS_MISMA_REGIONAL
+            ])
+            ->create();
+
+        $usuario = User::factory()
+            ->regionalLaPaz()
+            ->create();
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
+        $response->assertOk();
+        $response->assertJson($usuario->toArray());
+
+        $usuario = User::factory()
+            ->regionalSantaCruz()
+            ->create();
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
+        $response->assertForbidden();
+
+        $user = User::factory()
+            ->regionalLaPaz()
+            ->activo()
+            ->withPermissions([
+                Permisos::VER_USUARIOS,
+                Permisos::VER_USUARIOS_MISMA_REGIONAL
+            ])
+            ->create();
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
         $response->assertForbidden();
     }
 
     public function test_usuario_sin_permisos()
     {
-        $loggedUser = User::factory()
+        $user = User::factory()
+            ->withPermissions([])
             ->create();
-        
+
         $usuario = User::factory()
             ->create();
-        $response = $this->actingAs($loggedUser)->getJson("/api/usuarios/{$usuario->id}");
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
         $response->assertForbidden();
+    }
+
+    public function test_super_usuario()
+    {
+        $user = User::factory()
+            ->superUser()
+            ->create();
+
+        $usuario = User::factory()
+            ->create();
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
+        $response->assertOk();
+        $response->assertJson($usuario->toArray());
+    }
+
+    public function test_usuario_bloqueado()
+    {
+        $user = User::factory()
+            ->bloqueado()
+            ->withPermissions([Permisos::VER_USUARIOS])
+            ->create();
+
+        $usuario = User::factory()
+            ->create();
+
+        $response = $this->actingAs($user)->getJson("/api/usuarios/{$usuario->id}");
+        $response->assertForbidden();
+    }
+
+    public function test_usuario_no_autenticado()
+    {
+        $response = $this->getJson("/api/usuarios/100");
+        $response->assertUnauthorized();
     }
 }

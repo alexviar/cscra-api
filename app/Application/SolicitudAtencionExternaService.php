@@ -76,30 +76,31 @@ class SolicitudAtencionExternaService extends Controller
     protected function prepareResult($query)
     {
         $solicitudes = $query->with(["medico", "regional", "proveedor"])->get();
-        $asegurados = Afiliado::buscarPorIds($solicitudes->pluck("asegurado_id"));
+        $pacientes = Afiliado::buscarPorIds($solicitudes->pluck("paciente_id"));
+        // $titulares = Afiliado::buscarPorIds($solicitudes->pluck("titular_id"));
 
-        return $solicitudes->map(function ($solicitud) use ($asegurados) {
+        return $solicitudes->map(function ($solicitud) use ($pacientes) {
             return [
                 "id" => $solicitud->id,
                 "numero" => $solicitud->numero,
-                "fecha" => $solicitud->fecha,
-                "asegurado" => $asegurados->where("ID", $solicitud->asegurado_id)->first()->toArray(),
-                "medico" => $solicitud->medico->nombreCompleto,
-                "proveedor" => $solicitud->proveedor->nombre ?? $solicitud->proveedor->nombreCompleto,
+                "fecha" => $solicitud->fecha->format("d/m/y H:i:s"),
+                "paciente" => $pacientes->where("ID", $solicitud->paciente_id)->first()->toArray(),
+                "medico" => $solicitud->medico,
+                "proveedor" => $solicitud->proveedor,
                 "url_dm11" => $solicitud->url_dm11
             ];
         });
     }
 
-    public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $usuario_id, $prestaciones_solicitadas)
+    public function registrar($regional_id, $asegurado_id, $medico_id, $proveedor_id, $usuario_id, $prestacion)
     {
         $asegurado = Afiliado::buscarPorId($asegurado_id);
         $hoy = Carbon::now("America/La_Paz");
         $errors = [];
         if (!$asegurado) {
-            $errors["asegurado.id"] = "El asegurado no existe";
+            $errors["asegurado"] = "El asegurado no existe";
         } else if (!$asegurado->ultimaAfiliacion) {
-            $errors["asegurado.id"] = "No se encontraron registros de la afiliacion";
+            $errors["asegurado.ultimaAfiliacion"] = "No se encontraron registros de la afiliacion";
         } else {
             if ($asegurado->estado == 1) {
                 if ($asegurado->ultimaAfiliacion->baja) $errors["asegurado.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
@@ -119,17 +120,22 @@ class SolicitudAtencionExternaService extends Controller
 
             if ($asegurado->tipo == 2) {
                 $titular = $asegurado->titular;
-                if ($titular->estado == 1) {
-                    if ($asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
-                } else if ($titular->estado == 2) {
-                    if (!$asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja";
-                } else {
-                    $errors["titular.estado"] = "El asegurado tiene un estado indeterminado";
+                if(!$titular){
+                    $errors["titular"] = "Titular no encontrado";
                 }
-
-                if ($asegurado->afiliacionDelTitular->baja) {
-                    if (!$asegurado->afiliacionDelTitular->baja->fechaValidezSeguro) $errors["titular.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
-                    else if ($asegurado->afiliacionDelTitular->baja->fechaValidezSeguro->lte($hoy)) $errors["titular.fecha_validez_seguro"] = "El seguro ya no tiene validez";
+                if($asegurado->afiliacion->parentesco != 8){
+                    if ($titular->estado == 1) {
+                        if ($asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como activo, pero existe registro de su baja";
+                    } else if ($titular->estado == 2) {
+                        if (!$asegurado->afiliacionDelTitular->baja) $errors["titular.estado"] = "El asegurado figura como dado de baja, pero no se enontraron registros de la baja";
+                    } else {
+                        $errors["titular.estado"] = "El asegurado tiene un estado indeterminado";
+                    }
+    
+                    if ($titular->afiliacion->baja) {
+                        if (!$titular->afiliacion->baja->fechaValidezSeguro) $errors["titular.fecha_validez_seguro"] = "Fecha no especificada, se asume que el seguro ya no tiene validez";
+                        else if ($titular->afiliacion->baja->fechaValidezSeguro->lte($hoy)) $errors["titular.fecha_validez_seguro"] = "El seguro ya no tiene validez";
+                    }
                 }
             }
 
@@ -159,29 +165,6 @@ class SolicitudAtencionExternaService extends Controller
             $errors["proveedor"] = "El proveedor no existe";
         } else if ($proveedor->regional_id !== $regional_id) {
             $errors["proveedor"] = "El proveedor pertenece a otra regional";
-        } else if (!$proveedor->contrato) {
-            $errors["proveedor"] = "El proveedor no tiene un contrato activo";
-        } else {
-            if (count($prestaciones_solicitadas) == 0) {
-                $errors["prestaciones_solicitadas"] = "No se solicitaron prestaciones";
-            } elseif (count($prestaciones_solicitadas) > 1) {
-                $errors["prestaciones_solicitadas"] = "Actualmente solo se permite una prestacion por DM 11";
-            } else {
-                // $length = 0;
-                foreach ($prestaciones_solicitadas as $index => $value) {
-                    @["prestacion_id" => $prestacion_id, "nota" => $nota] = $value;
-                    $prestacion = Prestacion::find($prestacion_id);
-                    if (!$prestacion) {
-                        $errors["prestaciones_solicitadas.$index.prestacion"] = "La prestación no existe";
-                    } else if (!$proveedor->ofrece($prestacion_id)) {
-                        $errors["prestaciones_solicitadas.$index.prestacion"] = "El proveedor no ofrece esta prestacion"; //"El proveedor no ofrece la prestacion '{$prestacion->nombre}'";
-                    }
-                    if (strlen($nota) > 60) {
-                        $errors["prestaciones_solicitadas.$index.nota"] = "Las notas no deben exceder los 60 caracteres";
-                    }
-                    // $length += strlen($prestacion->nombre) + strlen($nota) + 3;
-                }
-            }
         }
 
         if (count($errors)) {
@@ -193,22 +176,14 @@ class SolicitudAtencionExternaService extends Controller
         $solicitud->fecha = $hoy;
         $solicitud->regional_id = $regional_id;
         $solicitud->asegurado_id = $asegurado_id;
-        // $solicitud->titular_id = $asegurado->titular->id;
+        $solicitud->titular_id = $asegurado->titular ? $asegurado->titular->id : null;
         $solicitud->empleador_id = $asegurado->empleador->id;
         $solicitud->medico_id = $medico_id;
         $solicitud->proveedor_id = $proveedor_id;
         $solicitud->usuario_id = $usuario_id;
+        $solicitud->prestacion = $prestacion;
 
-        foreach ($prestaciones_solicitadas as $prestacion_solicitada) {
-            $solicitud->prestacionesSolicitadas()->create($prestacion_solicitada, true);
-        }
-        DB::transaction(function () use ($solicitud) {
-            $solicitud->save();
-            $solicitud->url_dm11 = route("forms.dm11", [
-                "numero" => $solicitud->numero
-            ]);
-            $solicitud->save();
-        });
+        $solicitud->save();
 
         return $solicitud;
     }

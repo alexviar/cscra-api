@@ -2,19 +2,21 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Casts\CarnetIdentidad;
+use App\Models\Traits\SaveToUpper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasRoles, HasFactory, Notifiable;
+    use HasRoles, HasFactory, Notifiable, SaveToUpper;
 
     protected $guard_name = "sanctum";
+
+    protected $with = [ "roles" ];
 
     /**
      * The attributes that are mass assignable.
@@ -22,11 +24,10 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-      'ci_raiz',
-      'ci_complemento',
+      'ci',
       'apellido_paterno',
       'apellido_materno',
-      'nombres',
+      'nombre',
       'username',
       'password',
       'estado',
@@ -39,34 +40,25 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
+        "permissions",
+        'ci_complemento',
         'password',
         'remember_token',
     ];
 
     protected $appends = [
-      "nombre_completo",
-      "ci",
-      "estado_text",
-      "all_permissions"
+      "nombre_completo"
     ];
 
     protected $casts = [
-      "created_at" =>  'date:Y-m-d',
-      "updated_at" =>  'date:Y-m-d'
+      "ci" => CarnetIdentidad::class,
+      "created_at" =>  'date:d/m/Y',
+      "updated_at" =>  'date:d/m/Y'
     ];
 
-    // /**
-    //  * The attributes that should be cast to native types.
-    //  *
-    //  * @var array
-    //  */
-    // protected $casts = [
-    //     'email_verified_at' => 'datetime',
-    // ];
-
-    // function setPasswordAttribute($value){
-    //   $this->setAttribute("password", Hash::make($value));
-    // }
+    function setPasswordAttribute($value){
+      $this->attributes["password"] = Hash::make($value);
+    }
 
     function isSuperUser()
     {
@@ -77,31 +69,13 @@ class User extends Authenticatable
       return Hash::check($password, $this->password);
     }
 
-    function getAllPermissionsAttribute(): Collection
-    {
-      return $this->getAllPermissions();
-    }
-
-    function getCiAttribute(){
-      return $this->ci_raiz . ($this->ci_complemento ? " " .  $this->ci_complemento :  "");
-    }
-
-    function getEstadoTextAttribute(){
-        return $this->estado == 1 ? "Activo" : ($this->estado == 2 ? "Bloqueado" : null);
-    }
-
     function getNombreCompletoAttribute(){
-      $nombreCompleto = $this->nombres;
+      $nombreCompleto = $this->nombre;
       if($this->apellido_materno)
         $nombreCompleto =  $this->apellido_materno . " " . $nombreCompleto;
       if($this->apellido_paterno)
         $nombreCompleto =  $this->apellido_paterno . " " . $nombreCompleto;
       return $nombreCompleto;        
     }
-
-    function getRoleNamesAttribute(){
-      return $this->getRoleNames();
-    }
-
 
 }

@@ -5,34 +5,48 @@ namespace Tests\Feature\Usuario;
 use App\Models\Permisos;
 use App\Models\Role;
 use App\Models\User;
+use App\Models\ValueObjects\CarnetIdentidad;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class RegistrarUsuarioTest extends TestCase
 {
     use WithFaker;
 
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+    private function assertInsert(TestResponse $response, $data)
+    {
+        $response->assertOk();
+        $this->assertDatabaseHas("users", [
+            "ci" => $data["ci"]->raiz,
+            "ci_complemento" => $data["ci"]->complemento,
+            "apellido_paterno" => $data["apellido_paterno"],
+            "apellido_materno" => $data["apellido_materno"],
+            "nombre" => $data["nombre"],
+            "username" => $data["username"],
+            "estado" => 1,
+            "regional_id" => $data["regional_id"]
+        ]);
+        $user = User::where("ci", $data["ci"]->raiz)->first();
+        $response->assertJsonFragment($user->toArray());
+        $this->assertTrue($user->hasAllRoles($data["roles"]));
+        $this->assertTrue($user->validatePassword($data["password"]));
+    }
+
     public function test_nombre_de_usuario_repetido()
-    {   
-        $username = "usuario";
-        User::factory()->state([
-            "username" => $username
-        ])->create();
+    {
+        $existingUser = User::factory()->create();
 
         $user = $this->getSuperUser();
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', [
-                "username" => $username
+                "username" => $existingUser->username
             ]);
 
         $response->assertJsonValidationErrors([
@@ -40,25 +54,14 @@ class RegistrarUsuarioTest extends TestCase
         ]);
     }
 
-    public function test_nombre_de_usuario_demasiado_largo()
+    public function test_longitud_del_nombre_de_usuario()
     {
         $user = $this->getSuperUser();
 
-        $roles = Role::factory()->count(1)->create();
 
-        $ci = $this->faker->unique()->numerify("########");
-        $data = [
-            "ci" => $ci,
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->lexify(str_repeat('?', 33)),
-            "password" => $this->faker->password(8)."1aA!",
-            "regional_id" => 1,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
+        $data = User::factory()->state([
+            "username" => $this->faker->lexify(str_repeat('?', 33))
+        ])->raw();
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
@@ -69,61 +72,29 @@ class RegistrarUsuarioTest extends TestCase
         $data["username"] = $this->faker->lexify(str_repeat('?', 32));
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
-        $response->assertOk();
-    }
+        $response->assertJsonMissingValidationErrors(["username"]);
 
-    
-    public function test_nombre_de_usuario_demasiado_corto()
-    {
-        $user = $this->getSuperUser();
+        $data["username"] = $this->faker->lexify(str_repeat('?', 6));
+        $response = $this->actingAs($user, "sanctum")
+            ->postJson('/api/usuarios', $data);
+        $response->assertJsonMissingValidationErrors(["username"]);
 
-        $roles = Role::factory()->count(1)->create();
-
-        $ci = $this->faker->unique()->numerify("########");
-        $data = [
-            "ci" => $ci,
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->lexify(str_repeat('?', 5)),
-            "password" => $this->faker->password(8)."1aA!",
-            "regional_id" => 1,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
-
+        $data["username"] = $this->faker->lexify(str_repeat('?', 5));
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
         $response->assertJsonValidationErrors([
             "username" => "Este campo debe contener al menos 6 caracteres"
         ]);
-
-        $data["username"] = $this->faker->lexify(str_repeat('?', 6));
-        $response = $this->actingAs($user, "sanctum")
-            ->postJson('/api/usuarios', $data);
-        $response->assertOk();
     }
 
     public function test_password()
-    {        
+    {
         $user = $this->getSuperUser();
 
-        $roles = Role::factory()->count(1)->create();
-
         $ci = $this->faker->unique()->numerify("########");
-        $data = [
-            "ci" => $ci,
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->userName,
-            "password" => "abcdefG%",
-            "regional_id" => 1,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
+        $data = User::factory()->state([
+            "password" => "abcdefG%"
+        ])->raw();
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
@@ -144,273 +115,280 @@ class RegistrarUsuarioTest extends TestCase
         $response->assertJsonValidationErrors([
             "password" => "La contraseña debe contener al menos una letra mayuscula y una letra minuscula"
         ]);
-        
+
         $data["password"] = "aB2345(";
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
         $response->assertJsonValidationErrors([
             "password" => "Este campo debe contener al menos 8 caracteres"
         ]);
-        
+
         $data["password"] = "aB23456(";
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', $data);
-        $response->assertOk();
+        $response->assertJsonMissingValidationErrors(["password"]);
     }
-    
+
     public function test_ci_repetido()
     {
         $loggedUser = $this->getSuperUser();
 
-        $ci=$this->faker->unique()->numerify("########-A1");
-        $ci = explode("-",$ci);
-        $conflictUser1 = User::factory()->state([
-            "ci_raiz" => $ci[0],
-            "ci_complemento" => null
-        ])->create();
-    
-        $roles = Role::factory()->count(1)->create();
+        $existingUser1 = User::factory()->state([
+            "ci" => new CarnetIdentidad(12345678, "")
+        ])->regionalLaPaz()->create();
+        $existingUser2 = User::factory()->state([
+            "ci" => new CarnetIdentidad(2345678, "1A")
+        ])->regionalLaPaz()->create();
 
-        $data = [
-            "ci" => $ci[0],
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->unique()->lexify(str_repeat('?', mt_rand(6, 32))),
-            "password" => '$2yY1234',
-            "regional_id" => 1,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
-        $response = $this->actingAs($loggedUser, "sanctum")
-            ->postJson("/api/usuarios", $data);
-        $response->assertStatus(409);
-        $response->assertJsonFragment([
-            "payload" => $conflictUser1->id
-        ]);
-        
-        $data["ci_complemento"] = $ci[1];
-        $response = $this->actingAs($loggedUser, "sanctum")
-            ->postJson("/api/usuarios", $data);
-        $response->assertOk();
+        //No hay conflicto
+        $data = User::factory()->state([
+            "ci" => (new CarnetIdentidad(12345678, ""))
+        ])->regionalSantaCruz()->raw();
 
-        $newId = json_decode($response->getContent())->id;
-        
-        $data["username"] = $this->faker->unique()->lexify(str_repeat('?', mt_rand(6, 32)));
         $response = $this->actingAs($loggedUser, "sanctum")
             ->postJson("/api/usuarios", $data);
-        $response->assertStatus(409);
-        $response->assertJsonFragment([
-            "payload" => $newId
-        ]);
+        $response->assertJsonMissingValidationErrors(["ci"]);
 
-        $data["ci_complemento"] = "A2";
+        $data = User::factory()->state([
+            "ci" => (new CarnetIdentidad(12345678, "1A"))
+        ])->regionalLaPaz()->raw();
+
         $response = $this->actingAs($loggedUser, "sanctum")
             ->postJson("/api/usuarios", $data);
-        Log::info($response->getContent());
-        $response->assertOk();
+        $response->assertJsonMissingValidationErrors(["ci"]);
+
+        $data = User::factory()->state([
+            "ci" => (new CarnetIdentidad(2345678, "1B"))
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($loggedUser, "sanctum")
+            ->postJson("/api/usuarios", $data);
+        $response->assertJsonMissingValidationErrors(["ci"]);
+
+        //Hay conflicto
+        $data = User::factory()->state([
+            "ci" => $existingUser1->ci
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($loggedUser, "sanctum")
+            ->postJson("/api/usuarios", $data);
+        $response->assertJsonValidationErrors(["ci" => "Ya existe un usuario registrado con este carnet de identidad."]);
+
+        $data = User::factory()->state([
+            "ci" => $existingUser2->ci
+        ])->regionalLaPaz()->raw();
+
+        $response = $this->actingAs($loggedUser, "sanctum")
+            ->postJson("/api/usuarios", $data);
+        $response->assertJsonValidationErrors(["ci" => "Ya existe un usuario registrado con este carnet de identidad."]);
     }
-    
+
     public function test_rol_no_existe()
     {
         $user = $this->getSuperUser();
 
+        $data = User::factory()->raw();
+
         $response = $this->actingAs($user, "sanctum")
-            ->postJson('/api/usuarios', [
-                "ci" => 12345678,
-                "apellido_paterno" => "Paterno",
-                "apellido_materno" => "Materno",
-                "nombres" => "Nombres",
-                "username" => "usuario",
-                "password" => "contraseña",
-                "regional_id" => 1,
-                "roles" => ["fake rol"]
-            ]);
-            
+            ->postJson('/api/usuarios', $data + ["roles" => ["fake rol"]]);
+
         $response->assertJsonValidationErrors([
             "roles.0" => "El rol seleccionado es invalido"
         ]);
     }
-    
-    
-    public function test_regional_no_existe()
-    {  
-        $roles = Role::factory()->count(1)->create();
 
+
+    public function test_regional_no_existe()
+    {
         $user = $this->getSuperUser();
 
+        $data = User::factory()->state(["regional_id" => -1])->raw();
+
+
         $response = $this->actingAs($user, "sanctum")
-            ->postJson('/api/usuarios', [
-                "ci" => 12345678,
-                "apellido_paterno" => "Paterno",
-                "apellido_materno" => "Materno",
-                "nombres" => "Nombres",
-                "username" => "usuario",
-                "password" => "contraseña",
-                "regional_id" => 0,
-                "roles" => $roles->map(function ($rol) {
-                    return $rol->nombre;
-                })
-            ]);
-        $response->assertStatus(422);
+            ->postJson('/api/usuarios', $data);
         $response->assertJsonValidationErrors([
             "regional_id" => "La regional seleccionada es invalida."
         ]);
     }
 
-    public function test_campos_requeridos(){
+    public function test_campos_requeridos()
+    {
 
         $user = $this->getSuperUser();
 
         $response = $this->actingAs($user, "sanctum")
             ->postJson('/api/usuarios', []);
         $response->assertJsonValidationErrors([
-            "ci" => "Este campo es requerido.",
+            "ci.raiz" => "Este campo es requerido.",
             "username" => "Este campo es requerido.",
             "password" => "Este campo es requerido.",
             "apellido_paterno" => "Debe indicar al menos un apellido",
             "apellido_materno" => "Debe indicar al menos un apellido",
-            "nombres" => "Este campo es requerido.",
+            "nombre" => "Este campo es requerido.",
             "regional_id" => "Debe indicar una regional.",
             "roles" => "Este campo es requerido.",
         ]);
     }
 
     public function test_usuario_con_permiso_para_registrar()
-    {        
+    {
         $roles = Role::factory()->count(1)->create();
 
         $user = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
                 Permisos::REGISTRAR_USUARIOS
             ])
             ->create();
-        
-        $data = [
-            "ci" => $this->faker->numerify("########"),
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->unique()->lexify(str_repeat('?', mt_rand(6, 32))),
-            "password" => '$2yY1234',
-            "regional_id" => 1,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
-        
+
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito",
+                "password" => "<aQ123Ed>"
+            ])->regionalLaPaz()->raw() + [
+                "roles" => $roles->map(function ($r) {
+                    return $r->name;
+                })
+            ];
+
         $response = $this->actingAs($user)
             ->postJson("/api/usuarios", $data);
-        $response->assertOk();
-        $this->assertDatabaseHas("users", [
-            "ci_raiz" => $data["ci"],
-            "ci_complemento" => null,
-            "apellido_paterno" => $data["apellido_paterno"],
-            "apellido_materno" => $data["apellido_materno"],
-            "nombres" => $data["nombres"],
-            "username" => $data["username"],
-            "regional_id" => $data["regional_id"]
-        ]);
-        $content = json_decode($response->getContent());
-        $user = User::where("id", $content->id)->first();
-        $this->assertTrue($user->hasAllRoles($roles->map(function ($rol) {
-            return  $rol->name;
-        })));
-        $this->assertTrue(Hash::check($data["password"], $user->password));
-    }
-    
+        $this->assertInsert($response, $data);
 
-    public function test_usuario_puede_registrar_regionalmente()
-    {        
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito2",
+                "password" => "<aQ123Ed>"
+            ])->regionalSantaCruz()->raw() + [
+                "roles" => $roles->map(function ($r) {
+                    return $r->name;
+                })
+            ];
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/usuarios", $data);
+        $this->assertInsert($response, $data);
+    }
+
+    public function test_usuario_con_permiso_para_registrar_solo_en_su_regional()
+    {
         $roles = Role::factory()->count(1)->create();
 
         $user = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
-                Permisos::REGISTRAR_USUARIOS_DE_LA_MISMA_REGIONAL_QUE_EL_USUARIO
+                Permisos::REGISTRAR_USUARIOS_MISMA_REGIONAL
             ])
             ->create();
 
-        $data = [
-            "ci" => $this->faker->numerify("########"),
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->unique()->lexify(str_repeat('?', mt_rand(6, 32))),
-            "password" => '$2yY1234',
-            "regional_id" => 3,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
-        
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito",
+                "password" => "<aQ123Ed>"
+            ])->regionalLaPaz()->raw() + [
+                "roles" => $roles->map(function ($r) {
+                    return $r->name;
+                })
+            ];
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/usuarios", $data);
+        $this->assertInsert($response, $data);
+
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito2",
+                "password" => "<aQ123Ed>"
+            ])->regionalSantaCruz()->raw() + [
+                "roles" => $roles->map(function ($r) {
+                    return $r->name;
+                })
+            ];
+
         $response = $this->actingAs($user)
             ->postJson("/api/usuarios", $data);
         $response->assertForbidden();
 
-        $data["regional_id"] = 1;
+        $user = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::REGISTRAR_USUARIOS,
+                Permisos::REGISTRAR_USUARIOS_MISMA_REGIONAL
+            ])
+            ->create();
+
         $response = $this->actingAs($user)
-        ->postJson("/api/usuarios", $data);
-        $response->assertOk();
-        $this->assertDatabaseHas("users", [
-            "ci_raiz" => $data["ci"],
-            "ci_complemento" => null,
-            "apellido_paterno" => $data["apellido_paterno"],
-            "apellido_materno" => $data["apellido_materno"],
-            "nombres" => $data["nombres"],
-            "username" => $data["username"],
-            "regional_id" => $data["regional_id"]
-        ]);
-        $content = json_decode($response->getContent());
-        $user = User::where("id", $content->id)->first();
-        $this->assertTrue($user->hasAllRoles($roles->map(function ($rol) {
-            return  $rol->name;
-        })));
-        $this->assertTrue(Hash::check($data["password"], $user->password));
+            ->postJson("/api/usuarios", $data);
+        $response->assertForbidden();
     }
 
-    public function test_usuario_sin_permisos(){
-        $roles = Role::factory()->count(1)->create();
-
+    public function test_usuario_sin_permisos()
+    {
         $user = User::factory()
             ->withPermissions([])
             ->create();
-        
-        $data = [
-            "ci" => $this->faker->numerify("########"),
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "username" => $this->faker->unique()->lexify(str_repeat('?', mt_rand(6, 32))),
-            "password" => '$2yY1234',
-            "regional_id" => 3,
-            "roles" => $roles->map(function ($r) {
-                return $r->name;
-            })
-        ];
-        
+
+        $roles = Role::factory()->count(1)->create();
+
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito",
+                "password" => "<aQ123Ed>"
+            ])->raw() + [
+                "roles" => Arr::pluck($roles, "name")
+            ];
+
         $response = $this->actingAs($user)
             ->postJson("/api/usuarios", $data);
         $response->assertForbidden();
     }
-    
 
-    public function test_usuario_no_autenticado(){
+    public function test_super_usuario()
+    {
+        $user = $this->getSuperUser();
+
         $roles = Role::factory()->count(1)->create();
-        
-        $response = $this->postJson("/api/usuarios", [
-                "ci" => 12345678,
-                "ci_complemento" => "A1",
-                "apellido_paterno" => "Paterno",
-                "apellido_materno" => "Materno",
-                "nombres" => "Nombres",
-                "username" => "usuario",
-                "password" => "contraseña",
-                "regional_id" => 1,
-                "roles" => $roles->map(function ($rol) {
-                    return $rol->name;
-                })
-            ]);
+
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito",
+                "password" => "<aQ123Ed>"
+            ])->raw() + [
+                "roles" => Arr::pluck($roles, "name")
+            ];
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/usuarios", $data);
+        $this->assertInsert($response, $data);
+    }
+
+
+    public function test_usuario_bloqueado()
+    {
+        $user = User::factory()
+            ->bloqueado()
+            ->withPermissions([Permisos::REGISTRAR_USUARIOS])
+            ->create();
+
+        $roles = Role::factory()->count(1)->create();
+
+        $data = User::factory()
+            ->state([
+                "username" => "cosme.fulanito",
+                "password" => "<aQ123Ed>"
+            ])->raw() + [
+                "roles" => Arr::pluck($roles, "name")
+            ];
+
+        $response = $this->actingAs($user)
+            ->postJson("/api/usuarios", $data);
+        $response->assertForbidden();
+    }
+
+    public function test_usuario_no_autenticado()
+    {
+        $response = $this->postJson("/api/usuarios", []);
         $response->assertUnauthorized();
     }
 }

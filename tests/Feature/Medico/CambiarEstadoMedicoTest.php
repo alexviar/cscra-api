@@ -2,32 +2,48 @@
 
 namespace Tests\Feature\Medico;
 
-use App\Models\Especialidad;
 use App\Models\Medico;
 use App\Models\Permisos;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class CambiarEstadoMedicoTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+
+    private function assertSuccess(TestResponse $response, $model, $data)
+    {
+        $response->assertOk();
+        $this->assertDatabaseHas("medicos", [
+            "id" => $model->id,
+            "ci" => $model->ci->raiz,
+            "ci_complemento" => $model->ci->complemento,
+            "apellido_paterno" => $model->apellido_paterno,
+            "apellido_materno" => $model->apellido_materno,
+            "nombre" => $model->nombre,
+            "especialidad" => $model->especialidad,
+            "estado" => $data["estado"],
+            "regional_id" => $model->regional_id
+        ]);
+    }
+
+    public function test_medico_no_existe(){
+        $login = $this->getSuperUser();
+
+        $response = $this->actingAs($login, "sanctum")
+            ->putJson("/api/medicos/0/actualizar-estado", []);
+        $response->assertNotFound();
+    }
+
     public function test_campos_requeridos()
     {
-        $user = $this->getSuperUser();
+        $login = $this->getSuperUser();
 
-        $especialidad = Especialidad::factory()->create();
         $medico = Medico::factory()
-            ->for($especialidad)
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", []);
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", []);
 
         //dd($response->getContent());
         $response->assertJsonValidationErrors([
@@ -37,198 +53,169 @@ class CambiarEstadoMedicoTest extends TestCase
 
     public function test_estado_no_valido()
     {
-        $user = $this->getSuperUser();
+        $login = $this->getSuperUser();
 
-        $especialidad = Especialidad::factory()->create();
         $medico = Medico::factory()
-            ->for($especialidad)
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", [
                 "estado" => 3
             ]);
 
-        //dd($response->getContent());
         $response->assertJsonValidationErrors([
             "estado" => "El estado es invalido"
         ]);
     }
 
-    public function test_usuario_puede_dar_baja()
+    public function test_usuario_puede_cambiar_estado()
     {
-        $user = User::factory()
+        $login = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
-                Permisos::BAJA_MEDICOS
+                Permisos::ACTUALIZAR_ESTADO_MEDICOS
             ])
             ->create();
 
-        $especialidad = Especialidad::factory()->create();
+        //Misma regional
         $medico = Medico::factory()
-            ->for($especialidad)
+            ->regionalLaPaz()
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
-                "estado" => 2
-            ]);
-
-        $response->assertOk();
-        $this->assertDatabaseHas("medicos", [
-            "id" => $medico->id,
+        $data = [
             "estado" => 2
-        ]);
-    }
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
 
-    public function test_usuario_puede_dar_alta()
-    {
-        $user = User::factory()
-            ->withPermissions([
-                Permisos::BAJA_MEDICOS
-            ])
-            ->create();
-
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->baja()
-            ->for($especialidad)
-            ->create();
-
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
-                "estado" => 1
-            ]);
-
-        $response->assertOk();
-        $this->assertDatabaseHas("medicos", [
-            "id" => $medico->id,
+        $data = [
             "estado" => 1
-        ]);
-    }
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
 
-
-
-    public function test_usuario_puede_dar_baja_solo_en_la_regional_a_la_que_pertenece()
-    {
-        $user = User::factory()
-            ->withPermissions([
-                Permisos::BAJA_MEDICOS_REGIONAL
-            ])
-            ->create();
-
-        $especialidad = Especialidad::factory()->create();
+        
+        //Distinta regional
         $medico = Medico::factory()
-            ->for($especialidad)
-            ->create();
-
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
-                "estado" => 2
-            ]);
-
-        $response->assertOk();
-        $this->assertDatabaseHas("medicos", [
-            "id" => $medico->id,
-            "estado" => 2
-        ]);
-
-
-        $especialidad = Especialidad::factory()->create();
-        $medico = Medico::factory()
-            ->for($especialidad)
             ->regionalSantaCruz()
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
-                "estado" => 2
-            ]);
+        $data = [
+            "estado" => 2
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
 
-        $response->assertForbidden();
+        $data = [
+            "estado" => 1
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
     }
 
-    public function test_usuario_puede_dar_alta_solo_en_la_regional_a_la_que_pertenece()
+    public function test_usuario_puede_cambiar_estados_dentro_de_su_regional()
     {
-        $user = User::factory()
+        $login = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
-                Permisos::BAJA_MEDICOS_REGIONAL
+                Permisos::ACTUALIZAR_ESTADO_MEDICOS_REGIONAL
             ])
             ->create();
 
-        $especialidad = Especialidad::factory()->create();
+        //Misma regional
         $medico = Medico::factory()
-            ->baja()
-            ->for($especialidad)
+            ->regionalLaPaz()
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
-                "estado" => 1
-            ]);
+        $data = [
+            "estado" => 2
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
 
-        $response->assertOk();
-        $this->assertDatabaseHas("medicos", [
-            "id" => $medico->id,
+        $data = [
             "estado" => 1
-        ]);
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
 
-        $especialidad = Especialidad::factory()->create();
+        
+        //Distinta regional
         $medico = Medico::factory()
-            ->baja()
             ->regionalSantaCruz()
-            ->for($especialidad)
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
-                "estado" => 1
-            ]);
-
+        $data = [
+            "estado" => 2
+        ];
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
         $response->assertForbidden();
     }
 
     public function test_usuario_sin_permisos()
     {
-        $user = User::factory()
+        /** @var User $login */
+        $login = User::factory()
             ->create();
 
-        $especialidad = Especialidad::factory()->create();
         $medico = Medico::factory()
             ->baja()
-            ->for($especialidad)
             ->create();
 
-        $response = $this->actingAs($user)
-            ->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", [
                 "estado" => 1
             ]);
-
         $response->assertForbidden();
     }
 
-    public function test_usuario_invitado()
+    public function test_super_usuario()
     {
+        $login = User::factory()->superUser()->create();
 
-        $especialidad = Especialidad::factory()->create();
         $medico = Medico::factory()
-            ->baja()
-            ->for($especialidad)
             ->create();
 
-        $response = $this->putJson("/api/medicos/{$medico->id}/cambiar-estado", [
+        $data = [
+            "estado" => 2
+        ];
+
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $this->assertSuccess($response, $medico, $data);
+    }
+
+    public function test_usuario_bloqueado()
+    {
+        $login = User::factory()
+            ->bloqueado()
+            ->withPermissions([Permisos::REGISTRAR_MEDICOS])
+            ->create();
+
+        $medico = Medico::factory()
+            ->create();
+
+        $data = [
+            "estado" => 2
+        ];
+
+        $response = $this->actingAs($login)
+            ->putJson("/api/medicos/{$medico->id}/actualizar-estado", $data);
+        $response->assertForbidden();
+    }
+
+    public function test_usuario_no_autenticado()
+    {
+        $response = $this->putJson("/api/medicos/0/actualizar-estado", [
                 "estado" => 1
             ]);
-
         $response->assertUnauthorized();
-    }
-
-    public function test_medico_no_existe(){
-        $user = $this->getSuperUser();
-
-        $response = $this->actingAs($user)->putJson("/api/medicos/1/cambiar-estado", [
-            "estado" => 1
-        ]);
-        $response->assertNotFound();
-    }
-    
+    }    
 }

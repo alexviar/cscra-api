@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
     {
         // \App\Models\User::factory(10)->create();
         $this->call([
-            RolesAndPermissionsSeeder::class,
-            UnidadesTerritorialesSeeder::class,
-            RegionalesSeeder::class,
+            // RolesAndPermissionsSeeder::class,
+            // UnidadesTerritorialesSeeder::class,
+            // RegionalesSeeder::class,
         ]);
 
         // DB::table("tipos_proveedor")->insert([

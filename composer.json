@@ -7,10 +7,10 @@
         "laravel"
     ],
     "license": "MIT",
-    "repositories": [
+    "repositories": [     
         {
             "type": "vcs",
-            "url": "git@github.com:alexviar/framework.git"
+            "url": "git@github.com:alexviar/cbor-php.git"
         }
     ],
     "require": {
@@ -20,12 +20,15 @@
         "fruitcake/laravel-cors": "^2.0",
         "grimzy/laravel-mysql-spatial": "^5.0",
         "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "8.x-dev",
+        "laravel/framework": "^8.0",
         "laravel/sanctum": "^2.9",
         "laravel/tinker": "^2.5",
+        "mhauri/base45": "^0.1.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-http-logger": "^1.7",
-        "spatie/laravel-permission": "^4.0"
+        "spatie/laravel-permission": "^4.0",
+        "spomky-labs/cbor-php": "v3.0.x-dev",
+        "starkbank/ecdsa": "^0.0.5"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Medico;
+use App\Models\ValueObjects\CarnetIdentidad;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MedicoFactory extends Factory
@@ -21,17 +22,16 @@ class MedicoFactory extends Factory
      */
     public function definition()
     {
-        $ci = explode("-", $this->faker->unique()->regexify("[0-9]{7,8}-[A-Z][0-9]"));
+        $ci = explode("-", $this->faker->unique()->regexify("([1-9][0-9]{7})-([1-9][A-Z]){0,1}"));
         return [
             // "id" => $this->faker->unique()->randomNumber(),
-            "ci" => intval($ci[0]),
-            "ci_complemento" => $ci[1],
+            "ci" => new CarnetIdentidad(intval($ci[0]), $ci[1]),
             "apellido_paterno" => $this->faker->lastName,
             "apellido_materno" => $this->faker->lastName,
-            "nombres" => $this->faker->name,
-            "regional_id" => 1,
-            "estado" => 1,
-            "tipo" => 1
+            'nombre' => $this->faker->name,
+            "especialidad" => $this->faker->text(25),
+            'regional_id' => $this->faker->randomElement([1,2,3,4,5,6,7,8,9,10,11]),
+            'estado' => 1,//$this->faker->randomElement([1,2]),
         ];
     }
 
@@ -51,12 +51,5 @@ class MedicoFactory extends Factory
         return $this->state([
             "regional_id" => 3
         ]);
-    }
-
-    public function proveedor()
-    {
-        return [
-            "tipo" => 2
-        ];
     }
 }

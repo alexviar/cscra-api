@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Spatie\Permission\Models\Permission;
 
 class RoleFactory extends Factory
 {
@@ -24,7 +25,22 @@ class RoleFactory extends Factory
         return [
             // "id" => $this->faker->unique()->randomNumber(),
             "name" => $this->faker->unique()->text(32),
+            "description" => $this->faker->optional()->text(255),
             "guard_name" => "sanctum"
         ];
+    }
+
+    public function withRandomPermissions()
+    {
+        // $permisos = Permisos::toArray();
+        // $granted = $this->faker->randomElements($permisos, $this->faker->numberBetween(1, count($permisos));
+        $count = $this->faker->numberBetween(1, count(Permission::count()));
+        $granted = Permission::random()->limit($count)->get();
+        return $this->hasAttached($granted);
+    }
+
+    public function withPermissions($permisos)
+    {
+        return $this->hasAttached(Permission::whereIn("name", $permisos)->get());
     }
 }

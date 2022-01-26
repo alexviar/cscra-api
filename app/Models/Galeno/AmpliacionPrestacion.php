@@ -32,7 +32,7 @@ class AmpliacionPrestacion extends Model
 
     protected $appends = [
         "id",
-        "fecha_extinsion"
+        "fecha_extincion"
     ];
 
     function getIdAttribute()
@@ -40,7 +40,7 @@ class AmpliacionPrestacion extends Model
         return $this->attributes["ID"];
     }
 
-    function getFechaExtinsionAttribute()
+    function getFechaExtincionAttribute()
     {
         return $this->getAttribute("FECHA_EXTINSION_AMP");
     }

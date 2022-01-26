@@ -33,7 +33,7 @@ class RolePolicy
     }
 
     public function editar(User $user, $model) {
-      if($user->can(Permisos::EDITAR_ROLES)) return true;
+      if($user->can(Permisos::ACTUALIZAR_ROLES)) return true;
     }
 
     public function eliminar(User $user) {

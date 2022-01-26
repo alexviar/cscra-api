@@ -23,39 +23,26 @@ class SolicitudAtencionExternaPolicy
 
     public function verTodo(User $user, $filter)
     {
-        // dd($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL), Arr::get($filter, "regional_id") != $user->regional_id);
-        if ($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-        if (($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL))
-            && (!$user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || Arr::get($filter, "registrado_por_id") == $user->id)
-            && (!$user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL) || Arr::get($filter, "regional_id") == $user->regional_id)
-        ) return true;
+        // dd($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL), Arr::get($filter, "regional_id") != $user->regional_id);
+        if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)) return $user->regional_id == Arr::get($filter, "regional_id");
+        if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
     }
 
-    public function ver(User $user, SolicitudAtencionExterna $solicitud, $signature)
+    public function ver(User $user, SolicitudAtencionExterna $solicitud)
     {
-        if ($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-        if (($user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $user->can(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL))
-        && (!$user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $solicitud->usuario_id == $user->id)
-        && (!$user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL) || $solicitud->regional_id == $user->regional_id)
-        ) return true;
-        if ($solicitud->validateSignature($signature)) return true;
+        if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)) return $user->regional_id == $solicitud->regional_id;
+        if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
     }
 
     public function verDm11(User $user, SolicitudAtencionExterna $solicitud)
     {
-        if ($user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-        if (($user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL))
-            && (!$user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_REGISTRADO_POR) || $solicitud->usuario_id == $user->id)
-            && (!$user->can(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL) || $solicitud->regional_id == $user->regional_id)
-        ) return true;
+        if ($user->hasPermissionTo(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)) return $user->regional_id == $solicitud->regional_id;
+        if ($user->hasPermissionTo(Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
     }
 
     public function registrar(User $user, $payload)
     {
-        if ($user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-        if (
-            $user->can(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)
-            && Arr::get($payload, "regional_id") == $user->regional_id
-        ) return true;
+        if ($user->hasPermissionTo(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)) return $user->regional_id == Arr::get($payload, "regional_id");
+        if ($user->hasPermissionTo(Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
     }
 }

@@ -2,34 +2,39 @@
 
 namespace App\Models;
 
+use App\Casts\CarnetIdentidad;
+use App\Models\Traits\SaveToUpper;
+use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Medico extends Model {
-  use HasFactory;
+  use HasFactory, SaveToUpper;
   
-  public $timestamps = false;
   protected $table = "medicos";
 
-  public $with = ["especialidad"];
+  protected $with = ["regional"];
 
-  protected $appends = ["especialidad", "regional", "nombre_completo", "ci_text", "estado_text"];
+  protected $appends = ["nombre_completo"];
+  
+  protected $hidden = ["ci_complemento"];
+
+  protected $casts = [
+    "ci" => CarnetIdentidad::class,
+    "created_at" =>  'date:d/m/Y',
+    "updated_at" =>  'date:d/m/Y'
+  ];
 
   protected $fillable = [
     "ci",
     "ci_complemento",
     "apellido_paterno",
     "apellido_materno",
-    "nombres",
+    "nombre",
     "regional_id",
     "estado",
-    "especialidad_id",
-    "tipo"
+    "especialidad"
   ];
-
-  function getCiTextAttribute(){
-    return $this->ci . ($this->ci_complemento ? "-" .  $this->ci_complemento :  "");
-  }
   
   function getEstadoTextAttribute(){
     switch($this->estado){
@@ -39,7 +44,7 @@ class Medico extends Model {
   }
 
   function getNombreCompletoAttribute(){
-    $nombreCompleto = $this->nombres;
+    $nombreCompleto = $this->nombre;
     if($this->apellido_materno){
       $nombreCompleto = $this->apellido_materno . " " . $nombreCompleto;
     }
@@ -49,33 +54,7 @@ class Medico extends Model {
     return $nombreCompleto;
   }
 
-  public function especialidad(){
-    return $this->belongsTo(Especialidad::class, "especialidad_id");
-  }
-
   public function regional(){
     return $this->belongsTo(Regional::class, "regional_id");
-  }
-
-  public function getEspecialidadAttribute(){
-    if(!$this->relationLoaded("especialidad")) $this->load("especialidad");
-    $especialidad = $this->getRelation("especialidad");
-    return $especialidad->nombre;
-  }
-
-  public function getRegionalAttribute() {
-    if(!$this->relationLoaded("regional")) $this->load("regional");
-    $regional = $this->getRelation("regional");
-    return $regional->nombre;
-  }
-
-  public function toArray(){
-    $array = parent::toArray();
-    $array = array_merge($array, ["especialidad" => $this->especialidad, "regional" => $this->regional, "ci" => [
-      "raiz" => $array["ci"],
-      "complemento" => $array["ci_complemento"] ?? null
-    ]]);
-    unset($array["ci_complemento"]);
-    return $array;
   }
 }

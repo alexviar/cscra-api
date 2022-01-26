@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -31,8 +32,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        
+        Schema::defaultStringLength(191);
+
         // URL::forceScheme(request()->secure() ? "https" : "http");
-        if(config('app.env') == "production"){
+        if(config('app.env') !== "local"){
             URL::forceScheme("https");
         }
         Password::defaults(function () {
