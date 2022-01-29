@@ -26,27 +26,9 @@ class SolicitudAtencionExternaTest extends TestCase
      */
     public function test_encode_qr_data()
     {
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-            
-        $user = User::factory()->superUser()->create();
-        $proveedor = Proveedor::factory()->tipoRandom()->create();
-        $medico = Medico::factory()->create();
 
         /** @var SolicitudAtencionExterna $solicitud */
-        $solicitud = SolicitudAtencionExterna::factory()
-            ->for($user, "registradoPor")
-            ->for($proveedor)
-            ->for($medico)
-            ->for($empleador)
-            ->for($asegurado, "paciente")
-            ->create();
+        $solicitud = SolicitudAtencionExterna::factory()->create();
 
         $encoded_qr_data = (new SolicitudAtencionExternaQrSigner())->sign($solicitud, config("app.private_ec_key"));
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\ListaMora;
 
+use App\Models\Galeno\Empleador;
 use App\Models\ListaMoraItem;
 use App\Models\Permisos;
 use App\Models\User;
@@ -98,14 +99,20 @@ class ListaMoraBuscarTest extends TestCase
     {
         $login = $this->getSuperUser();
 
-        $laboratorio = ListaMoraItem::factory()->state([
-            "nombre" => "Laboratorio patito"
-        ])->create();
-        $other = ListaMoraItem::factory()->state([
-            "nombre" => "Clinica nuclear",
-        ])->create();        
+        $laboratorio = ListaMoraItem::factory()->for(Empleador::factory([
+            "NOMBRE_EMP" => "Laboratorio patito"
+        ]))->create();
+        $other = ListaMoraItem::factory()->for(Empleador::factory([
+            "NOMBRE_EMP" => "Clinica nuclear",
+        ]))->create();        
 
         DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function(){
+            $this->refreshDatabase();
+            // Empleador::truncate();
+            // ListaMoraItem::truncate();
+        });
 
         $page = [
             "current" => 1,
@@ -138,21 +145,14 @@ class ListaMoraBuscarTest extends TestCase
         $this->assertSuccess($response, [
             "total" => 1
         ], collect([$other]));
-
-        RefreshDatabaseState::$migrated = false;
-        $this->refreshDatabase();
     }
 
     public function test_filter_by_numero_patronal()
     {
         $login = $this->getSuperUser();
 
-        $item = ListaMoraItem::factory([
-            "numero_patronal" => "999-01001"
-        ])->create();
-        $other = ListaMoraItem::factory([
-            "numero_patronal" => "999-01002"
-        ])->create();
+        $item = ListaMoraItem::factory()->create();
+        $other = ListaMoraItem::factory()->create();
 
         $page = [
             "current" => 1,
@@ -168,7 +168,7 @@ class ListaMoraBuscarTest extends TestCase
 
         $response = $this->actingAs($login)->getJson("/api/lista-mora?".http_build_query([
             "page" => $page,
-            "filter" => ["numero_patronal" => "999-01001"]
+            "filter" => ["numero_patronal" => $item->numero_patronal]
         ]));
         $this->assertSuccess($response, [
             "total" => 1
@@ -176,7 +176,7 @@ class ListaMoraBuscarTest extends TestCase
 
         $response = $this->actingAs($login)->getJson("/api/lista-mora?".http_build_query([
             "page" => $page,
-            "filter" => ["numero_patronal" => "999-01002"]
+            "filter" => ["numero_patronal" => $other->numero_patronal]
         ]));
         $this->assertSuccess($response, [
             "total" => 1
@@ -187,24 +187,30 @@ class ListaMoraBuscarTest extends TestCase
     {
         $login = $this->getSuperUser();
 
-        $centro = ListaMoraItem::factory([
-            "numero_patronal" => "999-01001",
-            "nombre" => "Centro ofstalmologico"
-        ])->create();
-        $cenetrop = ListaMoraItem::factory([
-            "numero_patronal" => "999-01002",
-            "nombre" => "Laboratorio de analisis clinicos - Cenetrop"
-        ])->create();
-        $number = ListaMoraItem::factory([
-            "numero_patronal" => "121-01002",
-            "nombre" => "Hospital 999"
-        ])->create();
-        $patito = ListaMoraItem::factory([
-            "numero_patronal" => "111-01002",
-            "nombre" => "Laboratorio patito"
-        ])->create();
+        $centro = ListaMoraItem::factory()->for(Empleador::factory([
+            "NUMERO_PATRONAL_EMP" => "999-01001",
+            "NOMBRE_EMP" => "Centro ofstalmologico"
+        ]))->create();
+        $cenetrop = ListaMoraItem::factory()->for(Empleador::factory([
+            "NUMERO_PATRONAL_EMP" => "999-01002",
+            "NOMBRE_EMP" => "Laboratorio de analisis clinicos - Cenetrop"
+        ]))->create();
+        $number = ListaMoraItem::factory()->for(Empleador::factory([
+            "NUMERO_PATRONAL_EMP" => "121-01002",
+            "NOMBRE_EMP" => "Hospital 999"
+        ]))->create();
+        $patito = ListaMoraItem::factory()->for(Empleador::factory([
+            "NUMERO_PATRONAL_EMP" => "111-01002",
+            "NOMBRE_EMP" => "Laboratorio patito"
+        ]))->create();
 
         DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function(){
+            $this->refreshDatabase();
+            // Empleador::truncate();
+            // ListaMoraItem::truncate();
+        });
 
         $page = [
             "current" => 1,
@@ -233,9 +239,6 @@ class ListaMoraBuscarTest extends TestCase
         $this->assertSuccess($response, [
             "total" => 2
         ], collect([$centro, $cenetrop]));
-
-        RefreshDatabaseState::$migrated = false;
-        $this->refreshDatabase();
     }
 
     public function test_filter_by_regional()

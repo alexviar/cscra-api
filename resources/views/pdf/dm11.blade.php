@@ -85,12 +85,13 @@
                             <div  class="label-cell" style="display: table-cell;width: 60px">
                                 <div>Señor Dr.</div>
                             </div>
-                            <div style="text-align: center; display: table-cell; border-bottom: 1px dashed">{{$proveedor}}</div>
+                            <div style="text-align: center; display: table-cell; border-bottom: 1px dashed">{{$proveedor["razon_social"]}}</div>
                         </div>                    
-                        <div style="display: table-row; margin-top: -3px">
+                        <div style="display: table-row; margin-top: -10px">
                             <div style="display: table-cell">
                                 <div>Presente</div>
                             </div>
+                            <div style="font-size: 10px; text-align: center; display: table-cell">{{$proveedor["direccion"]}}. Telf.: {{$proveedor["telefono1"]}}, {{$proveedor["telefono2"]}}</div>
                         </div>                    
                     </div>
                 </td>
@@ -109,25 +110,17 @@
                     </div>
                 </td>
             </tr>
-            <tr>
-                <td colspan="4" valign="top">
-                    <div style="text-align: center; font-weight: bold;">Agradecemos a Ud. tenga a bien prestar la siguiente atencion profesional</div>
-                </td>
-            </tr>
         </tbody>
     </table>
     
-    <div style="position: absolute; top: 205px">
+    <div style="position: absolute; top: 190px">
+        <div style="text-align: center; font-weight: bold;">Agradecemos a Ud. tenga a bien prestar la siguiente atencion profesional</div>
         <div style="display:table; width:100%">
-            @foreach ($prestaciones as $porcion_de_servicios)
-                <div class="services">
-                    <ul>
-                        @foreach($porcion_de_servicios as $servicio)
-                            <li>{{$servicio}}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endforeach
+            <div class="services">
+                <ul>
+                    <li>{{$prestacion}}</li>
+                </ul>
+            </div>
         </div>
     
         <div style="display: table; width: 100%; margin-top: 10px; margin-bottom: 5px">

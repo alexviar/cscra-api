@@ -4,6 +4,7 @@ namespace App\Models\Galeno;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Throwable;
 
 class Afiliado extends Model
 {

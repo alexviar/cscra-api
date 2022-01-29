@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Infrastructure\SolicitudAtencionExternaQrSigner;
 use App\Models\Galeno\Afiliado;
 use App\Models\Galeno\Empleador;
+use App\Models\Traits\SaveToUpper;
 use Carbon\Carbon;
 use CBOR\ByteStringObject;
 use CBOR\ListObject;
@@ -23,14 +24,26 @@ use Illuminate\Support\Arr;
  */
 class SolicitudAtencionExterna extends Model
 {
-    use HasFactory;
-    
-    public $timestamps = false;
+    use HasFactory, SaveToUpper;
 
     protected $table = "solicitudes_atencion_externa";
 
+    protected $appends = [ "url_dm11", "numero" ];
+
     protected $casts = [
         "fecha" => "datetime:d/m/y H:i:s"
+    ];
+
+    protected $fillable = [
+        "fecha",
+        "prestacion",
+        "paciente_id",
+        "titular_id",
+        "empleador_id",
+        "medico_id",
+        "proveedor_id",
+        "regional_id",
+        "user_id"
     ];
 
     function getUrlDm11Attribute() {
@@ -41,7 +54,7 @@ class SolicitudAtencionExterna extends Model
 
     function getNumeroAttribute()
     {
-        return str_pad($this->id, 10, '0', STR_PAD_LEFT);
+        return str_pad($this->id, 20, '0', STR_PAD_LEFT);
     }
 
     function paciente()
@@ -69,9 +82,9 @@ class SolicitudAtencionExterna extends Model
         return $this->belongsTo(Proveedor::class);
     }
 
-    function registradoPor()
+    function usuario()
     {
-        return $this->belongsTo(User::class, "login", "id");
+        return $this->belongsTo(User::class, "user_id");
     }
 
     function regional()
@@ -82,8 +95,15 @@ class SolicitudAtencionExterna extends Model
     function toArray()
     {
         $array = parent::toArray();
-        $array["fecha"] = $this->fecha->format("d/m/y H:i:s");
-        $array['url_dm11'] = $this->urlDm11;
-        return $array;
+        return Arr::undot(Arr::only(Arr::dot($array), [
+            "id", "fecha", "prestacion", "url_dm11",
+            "paciente.id", "paciente.matricula", "paciente.nombre_completo",
+            "titular.id", "titular.matricula", "titular.nombre_completo",
+            "empleador.id", "empleador.numero_patronal", "empleador.nombre",
+            "medico.id", "medico.nombre_completo", "medico.especialidad",
+            "proveedor.id", "proveedor.razon_social", "proveedor.especialidad",
+            "usuario.id", "usuario.nombre",
+            "regional.id", "regional.nombre"
+        ]));
     }
 }

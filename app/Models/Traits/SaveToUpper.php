@@ -13,6 +13,7 @@ trait SaveToUpper
         'username',
         'email',
         'remember_token',
+        'guard_name',
         'slug',
     ];
 

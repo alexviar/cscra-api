@@ -25,8 +25,9 @@ class CreateMedicosTable extends Migration
             $table->foreignId("regional_id")->constrained("regionales");
             $table->timestamps();
             
-            $table->fulltext(["apellido_paterno", "apellido_materno", "nombre"], "full_name");
-            $table->unique(["ci", "ci_complemento", "regional_id"], "ci");
+            $table->fulltext(["apellido_paterno", "apellido_materno", "nombre"], "medicos_full_name");
+            $table->fulltext(["especialidad"]);
+            $table->unique(["ci", "ci_complemento", "regional_id"], "medicos_ci");
         });
     }
 

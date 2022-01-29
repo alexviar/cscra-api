@@ -20,18 +20,18 @@ class MedicoFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition($attributes)
     {
         $ci = explode("-", $this->faker->unique()->regexify("([1-9][0-9]{7})-([1-9][A-Z]){0,1}"));
         return [
             // "id" => $this->faker->unique()->randomNumber(),
-            "ci" => new CarnetIdentidad(intval($ci[0]), $ci[1]),
-            "apellido_paterno" => $this->faker->lastName,
-            "apellido_materno" => $this->faker->lastName,
-            'nombre' => $this->faker->name,
-            "especialidad" => $this->faker->text(25),
-            'regional_id' => $this->faker->randomElement([1,2,3,4,5,6,7,8,9,10,11]),
-            'estado' => 1,//$this->faker->randomElement([1,2]),
+            "ci" => $attributes["ci"] ?? new CarnetIdentidad(intval($ci[0]), $ci[1]),
+            "apellido_paterno" => $attributes["apellido_paterno"] ?? $this->faker->lastName,
+            "apellido_materno" => $attributes["apellido_materno"] ?? $this->faker->lastName,
+            'nombre' => $attributes["nombre"] ?? $this->faker->name,
+            "especialidad" => $attributes["especialidad"] ?? $this->faker->text(25),
+            'regional_id' => $attributes["regional_id"] ?? $this->faker->randomElement([1,2,3,4,5,6,7,8,9,10,11]),
+            'estado' => $attributes["estado"] ?? 1,//$this->faker->randomElement([1,2]),
         ];
     }
 

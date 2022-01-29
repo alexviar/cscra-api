@@ -45,7 +45,7 @@ class RoleController extends Controller
     {
         $this->authorize("registrar", Role::class);
         $payload = $request->validate([
-            "name" => "required|unique:roles|max:50",
+            "name" => "required|unique:roles|max:125",
             "description" => "nullable|max:255",
             "permissions" => "array|required",
             "permissions.*" => "exists:".Permission::class.",name"
@@ -61,6 +61,8 @@ class RoleController extends Controller
             $role->givePermissionTo($payload["permissions"]);
             return $role;
         });
+
+        $role->loadMissing("permissions");
         return response()->json($role);
     }
 
@@ -137,7 +139,7 @@ class RoleController extends Controller
             abort(409, "El rol no esta vacío.");
         }
 
-        $this->authorize("eliminar", Role::class);
+        $this->authorize("eliminar", [Role::class, $rol]);
         
         $rol->delete();
         

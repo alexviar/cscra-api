@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Permisos;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Arr;
@@ -37,13 +38,15 @@ class UserPolicy
 
     public function registrar(User $user, $payload)
     {
+        if (in_array(1, $payload["roles"]) || in_array(Role::find(1)->name, $payload["roles"]) && !$user->isSuperUser()) return false;
         if ($user->hasPermissionTo(Permisos::REGISTRAR_USUARIOS_MISMA_REGIONAL)) return $user->regional_id == Arr::get($payload, "regional_id");
         if ($user->hasPermissionTo(Permisos::REGISTRAR_USUARIOS)) return true;
     }
 
     public function editar(User $user, $model, $payload)
     {
-        if ($model->username === "admin") return false;
+        if ($model->id === 1) return false;
+        if (in_array(1, $payload["roles"]) || in_array(Role::find(1)->name, $payload["roles"]) && !$user->isSuperUser()) return false;
         if ($user->hasPermissionTo(Permisos::ACTUALIZAR_USUARIOS_MISMA_REGIONAL)) return $user->regional_id == Arr::get($payload, "regional_id") && $user->regional_id == $model->regional_id;
         if ($user->hasPermissionTo(Permisos::ACTUALIZAR_USUARIOS)) return true;
     }

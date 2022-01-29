@@ -10,42 +10,36 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
-class EmpleadorController extends Controller {
-  
-  function buscar(Request $request): JsonResponse{
-    $filter = $request->filter;
-    $page = $request->page;
+class EmpleadorController extends Controller
+{
 
-    $query = GalenoEmpleador::query();
-    if(Arr::has($filter, "numero_patronal")){
-      $query->where("NUMERO_PATRONAL_EMP", $filter["numero_patronal"]);
-    }
-    if(Arr::has($filter, "id")){
-      $query->where("ID", $filter["id"]);
-    }
-    else if(Arr::has($filter, "ids")){
-      $query->whereIn("ID", $filter["ids"]);
+    function appendFilters($query, $filter)
+    {
+        if ($numeroPatronal = Arr::get($filter, "numero_patronal")) {
+            $query->where("NUMERO_PATRONAL_EMP", $numeroPatronal);
+        }
+        if (Arr::has($filter, "id")) {
+            $query->where("ID", $filter["id"]);
+        } else if (Arr::has($filter, "ids")) {
+            $query->whereIn("ID", $filter["ids"]);
+        }
     }
 
-    $total = $query->count();
+    function buscar(Request $request): JsonResponse
+    {
+        $filter = $request->filter;
+        $page = $request->page;
 
-    $pageSize = Arr::get($page, "size", null);
-    if($pageSize){
-      $query->limit($pageSize);
+        $query = GalenoEmpleador::query();
+
+        return  $this->buildResponse($query, $filter, $page);
     }
-    if(Arr::has($page, "current")){
-      $query->offset($page["current"], $pageSize);
+
+    function buscarPorPatronal(Request $request): JsonResponse
+    {
+        $empleador = GalenoEmpleador::where("NUMERO_PATRONAL_EMP", $request->numero_patronal)->first(); //$this->service->buscarPorPatronal($request->numero_patronal);
+        if ($empleador)
+            return response()->json($empleador);
+        throw new ModelNotFoundException("Empleador no encontrado");
     }
-
-    $records = $query->get();
-
-    return  response()->json($this->buildPaginatedResponseData($total, $records));
-  }
-
-  function buscarPorPatronal(Request $request): JsonResponse {
-    $empleador = GalenoEmpleador::where("NUMERO_PATRONAL_EMP", $request->numero_patronal)->first();//$this->service->buscarPorPatronal($request->numero_patronal);
-    if($empleador)
-      return response()->json($empleador);
-    throw new ModelNotFoundException("Empleador no encontrado");
-  }
 }

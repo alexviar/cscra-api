@@ -22,6 +22,14 @@ class ListaMoraQuitarTest extends TestCase
         ]);
     }
 
+    public function test_item_not_found()
+    {
+        $login = $this->getSuperUser();
+        $response = $this->actingAs($login)
+            ->deleteJson("/api/lista-mora/0");
+        $response->assertNotFound();
+    }
+
     public function test_usuario_puede_eliminar()
     {
         $login = User::factory()

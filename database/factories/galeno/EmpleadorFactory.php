@@ -5,6 +5,7 @@ namespace Database\Factories\Galeno;
 use App\Models\Galeno\Empleador;
 use App\Models\Regional;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class EmpleadorFactory extends Factory
@@ -21,16 +22,17 @@ class EmpleadorFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition($attributes)
     {
         $fechaIngreso = $this->faker->date();
         return [
             "ID" => $this->faker->unique()->numerify("AA#############"),
-            "NUMERO_PATRONAL_EMP" => $this->faker->unique()->numerify("###-#####"),
-            "NOMBRE_EMP" => $this->faker->text(50),
-            "ESTADO_EMP" => 1,
+            "NUMERO_PATRONAL_EMP" => $attributes["NUMERO_PATRONAL_EMP"] ?? $this->faker->unique()->numerify("###-#####"),
+            "NOMBRE_EMP" => $attributes["NOMBRE_EMP"] ?? $this->faker->text(50),
+            "ESTADO_EMP" => $attributes["ESTADO_EMP"] ?? 1,
+            "FECHA_BAJA_EMP" => $attributes["FECHA_BAJA_EMP"] ?? NULL,
             "ID_RAD" => $this->faker->unique()->numerify("AA#############"),
-            "ID_RGL" => $this->faker->randomElement(Regional::LOCAL_ID_TO_GALENO_ID),
+            "ID_RGL" => $attributes["ID_RGL"] ?? $this->faker->randomElement(Regional::LOCAL_ID_TO_GALENO_ID),
             "FECHA_INGRESO_EMP" => $this->faker->date(),
             "REG_DATE" => $this->faker->dateTimeBetween($fechaIngreso, "now"),
             "REG_LOGIN" => substr($this->faker->username(), 0, 15),
@@ -50,14 +52,6 @@ class EmpleadorFactory extends Factory
         ]);
     }
 
-    function altaConFechaBaja()
-    {
-        return $this->state([
-            "ESTADO_EMP" => 1,
-            "FECHA_BAJA_EMP" => $this->faker->date()
-        ]);
-    }
-
     function estadoDesconocido()
     {
         return $this->state([
@@ -65,40 +59,11 @@ class EmpleadorFactory extends Factory
         ]);
     }
 
-    function bajaSinFecha()
+    function baja($conFecha = true)
     {
         return $this->state([
-            "ESTADO_EMP" => 2,
-            "FECHA_BAJA_EMP" => null
-        ]);
-    }
-
-    function bajaHace2MesesMas1Dia()
-    {
-        return $this->state([
-            "ESTADO_EMP" => 2,
-            "FECHA_BAJA_EMP" => Carbon::now()
-                ->subMonths(2)
-                ->subDay(1)
-        ]);
-    }
-
-    function bajaHace2Meses()
-    {
-        return $this->state([
-            "ESTADO_EMP" => 2,
-            "FECHA_BAJA_EMP" => Carbon::now()
-                ->subMonths(2)
-        ]);
-    }
-
-    function bajaHace2MesesMenos1Dia()
-    {
-        return $this->state([
-            "ESTADO_EMP" => 2,
-            "FECHA_BAJA_EMP" => Carbon::now()
-                ->subMonths(2)
-                ->addDay(1)
+            "ESTADO_EMP" => $this->faker->randomElement([2,3]),
+            "FECHA_BAJA_EMP" => $conFecha === false ? null : CarbonImmutable::make($this->faker->date())
         ]);
     }
 }

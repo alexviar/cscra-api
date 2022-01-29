@@ -27,7 +27,7 @@ class CreateSuperUser extends Migration
             "regional_id" => 1,
             "nombre" => "",
             "username" => "admin",
-            "password" => '$2y$10$QUnLfz295yFWvgHw0jHFeOinnL91AhgaQxhPEjAzbPSGTNCffrAhq'
+            "password" => 'password'
         ]);
 
         $user->syncRoles([$rol->name]);

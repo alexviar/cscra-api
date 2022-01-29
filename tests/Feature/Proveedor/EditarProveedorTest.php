@@ -65,6 +65,14 @@ class EditarProveedorTest extends TestCase
         return $data;
     }
 
+    public function test_proveedor_not_found()
+    {
+        $login = $this->getSuperUser();
+        $response = $this->actingAs($login)
+            ->putJson("/api/proveedores/0", []);
+        $response->assertNotFound();
+    }
+
     public function test_campos_requeridos()
     {
         $login = $this->getSuperUser();

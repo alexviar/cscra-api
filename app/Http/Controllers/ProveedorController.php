@@ -10,6 +10,7 @@ use Grimzy\LaravelMysqlSpatial\Types\Point;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class ProveedorController extends Controller
@@ -20,11 +21,9 @@ class ProveedorController extends Controller
         if ($busqueda = Arr::get($filter, "_busqueda")) {
             $query->where(function ($query) use ($busqueda) {
                 $query->whereRaw("MATCH(`apellido_paterno`, `apellido_materno`, `nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda . "*"]);
-                $query->orWhere("especialidad", $busqueda);
+                $query->orWhereRaw("MATCH(`especialidad`) AGAINST(? IN BOOLEAN MODE)", [$busqueda . "*"]);
+                //Tambien buscar por nit? debería ser un atributo restringido solo para usuarios con permiso para ver el nit?
             });
-            if (($tipo = Arr::get($filter, "tipo"))) {
-                $query->where("tipo", $tipo);
-            }
         } else {
             if ($nombre = Arr::get($filter, "nombre")) {
                 $query->whereRaw("MATCH(`apellido_paterno`, `apellido_materno`, `nombre`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
@@ -32,13 +31,14 @@ class ProveedorController extends Controller
             if (($nit = Arr::get($filter, "nit"))) {
                 $query->where("nit", $nit);
             }
-            if (($tipo = Arr::get($filter, "tipo"))) {
-                $query->where("tipo", $tipo);
-                if ($tipo == 1) {
-                    if($ciRaiz = Arr::get($filter, "ci.raiz")){
-                        $query->where("ci", $ciRaiz);
-                        if($ciComplemento = Arr::get($filter, "ci.complemento")) $query->where("ci_complemento", $ciComplemento);
-                    }
+        }
+        
+        if (($tipo = Arr::get($filter, "tipo"))) {
+            $query->where("tipo", $tipo);
+            if ($tipo == 1 && !$busqueda) {
+                if($ciRaiz = Arr::get($filter, "ci.raiz")){
+                    $query->where("ci", $ciRaiz);
+                    if($ciComplemento = Arr::get($filter, "ci.complemento")) $query->where("ci_complemento", $ciComplemento);
                 }
             }
         }
@@ -62,7 +62,7 @@ class ProveedorController extends Controller
 
     function mostrar(Request $request, $id)
     {
-        $proveedor = Proveedor::find($id);
+        $proveedor = Proveedor::whereTipo(Str::substr($id, 0, 3) == "MED" ? 1 : (Str::substr($id, 0, 3) == "EMP" ? 2 : 0))->where("id", Str::substr($id, 3))->first();
         if (!$proveedor) {
             throw new ModelNotFoundException("El proveedor no existe");
         }
@@ -230,7 +230,7 @@ class ProveedorController extends Controller
 
     function actualizar(Request $request, $id)
     {
-        $proveedor = Proveedor::find($id);
+        $proveedor = Proveedor::whereTipo(Str::substr($id, 0, 3) == "MED" ? 1 : (Str::substr($id, 0, 3) == "EMP" ? 2 : 0))->where("id", Str::substr($id, 3))->first();
         if (!$proveedor) {
             throw new ModelNotFoundException("El proveedor no existe");
         }
@@ -247,7 +247,7 @@ class ProveedorController extends Controller
 
     function actualizarEstado(Request $request, $id)
     {
-        $proveedor = Proveedor::find($id);
+        $proveedor = Proveedor::whereTipo(Str::substr($id, 0, 3) == "MED" ? 1 : (Str::substr($id, 0, 3) == "EMP" ? 2 : 0))->where("id", Str::substr($id, 3))->first();
         if (!$proveedor) {
             throw new ModelNotFoundException("El proveedor no existe");
         }

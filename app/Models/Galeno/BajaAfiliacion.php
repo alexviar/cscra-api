@@ -56,7 +56,7 @@ class BajaAfiliacion extends Model
     }
 
     function afiliacionBeneficiario(){
-        return $this->belongsTo(AfiliacionTitular::class, "ID_BNO", "ID");
+        return $this->belongsTo(AfiliacionBeneficiario::class, "ID_BNO", "ID");
     }
 
     function getFechaValidezSeguroAttribute()

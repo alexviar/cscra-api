@@ -12,6 +12,7 @@ use App\Models\SolicitudAtencionExterna;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class VerDm11Test extends TestCase
@@ -23,93 +24,102 @@ class VerDm11Test extends TestCase
      */
     public function test_usuario_con_permiso_para_emitir_dm11()
     {
-        $user = User::factory()
+        $login = User::factory()
             ->withPermissions([
                 Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA
             ])
             ->create();
 
-        $empleador = Empleador::factory()->create();
-        $afiliado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($afiliado)
-            ->for($empleador)
-            ->create()
-            ->refresh();
-
-        $medico = Medico::factory()
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
-        $solicitud = SolicitudAtencionExterna::factory()
-            ->for($afiliado, "asegurado")
-            ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
-            ->for($user, "registradoPor")
-            ->create();
-
+        $solicitud = SolicitudAtencionExterna::factory()->create();
         $numero = $solicitud->numero;
-        $response = $this->actingAs($user)
-            ->get("/api/formularios/dm11/$numero");
+        $this->beforeApplicationDestroyed(function() use($numero){
+            Storage::delete("formularios/dm11/$numero.pdf");
+        });
 
+        $response = $this->actingAs($login)
+            ->get("/api/formularios/dm11/$numero");    
         $response->assertOk();
+        Storage::disk("local")->assertExists("formularios/dm11/$numero.pdf");
         // $content = $response->streamedContent();
         // $this->assertTrue(!!$content);
     }
     
     public function test_usuario_con_permiso_para_emitir_dm11_restringido_por_regional()
     {
-        $user = User::factory()
+        $login = User::factory()
+            ->regionalLaPaz()
             ->withPermissions([
                 Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL
             ])
             ->create();
 
-        $empleador = Empleador::factory()->create();
-        $afiliado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($afiliado)
-            ->for($empleador)
-            ->create()
-            ->refresh();
+        $solicitud = SolicitudAtencionExterna::factory()->regionalLaPaz()->create();
+        $numero = $solicitud->numero;
+        $this->beforeApplicationDestroyed(function() use($numero){
+            Storage::delete("formularios/dm11/$numero.pdf");
+        });
 
-        $medico = Medico::factory()
-            ->create();
-        $proveedor = Proveedor::factory()
-            ->empresa()
-            ->create();
-
-        $solicitud1 = SolicitudAtencionExterna::factory()
-            ->for($afiliado, "asegurado")
-            ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
-            ->for($user, "registradoPor")
-            ->create();
-
-
-        $numero = $solicitud1->numero;
-        $response = $this->actingAs($user)
-            ->get("/api/formularios/dm11/$numero");
-    
+        $response = $this->actingAs($login)
+            ->get("/api/formularios/dm11/$numero");    
         $response->assertOk();
-        
-        $solicitud2 = SolicitudAtencionExterna::factory()
+        Storage::disk("local")->assertExists("formularios/dm11/$numero.pdf");
+
+        $solicitud = SolicitudAtencionExterna::factory()
             ->regionalSantaCruz()
-            ->for($afiliado, "asegurado")
-            ->for($afiliado->empleador)
-            ->for($medico)
-            ->for($proveedor)
-            ->for($user, "registradoPor")
             ->create();
         
-        $numero = $solicitud2->numero;
+        $numero = $solicitud->numero;
+        $response = $this->actingAs($login)
+            ->get("/api/formularios/dm11/$numero");
+        $response->assertForbidden();
+
+        $login = User::factory()
+            ->regionalLaPaz()
+            ->withPermissions([
+                Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA,
+                Permisos::EMITIR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL
+            ])
+            ->create();
+        
+        $numero = $solicitud->numero;
+        $response = $this->actingAs($login)
+            ->get("/api/formularios/dm11/$numero");
+        $response->assertForbidden();
+    }
+
+    public function test_usuario_sin_permiso()
+    {
+        $user = User::factory()
+            ->withPermissions([])
+            ->create();
+
+        $solicitud = SolicitudAtencionExterna::factory()->create();
+        $numero = $solicitud->numero;
+
         $response = $this->actingAs($user)
             ->get("/api/formularios/dm11/$numero");
 
         $response->assertForbidden();
+    }
+
+    public function test_super_usuario()
+    {
+        //Storage::fake("local");
+        $user = User::factory()
+            ->superUser()
+            ->create();
+
+        $solicitud = SolicitudAtencionExterna::factory()->create();
+        $numero = $solicitud->numero;
+
+        $this->beforeApplicationDestroyed(function() use($numero){
+            Storage::delete("formularios/dm11/$numero.pdf");
+        });
+
+        $response = $this->actingAs($user)->get("/api/formularios/dm11/$numero");
+        $response->assertOk();
+        Storage::disk("local")->assertExists("formularios/dm11/$numero.pdf");
+        // $content = $response->streamedContent();
+        // $this->assertTrue(!!$content);
     }
 }

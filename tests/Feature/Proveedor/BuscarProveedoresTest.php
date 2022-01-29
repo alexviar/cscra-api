@@ -34,7 +34,7 @@ class BuscarProveedoresTest extends TestCase
             ])
             ->create();
 
-        for($i = 0; $i < 20; $i++) Proveedor::factory()->tipoRandom()->create();
+        for($i = 0; $i < 20; $i++) Proveedor::factory()->create();
         
         $response = $this->actingAs($login)->getJson("/api/proveedores?".http_build_query([
             "page" => [ "current" => 1, "size" => 10]
@@ -54,8 +54,8 @@ class BuscarProveedoresTest extends TestCase
             ])
             ->create();
             
-        $proveedorLaPaz = Proveedor::factory()->tipoRandom()->regionalLaPaz()->create();
-        Proveedor::factory()->tipoRandom()->regionalSantaCruz()->create();
+        $proveedorLaPaz = Proveedor::factory()->regionalLaPaz()->create();
+        Proveedor::factory()->regionalSantaCruz()->create();
         
         $response = $this->actingAs($login)->getJson("/api/proveedores?".http_build_query([
             "page" => [ "current" => 1, "size" => 10]
@@ -128,6 +128,11 @@ class BuscarProveedoresTest extends TestCase
         ])->create();
 
         DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function(){
+            $this->refreshDatabase();
+            // Proveedor::truncate();
+        });
 
         $page = [
             "current" => 1,
@@ -144,9 +149,6 @@ class BuscarProveedoresTest extends TestCase
         $this->assertSuccess($response, [
             "total" => 4
         ], collect([$lorena, $lorem, $lord, $loro]));
-        
-        RefreshDatabaseState::$migrated = false;
-        $this->refreshDatabase();
     }
 
     public function test_filter_by_tipo()
@@ -191,11 +193,11 @@ class BuscarProveedoresTest extends TestCase
 
         $proveedor1 = Proveedor::factory([
             "nit" => "123456789012"
-        ])->tipoRandom()->create();
+        ])->create();
 
         $proveedor2 = Proveedor::factory([
             "nit" => "234567890123"
-        ])->tipoRandom()->create();
+        ])->create();
 
         $page = [
             "current" => 1,
@@ -230,8 +232,8 @@ class BuscarProveedoresTest extends TestCase
     {
         $login = $this->getSuperUser();
 
-        $activo = Proveedor::factory()->tipoRandom()->create();
-        $baja = Proveedor::factory()->tipoRandom()->baja()->create();
+        $activo = Proveedor::factory()->create();
+        $baja = Proveedor::factory()->baja()->create();
 
         $page = [
             "current" => 1,
@@ -266,8 +268,8 @@ class BuscarProveedoresTest extends TestCase
     {
         $login = $this->getSuperUser();
 
-        $proveedorLaPaz = Proveedor::factory()->tipoRandom()->regionalLaPaz()->create();
-        $proveedorSantaCruz = Proveedor::factory()->tipoRandom()->regionalSantaCruz()->create();
+        $proveedorLaPaz = Proveedor::factory()->regionalLaPaz()->create();
+        $proveedorSantaCruz = Proveedor::factory()->regionalSantaCruz()->create();
 
         $page = [
             "current" => 1,

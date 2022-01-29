@@ -16,10 +16,4 @@ abstract class TestCase extends BaseTestCase
     protected function getSuperUser(){
         return User::where("username", "admin")->first();
     }
-
-    public static function setUpBeforeClass(): void
-    {
-        parent::setUpBeforeClass();
-        // RefreshDatabaseState::$migrated = true;
-    }
 }

@@ -16,7 +16,7 @@ class User extends Authenticatable
 
     protected $guard_name = "sanctum";
 
-    protected $with = [ "roles" ];
+    protected $with = ["roles"];
 
     /**
      * The attributes that are mass assignable.
@@ -24,14 +24,14 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-      'ci',
-      'apellido_paterno',
-      'apellido_materno',
-      'nombre',
-      'username',
-      'password',
-      'estado',
-      'regional_id'
+        'ci',
+        'apellido_paterno',
+        'apellido_materno',
+        'nombre',
+        'username',
+        'password',
+        'estado',
+        'regional_id'
     ];
 
     /**
@@ -47,35 +47,42 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-      "nombre_completo"
+        "nombre_completo"
     ];
 
     protected $casts = [
-      "ci" => CarnetIdentidad::class,
-      "created_at" =>  'date:d/m/Y',
-      "updated_at" =>  'date:d/m/Y'
+        "ci" => CarnetIdentidad::class,
+        "created_at" =>  'date:d/m/Y',
+        "updated_at" =>  'date:d/m/Y'
     ];
 
-    function setPasswordAttribute($value){
-      $this->attributes["password"] = Hash::make($value);
+    function setPasswordAttribute($value)
+    {
+        $this->attributes["password"] = Hash::make($value);
     }
 
     function isSuperUser()
     {
-        return $this->hasRole("super user");
+        return $this->hasRole(1);//$this->hasRole("super user");
     }
 
-    function validatePassword($password) {
-      return Hash::check($password, $this->password);
+    function validatePassword($password)
+    {
+        return Hash::check($password, $this->password);
     }
 
-    function getNombreCompletoAttribute(){
-      $nombreCompleto = $this->nombre;
-      if($this->apellido_materno)
-        $nombreCompleto =  $this->apellido_materno . " " . $nombreCompleto;
-      if($this->apellido_paterno)
-        $nombreCompleto =  $this->apellido_paterno . " " . $nombreCompleto;
-      return $nombreCompleto;        
+    function getNombreCompletoAttribute()
+    {
+        $nombreCompleto = $this->nombre;
+        if ($this->apellido_materno)
+            $nombreCompleto =  $this->apellido_materno . " " . $nombreCompleto;
+        if ($this->apellido_paterno)
+            $nombreCompleto =  $this->apellido_paterno . " " . $nombreCompleto;
+        return $nombreCompleto;
     }
 
+    function regional()
+    {
+        return $this->belongsTo(Regional::class);
+    }
 }

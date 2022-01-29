@@ -43,7 +43,7 @@ class Proveedor extends Model
 
     protected $with = ["regional"];
 
-    protected $appends = ["nombre_completo"];
+    protected $appends = ["razon_social"];
 
     protected $hidden = ["ci_complemento"];
 
@@ -61,6 +61,11 @@ class Proveedor extends Model
         return $nombreCompleto;
     }
 
+    function getRazonSocialAttribute()
+    {
+        return $this->tipo == 1 ? $this->nombre_completo : $this->nombre;
+    }
+
     function regional()
     {
         return $this->belongsTo(Regional::class, "regional_id", "id");
@@ -69,13 +74,15 @@ class Proveedor extends Model
     function toArray()
     {
         if($this->tipo == 2){
-            $this->makeHidden("ci", "apellido_paterno", "apellido_materno", "nombre", "especialidad");
+            $this->makeHidden("ci", "apellido_paterno", "apellido_materno", "especialidad");
         }
         $array = parent::toArray();
         $array["ubicacion"] = [
             "latitud" => $this->ubicacion->getLat(),
             "longitud" => $this->ubicacion->getLng()
         ];
+        $id = str_pad($this->id, 20, '0', STR_PAD_LEFT);
+        $array["id"] = $this->tipo == 1 ? "MED{$id}" : "EMP$id";
         return $array;
     }
 }

@@ -17,22 +17,38 @@ class UserController extends Controller
 {
     protected function appendFilters($query, $filter)
     {
-        if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
-            $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [Str::upper($nombre) . "*"]);
-            // $query->where("nombre","like", Str::upper($nombre) . "%");
+        $query->with(["roles", "regional"]);
+        if($busqueda = Arr::get($filter, "_busqueda")){
+            $query->where(function($query) use($busqueda){
+                $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$busqueda . "*"]);
+                // $split = explode("-", $busqueda);
+                // if(count($split) <= 2) {
+                //     $query->orWhere(function($query) use($split){
+                //         $query->where("ci", $split[0]);
+                //         if(count($split) == 2) $query->where("ci_complemento", $split[0]);
+                //     });
+                // }
+                $query->orWhere("username", $busqueda);
+            });
         }
-        if (Arr::has($filter, "ci.raiz") && $ci = Arr::get($filter, "ci.raiz")) {
+        else {
+            if ($nombre = Arr::get($filter, "nombre")) {
+                $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
+                // $query->where("nombre","like", Str::upper($nombre) . "%");
+            }
+            if (Arr::has($filter, "username") && ($username = $filter["username"])) {
+                $query->where("username", "LIKE", $username . "%");
+            }
+        }
+        if ($ci = Arr::get($filter, "ci.raiz")) {
             $query->where("ci", $ci);
             if($ciComplemento = Arr::get($filter, "ci.complemento")) $query->where("ci_complemento", $ciComplemento);
         }
-        if (Arr::has($filter, "username") && ($username = $filter["username"])) {
-            $query->where("username", "LIKE", $username . "%");
+        if ($estado = Arr::get($filter, "estado")) {
+            $query->where("estado", $estado);
         }
-        if (Arr::has($filter, "estado")) {
-            $query->where("estado", $filter["estado"]);
-        }
-        if (Arr::has($filter, "regional_id")) {
-            $query->where("regional_id", $filter["regional_id"]);
+        if ($regionalId = Arr::get($filter, "regional_id")) {
+            $query->where("regional_id", $regionalId);
         }
     }
 
@@ -56,6 +72,7 @@ class UserController extends Controller
         
         $this->authorize("ver", $user);
 
+        $user->loadMissing(["regional", "roles"]);
         return response()->json($user);
     }
 
@@ -103,6 +120,7 @@ class UserController extends Controller
             $model->syncRoles($payload["roles"]);
             return $model;
         });
+        $user->loadMissing(["regional", "roles"]);
         return response()->json($user);
     }
 
@@ -185,9 +203,8 @@ class UserController extends Controller
 
         $this->authorize("enable", $user);
 
-        $user->update([
-            "estado" => 1
-        ]);
+        $user->estado = 1;
+        $user->save();
 
         return response()->json();
     }
@@ -202,9 +219,8 @@ class UserController extends Controller
 
         $this->authorize("disable", $user);
 
-        $user->update([
-            "estado" => 2
-        ]);
+        $user->estado = 2;
+        $user->save();
 
         return response()->json();
     }
