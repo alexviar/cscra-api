@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Application\SolicitudAtencionExternaService;
 use App\Http\Reports\Dm11Generador;
 use App\Models\Galeno\Afiliado;
 use App\Models\ListaMoraItem;
@@ -12,7 +11,6 @@ use App\Models\SolicitudAtencionExterna;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -22,6 +20,10 @@ class SolicitudAtencionExternaController extends Controller
 {
     function appendFilters($query, $filter)
     {
+        if($busqueda = Arr::get($filter, "_busqueda")){
+            if(is_numeric($busqueda)) $query->where("id", $busqueda);
+            else $query->whereRaw("MATCH(`prestacion`) AGAINST(? IN BOOLEAN MODE)", [$busqueda."*"]);
+        }
         if($regionalId = Arr::get($filter, "regional_id")) {
             $query->where("regional_id", $regionalId);
         }
@@ -164,7 +166,7 @@ class SolicitudAtencionExternaController extends Controller
         $erroresVigenciaDeDerecho = $this->validateVigenciaDeDerecho($asegurado, $hoy);
         $medico = Medico::find($payload["medico_id"]);
         $erroresMedico = $this->validateMedico($medico, $payload);
-        $proveedor = Proveedor::find(Str::substr($payload["proveedor_id"], 3));
+        $proveedor = Proveedor::findById($payload["proveedor_id"]);
         $erroresProveedor = $this->validateProveedor($proveedor, $payload);
 
         $errores = array_merge($erroresVigenciaDeDerecho, $erroresMedico, $erroresProveedor);

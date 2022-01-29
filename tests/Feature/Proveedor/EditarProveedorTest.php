@@ -80,7 +80,7 @@ class EditarProveedorTest extends TestCase
         $proveedor = Proveedor::factory()->medico()->create();
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}", []);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}", []);
 
         $response->assertJsonValidationErrors([
             "nit" => "Este campo es requerido.",
@@ -98,7 +98,7 @@ class EditarProveedorTest extends TestCase
 
         $proveedor = Proveedor::factory()->empresa()->create();
 
-        $response = $this->actingAs($login)->putJson("/api/proveedores/{$proveedor->id}", []);
+        $response = $this->actingAs($login)->putJson("/api/proveedores/{$proveedor->padded_id}", []);
 
         $response->assertJsonValidationErrors([
             "nit" => "Este campo es requerido.",
@@ -168,7 +168,7 @@ class EditarProveedorTest extends TestCase
         $proveedor = Proveedor::factory()->medico()->create();
 
         $response = $this->actingAs($user, "sanctum")
-            ->putJson("/api/proveedores/{$proveedor->id}", [
+            ->putJson("/api/proveedores/{$proveedor->padded_id}", [
                 "regional_id" => 0
             ]);
         $response->assertJsonValidationErrors([
@@ -178,7 +178,7 @@ class EditarProveedorTest extends TestCase
         $proveedor = Proveedor::factory()->empresa()->create();
 
         $response = $this->actingAs($user, "sanctum")
-            ->putJson("/api/proveedores/{$proveedor->id}", [
+            ->putJson("/api/proveedores/{$proveedor->padded_id}", [
                 "regional_id" => 0
             ]);
         $response->assertJsonValidationErrors([
@@ -338,7 +338,7 @@ class EditarProveedorTest extends TestCase
         $data = $this->prepareData($data);
         
         $response = $this->actingAs($login, "sanctum")
-            ->putJson("/api/proveedores/{$proveedor->id}", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}", $data);
         $response->assertForbidden();
     }    
 
@@ -352,7 +352,7 @@ class EditarProveedorTest extends TestCase
         $data = $this->prepareData($data);
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}", $data);
         $this->assertSuccess($response, $proveedor, $data);
     }
 
@@ -369,7 +369,7 @@ class EditarProveedorTest extends TestCase
         $data = $this->prepareData($data);
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}", $data);
         $response->assertForbidden();
     }
 

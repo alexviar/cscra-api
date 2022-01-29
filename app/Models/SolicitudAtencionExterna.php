@@ -96,7 +96,7 @@ class SolicitudAtencionExterna extends Model
     {
         $array = parent::toArray();
         return Arr::undot(Arr::only(Arr::dot($array), [
-            "id", "fecha", "prestacion", "url_dm11",
+            "id", "numero", "fecha", "prestacion", "url_dm11",
             "paciente.id", "paciente.matricula", "paciente.nombre_completo",
             "titular.id", "titular.matricula", "titular.nombre_completo",
             "empleador.id", "empleador.numero_patronal", "empleador.nombre",

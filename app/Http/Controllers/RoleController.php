@@ -99,7 +99,7 @@ class RoleController extends Controller
         }
         
         $payload = $request->validate([
-            "name" => "required|unique:roles,name,$id|max:50",
+            "name" => "required|unique:roles,name,$id|max:125",
             "description" => "nullable|max:255",
             "permissions" => "array|required",
             "permissions.*" => "exists:".Permission::class.",name"

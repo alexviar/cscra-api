@@ -87,7 +87,7 @@ class BuscarUsuarioTest extends TestCase
             "size" => 10
         ];
         $filter = [
-            "nombre_completo" => "lor"
+            "nombre" => "lor"
         ];
 
         $response = $this->actingAs($login)->getJson("/api/usuarios?".http_build_query([

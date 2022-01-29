@@ -49,7 +49,7 @@ class RegistrarProveedorTest extends TestCase
                 "telefono2" => $data["telefono2"]
             ]);
         }
-        $proveedor = Proveedor::find($response->json("id"));
+        $proveedor = Proveedor::findById($response->json("id"));
         // if($proveedor == null) dd($response->json("id"), $proveedor);
         $response->assertJson($proveedor->toArray());
     }

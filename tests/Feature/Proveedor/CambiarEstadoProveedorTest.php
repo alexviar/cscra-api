@@ -66,7 +66,7 @@ class CambiarEstadoProveedorTest extends TestCase
             ->create();
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", []);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", []);
         $response->assertJsonValidationErrors([
             "estado" => "Este campo es requerido"
         ]);
@@ -80,7 +80,7 @@ class CambiarEstadoProveedorTest extends TestCase
             ->create();
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", [
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", [
                 "estado" => 3
             ]);
 
@@ -107,14 +107,14 @@ class CambiarEstadoProveedorTest extends TestCase
             "estado" => 2
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
 
         $data = [
             "estado" => 1
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
 
         
@@ -127,14 +127,14 @@ class CambiarEstadoProveedorTest extends TestCase
             "estado" => 2
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
 
         $data = [
             "estado" => 1
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
     }
 
@@ -156,14 +156,14 @@ class CambiarEstadoProveedorTest extends TestCase
             "estado" => 2
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
 
         $data = [
             "estado" => 1
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
 
         
@@ -176,7 +176,7 @@ class CambiarEstadoProveedorTest extends TestCase
             "estado" => 2
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $response->assertForbidden();
 
         //Precedencia de los permisos regionales
@@ -191,7 +191,7 @@ class CambiarEstadoProveedorTest extends TestCase
             "estado" => 2
         ];
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $response->assertForbidden();
     }
 
@@ -206,7 +206,7 @@ class CambiarEstadoProveedorTest extends TestCase
             ->create();
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", [
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", [
                 "estado" => 1
             ]);
         $response->assertForbidden();
@@ -224,7 +224,7 @@ class CambiarEstadoProveedorTest extends TestCase
         ];
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $this->assertSuccess($response, $proveedor, $data);
     }
 
@@ -243,7 +243,7 @@ class CambiarEstadoProveedorTest extends TestCase
         ];
 
         $response = $this->actingAs($login)
-            ->putJson("/api/proveedores/{$proveedor->id}/actualizar-estado", $data);
+            ->putJson("/api/proveedores/{$proveedor->padded_id}/actualizar-estado", $data);
         $response->assertForbidden();
     }
 

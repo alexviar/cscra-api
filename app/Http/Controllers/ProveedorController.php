@@ -62,7 +62,7 @@ class ProveedorController extends Controller
 
     function mostrar(Request $request, $id)
     {
-        $proveedor = Proveedor::whereTipo(Str::substr($id, 0, 3) == "MED" ? 1 : (Str::substr($id, 0, 3) == "EMP" ? 2 : 0))->where("id", Str::substr($id, 3))->first();
+        $proveedor = Proveedor::findById($id);
         if (!$proveedor) {
             throw new ModelNotFoundException("El proveedor no existe");
         }
@@ -230,7 +230,7 @@ class ProveedorController extends Controller
 
     function actualizar(Request $request, $id)
     {
-        $proveedor = Proveedor::whereTipo(Str::substr($id, 0, 3) == "MED" ? 1 : (Str::substr($id, 0, 3) == "EMP" ? 2 : 0))->where("id", Str::substr($id, 3))->first();
+        $proveedor = Proveedor::findById($id);
         if (!$proveedor) {
             throw new ModelNotFoundException("El proveedor no existe");
         }
@@ -247,7 +247,7 @@ class ProveedorController extends Controller
 
     function actualizarEstado(Request $request, $id)
     {
-        $proveedor = Proveedor::whereTipo(Str::substr($id, 0, 3) == "MED" ? 1 : (Str::substr($id, 0, 3) == "EMP" ? 2 : 0))->where("id", Str::substr($id, 3))->first();
+        $proveedor = Proveedor::findById($id);
         if (!$proveedor) {
             throw new ModelNotFoundException("El proveedor no existe");
         }

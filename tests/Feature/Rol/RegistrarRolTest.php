@@ -46,16 +46,16 @@ class RegistrarRolTest extends TestCase
 
         $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
-                "name" => $this->faker->lexify(str_repeat('?', 50))
+                "name" => $this->faker->lexify(str_repeat('?', 125))
             ]);
         $response->assertJsonMissingValidationErrors(["name"]);
 
         $response = $this->actingAs($login, "sanctum")
             ->postJson("/api/roles", [
-                "name" => $this->faker->lexify(str_repeat('?', 51))
+                "name" => $this->faker->lexify(str_repeat('?', 126))
             ]);
         $response->assertJsonValidationErrors([
-            "name" => "Este campo no debe exceder los 50 caracteres"
+            "name" => "Este campo no debe exceder los 125 caracteres"
         ]);
     }
 

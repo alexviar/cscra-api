@@ -30,7 +30,7 @@ class VerProveedorTest extends TestCase
             ->regionalLaPaz()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertOk();
         $response->assertJson($model->toArray());
 
@@ -38,7 +38,7 @@ class VerProveedorTest extends TestCase
             ->regionalSantaCruz()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertOk();
         $response->assertJson($model->toArray());
     }
@@ -57,7 +57,7 @@ class VerProveedorTest extends TestCase
             ->regionalLaPaz()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertOk();
         $response->assertJson($model->toArray());
 
@@ -65,7 +65,7 @@ class VerProveedorTest extends TestCase
             ->regionalSantaCruz()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertForbidden();
 
         $user = User::factory()
@@ -77,7 +77,7 @@ class VerProveedorTest extends TestCase
             ])
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertForbidden();
     }
 
@@ -90,7 +90,7 @@ class VerProveedorTest extends TestCase
         $model = Proveedor::factory()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertForbidden();
     }
 
@@ -103,7 +103,7 @@ class VerProveedorTest extends TestCase
         $model = Proveedor::factory()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertOk();
         $response->assertJson($model->toArray());
     }
@@ -118,7 +118,7 @@ class VerProveedorTest extends TestCase
         $model = Proveedor::factory()
             ->create();
 
-        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
+        $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->padded_id}");
         $response->assertForbidden();
     }
 
