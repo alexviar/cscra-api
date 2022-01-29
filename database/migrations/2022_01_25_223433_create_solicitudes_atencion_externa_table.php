@@ -15,7 +15,7 @@ class CreateSolicitudesAtencionExternaTable extends Migration
     {
         Schema::create('solicitudes_atencion_externa', function (Blueprint $table) {
             $table->id();
-            $table->date("fecha");
+            $table->datetime("fecha");
             $table->char("paciente_id", 15); 
             $table->char("titular_id", 15)->nullable(); 
             $table->char("empleador_id", 15);
@@ -23,7 +23,7 @@ class CreateSolicitudesAtencionExternaTable extends Migration
             $table->foreignId("medico_id")->constrained("medicos");
             $table->foreignId("proveedor_id")->constrained("proveedores");
             $table->foreignId("regional_id")->constrained("regionales");
-            $table->foreignId("login")->constrained("users");
+            $table->foreignId("user_id")->constrained("users");
             $table->timestamps();
 
             $table->fulltext(["prestacion"]);

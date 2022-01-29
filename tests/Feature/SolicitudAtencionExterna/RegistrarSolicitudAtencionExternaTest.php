@@ -14,393 +14,113 @@ use App\Models\Permisos;
 use App\Models\Prestacion;
 use App\Models\Proveedor;
 use App\Models\Regional;
+use App\Models\SolicitudAtencionExterna;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class RegistrarSolicitudAtencionExternaTest extends TestCase
 {
-    use DatabaseTransactions, WithFaker;
+    use WithFaker;
 
     protected $connectionsToTransact = ["mysql", "galeno"];
 
-
-    function createSuperUser()
+    function setUp(): void
     {
-        return User::where("username", "admin")->first();
+        parent::setUp();
+        Storage::fake("local");
     }
 
-    function assertSolicitudRegistrada(){
-        $this->assertDatabaseCount("atenciones_externas", 1);
-        $this->assertDatabaseCount("detalles_atenciones_externas", 1);
-    }
-
-    function test_beneficiario_con_fecha_de_extinsion_vencida_ayer()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->fechaExtinsionVencidaAyer()
-            ->create();
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["asegurado.fecha_extincion" => "Fecha de extincion alcanzada"]);
-    }
-
-
-    function test_beneficiario_con_fecha_de_extinsion_vencida_hoy()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->fechaExtinsionVencidaHoy()
-            ->create();
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["asegurado.fecha_extincion" => "Fecha de extincion alcanzada"]);
-    }
-
-    function test_beneficiario_con_fecha_de_extinsion_vencida_maniana()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->fechaExtinsionVencidaManiana()
-            ->create();
-            
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+    function assertSuccess(TestResponse $response, $data){
         $response->assertOk();
-        $this->assertSolicitudRegistrada();
     }
 
-    function test_beneficiario_sin_fecha_de_extinsion()
+    function test_beneficiario_con_fecha_de_extinsion_vencida()
     {
-        $this->travelTo(Carbon::create(2020));
+        $login = $this->getSuperUser();
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
+        $beneficiario = AfiliacionBeneficiario::factory()->noExtinguible()->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($beneficiario, "paciente")->for($login, "usuario")->raw();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_extincion"]);
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $beneficiario = Afiliado::factory()->beneficiario(AfiliacionBeneficiario::factory()->extinguible())->create();
+        $data = SolicitudAtencionExterna::factory()->for($beneficiario, "paciente")->for($login, "usuario")->raw();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
+        $fechaExtinsion = $beneficiario->afiliacion->fecha_extincion->clone();
+        $this->travelTo($fechaExtinsion->subDay());
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_extincion"]);
 
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
-    }
-
-    function test_beneficiario_con_ampliacion_vencida_ayer()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->fechaExtinsionVencidaManiana()
-            ->create();
-        $ampliacionPrestacion = AmpliacionPrestacion::factory()
-            ->for($afiliacionBeneficiario)
-            ->vencidaAyer()
-            ->create();
-            
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors(["asegurado.fecha_extincion" => "Fecha de extincion alcanzada"]);
-    }
 
-    function test_beneficiario_con_ampliacion_vencida_hoy()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->fechaExtinsionVencidaManiana()
-            ->create();
-        $ampliacionPrestacion = AmpliacionPrestacion::factory()
-            ->for($afiliacionBeneficiario)
-            ->vencidaHoy()
-            ->create();
-        
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors(["asegurado.fecha_extincion" => "Fecha de extincion alcanzada"]);
-    }
 
-    function test_beneficiario_con_ampliacion_vencida_maniana()
-    {
-        $this->travelTo(Carbon::create(2020));
+        $fechaExtinsion = $beneficiario->afiliacion->fecha_extincion->clone();
+        $ampliacion=$fechaExtinsion->addYears(5);
+        AmpliacionPrestacion::factory()->for($beneficiario->afiliacion)->vencimiento($ampliacion)->create();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_extincion"]);
 
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->fechaExtinsionVencidaAyer()
-            ->create();
-        $ampliacionPrestacion = AmpliacionPrestacion::factory()
-            ->for($afiliacionBeneficiario)
-            ->vencidaManiana()
-            ->create();
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $this->travelTo($ampliacion->subDay());
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_extincion"]);
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["asegurado.fecha_extincion" => "Fecha de extincion alcanzada"]);
 
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["asegurado.fecha_extincion" => "Fecha de extincion alcanzada"]);
 
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
+        $this->travelBack();
     }
 
     function test_afiliado_con_estado_desconocido()
     {
-        $this->travelTo(Carbon::create(2020));
+        $login = $this->getSuperUser();
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->state(["ESTADO_AFI" => 0])->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->state(["ESTADO_AFI" => 0])->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $paciente = Afiliado::factory()->titular()->estadoDesconocido();
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors(["asegurado.estado" => "El asegurado tiene un estado indeterminado"]);
-        $response->assertJsonValidationErrors(["titular.estado" => "El asegurado tiene un estado indeterminado"]);
+        
+        $titular = Afiliado::factory()->titular()->estadoDesconocido()->create();
+        $paciente = AfiliacionBeneficiario::factory()->for($titular->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
+        // var_dump($paciente->titular->getAttributes(), $titular->getAttributes());
 
-        $titular = Afiliado::factory()->state(["ESTADO_AFI" => 3])->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->state(["ESTADO_AFI" => 3])->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["asegurado.estado" => "El asegurado tiene un estado indeterminado"]);
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors(["titular.estado" => "El asegurado tiene un estado indeterminado"]);
     }
 
     function test_afiliado_con_estado_de_alta_pero_con_registro_de_baja()
     {
-        $this->travelTo(Carbon::create(2020));
+        $user = $this->getSuperUser();
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()
-            ->for($titular)
-            ->for($empleador)
-            ->create();
-        BajaAfiliacion::factory()
-            ->for($afiliacionTitular, "afiliacionTitular")
-            ->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-        BajaAfiliacion::factory()
-            ->for($afiliacionBeneficiario)
-            ->create();
+        $afiliacion = AfiliacionBeneficiario::factory()->create();
+        $data = SolicitudAtencionExterna::factory()->for($afiliacion->afiliado, "paciente")->raw();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.estado"]);
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $baja = BajaAfiliacion::factory()->for($afiliacion)->create();
+        // dd($baja->getAttributes(), $afiliacion->getAttributes());
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "asegurado.estado" => "El asegurado figura como activo, pero existe registro de su baja"
+        ]);
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        BajaAfiliacion::factory()->for($afiliacion->afiliacionDelTitular)->create();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
             "asegurado.estado" => "El asegurado figura como activo, pero existe registro de su baja",
@@ -411,711 +131,174 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
 
     function test_afiliado_con_estado_de_baja_pero_sin_registro_de_baja()
     {
-        $this->travelTo(Carbon::create(2020));
+        $user = $this->getSuperUser();
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()
-            ->for($titular)
-            ->for($empleador)
-            ->create();
-        $beneficiario = Afiliado::factory()->baja()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $afiliado = Afiliado::factory()->beneficiario()->baja()->create();
+        $data = SolicitudAtencionExterna::factory()->for($afiliado, "paciente")->raw();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
             "asegurado.estado" => "El asegurado figura como dado de baja, pero no se enontraron registros de la baja",
+        ]);
+
+        $titular = Afiliado::factory()->titular()->baja()->create();
+        $paciente = AfiliacionBeneficiario::factory()->for($titular->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
             "titular.estado" => "El asegurado figura como dado de baja, pero no se enontraron registros de la baja"
         ]);
     }
 
-    function test_afiliado_con_fecha_de_validez_vencida_ayer()
+    function test_beneficiario_con_fecha_de_validez_vencida()
     {
-        $this->travelTo(Carbon::create(2020));
+        $login = $this->getSuperUser();
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()->validezVencidaAyer()
-            ->for($afiliacionTitular)
-            ->create();
+        $beneficiario = AfiliacionBeneficiario::factory()->noExtinguible()->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($beneficiario, "paciente")->for($login, "usuario")->raw();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_validez_seguro", "titular.fecha_validez_seguro"]);
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $baja = BajaAfiliacion::factory()->for($beneficiario->afiliacion)->create();
+        $vencimiento = $baja->fecha_validez_seguro;
+        $this->travelTo($vencimiento->subDay());
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_validez_seguro"]);
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["asegurado.fecha_validez_seguro" => "El seguro ya no tiene validez"]);
 
-        $data = [
-            "asegurado_id" => $titular->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["asegurado.fecha_validez_seguro" => "El seguro ya no tiene validez"]);
 
-        $user = $this->createSuperUser();
+        $baja->delete();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["asegurado.fecha_validez_seguro", "titular.fecha_validez_seguro"]);
+        
+        $baja = BajaAfiliacion::factory()->for($beneficiario->titular->afiliacion)->create();
+        $vencimiento = $baja->fecha_validez_seguro;
+        $this->travelTo($vencimiento->subDay());
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["titular.fecha_validez_seguro"]);
 
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "asegurado.fecha_validez_seguro" => "El seguro ya no tiene validez",
-        ]);
-    }
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["titular.fecha_validez_seguro" => "El seguro ya no tiene validez"]);
 
-    function test_beneficiario_con_fecha_de_validez_vencida_ayer()
-    {
-        $this->travelTo(Carbon::create(2020));
+        $this->travel(1)->days();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors(["titular.fecha_validez_seguro" => "El seguro ya no tiene validez"]);
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->baja()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-        BajaAfiliacion::factory()->validezVencidaAyer()
-            ->for($afiliacionBeneficiario)
-            ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "asegurado.fecha_validez_seguro" => "El seguro ya no tiene validez",
-        ]);
-    }
-
-    function test_titular_con_fecha_de_validez_vencida_ayer()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()->validezVencidaAyer()
-            ->for($afiliacionTitular)
-            ->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "titular.fecha_validez_seguro" => "El seguro ya no tiene validez"
-        ]);
-    }
-
-    function test_afiliado_con_fecha_de_validez_vencida_hoy()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()->validezVencidaHoy()
-            ->for($afiliacionTitular, "afiliacionTitular")
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-        $data = [
-            "asegurado_id" => $titular->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "asegurado.fecha_validez_seguro" => "El seguro ya no tiene validez"
-        ]);
-    }
-
-    function test_beneficiario_con_fecha_de_validez_vencida_hoy()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->baja()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-        BajaAfiliacion::factory()->validezVencidaHoy()
-            ->for($afiliacionBeneficiario)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "asegurado.fecha_validez_seguro" => "El seguro ya no tiene validez"
-        ]);
-    }
-
-    function test_titular_con_fecha_de_validez_vencida_hoy()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()->validezVencidaHoy()
-            ->for($afiliacionTitular)
-            ->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors([
-            "titular.fecha_validez_seguro" => "El seguro ya no tiene validez"
-        ]);
-    }
-
-    function test_afiliado_con_fecha_de_validez_vencida_maniana()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()->validezVencidaManiana()
-            ->for($afiliacionTitular)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $titular->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
-    }
-
-    function test_beneficiario_con_fecha_de_validez_vencida_maniana()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->baja()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-        BajaAfiliacion::factory()->validezVencidaManiana()
-            ->for($afiliacionBeneficiario)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
-    }
-
-    function test_titular_con_fecha_de_validez_vencida_maniana()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()->validezVencidaManiana()
-            ->for($afiliacionTitular)
-            ->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
+        $this->travelBack();
     }
 
     function test_afiliado_con_baja_sin_fecha_de_validez()
     {
-        $this->travelTo(Carbon::create(2020));
+        $user = $this->getSuperUser();
 
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()
-            ->for($afiliacionTitular)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $titular->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["asegurado.fecha_validez_seguro" => "Fecha no especificada, se asume que el seguro ya no tiene validez"]);
-    }
-
-    function test_beneficiario_con_baja_sin_fecha_de_validez()
-    {
-        $this->travelTo(Carbon::create(2020));
-
-        $regional_id = 1;
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
         $beneficiario = Afiliado::factory()->beneficiario()->baja()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-        BajaAfiliacion::factory()
-            ->for($afiliacionBeneficiario)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        BajaAfiliacion::factory()->for($beneficiario->afiliacion)->sinVencimiento()->create();
+        $data = SolicitudAtencionExterna::factory()->for($beneficiario, "paciente")->raw();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["asegurado.fecha_validez_seguro" => "Fecha no especificada, se asume que el seguro ya no tiene validez"]);
-    }
+        $response->assertJsonValidationErrors([
+            "asegurado.fecha_validez_seguro" => "Fecha no especificada, se asume que el seguro ya no tiene validez"
+        ]);
 
-    function test_titular_con_baja_sin_fecha_de_validez()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->baja()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()->for($titular)->for($empleador)->create();
-        BajaAfiliacion::factory()
-            ->for($afiliacionTitular)
-            ->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        $afiliacionBeneficiario = AfiliacionBeneficiario::factory()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $titular = Afiliado::factory()->titular()->baja()->create();
+        BajaAfiliacion::factory()->for($titular->afiliacion)->sinVencimiento()->create();
+        $paciente = AfiliacionBeneficiario::factory()->for($titular->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["titular.fecha_validez_seguro" => "Fecha no especificada, se asume que el seguro ya no tiene validez"]);
+        $response->assertJsonValidationErrors([
+            "titular.fecha_validez_seguro" => "Fecha no especificada, se asume que el seguro ya no tiene validez"
+        ]);
     }
 
     function test_empleador_dado_de_baja_sin_fecha_de_baja()
     {
+        $user = $this->getSuperUser();
         
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->bajaSinFecha()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-       $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $paciente = (rand(0,1) ? Afiliado::factory()->beneficiario() : Afiliado::factory()->beneficiario())->create();
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertJsonValidationErrors(["empleador.fecha_baja" => "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez"]);
+        $response->assertJsonMissingValidationErrors(["empleador.fecha_baja"]);
+
+        $paciente = AfiliacionTitular::factory()->for(Empleador::factory()->baja(false))->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "empleador.fecha_baja" => "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez"
+        ]);
+        
+        $paciente = AfiliacionBeneficiario::factory()->for($paciente->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "empleador.fecha_baja" => "No se ha especificado la fecha de baja, se asume que el seguro ya no tiene validez"
+        ]);
     }
 
-    function test_empleador_dado_de_baja_hace_dos_meses_y_un_dia()
+    function test_empleador_dado_de_baja()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->bajaHace2MesesMas1Dia()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+        $user = $this->getSuperUser();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $paciente = AfiliacionTitular::factory()->for(Empleador::factory()->baja())->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
+        $fecha_baja = $paciente->empleador->fecha_baja->clone();
+        $this->travelTo($fecha_baja->addMonths(2)->subDay());
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["empleador.fecha_baja"]);
 
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $this->travel(1)->days();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
             "empleador.fecha_baja" => "El seguro ya no tiene validez"
         ]);
-    }
-    
-    function test_empleador_dado_de_baja_hace_dos_meses()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->bajaHace2Meses()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $this->travel(1)->days();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
             "empleador.fecha_baja" => "El seguro ya no tiene validez"
         ]);
-    }
-    
-    function test_empleador_dado_de_baja_hace_dos_meses_menos_un_dia()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->bajaHace2MesesMenos1Dia()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+        
+        $paciente = AfiliacionBeneficiario::factory()->for($paciente->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $fecha_baja = $paciente->empleador->fecha_baja->clone();
+        $this->travelTo($fecha_baja->addMonths(2)->subDay());
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
-    }
-    
-    function test_empleador_de_alta_con_fecha_de_baja()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->altaConFechaBaja()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+        $response->assertJsonMissingValidationErrors(["empleador.fecha_baja"]);
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $this->travel(1)->days();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "empleador.estado" => "El empleador figura como activo, pero tiene una fecha de baja"
+            "empleador.fecha_baja" => "El seguro ya no tiene validez"
+        ]);
+        
+        $this->travel(1)->days();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "empleador.fecha_baja" => "El seguro ya no tiene validez"
         ]);
     }
     
     function test_empleador_con_estado_desconocido()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->estadoDesconocido()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $user = $this->getSuperUser();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        $paciente = AfiliacionTitular::factory()->for(Empleador::factory()->estadoDesconocido())->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "empleador.estado" => "El empleador tiene un estado indeterminado"
+        ]);
+        
+        $paciente = AfiliacionBeneficiario::factory()->for($paciente->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
             "empleador.estado" => "El empleador tiene un estado indeterminado"
@@ -1124,41 +307,22 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
 
     public function test_empleador_en_mora()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
+        $user = $this->getSuperUser();
 
-        ListaMoraItem::create([
-            "empleador_id" => $empleador->id,
-            "numero_patronal" => $empleador->numero_patronal,
-            "nombre" => $empleador->nombre,
-            "regional_id" => Regional::mapGalenoIdToLocalId($empleador->regional_id)
+        $paciente = AfiliacionTitular::factory()->for(Empleador::factory()->estadoDesconocido())->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonMissingValidationErrors(["empleador.aportes"]);
+
+        ListaMoraItem::factory()->for($paciente->empleador)->create();
+        
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response->assertJsonValidationErrors([
+            "empleador.aportes" => "El empleador esta en mora"
         ]);
-
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
+        
+        $paciente = AfiliacionBeneficiario::factory()->for($paciente->afiliacion, "afiliacionDelTitular")->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->for($paciente, "paciente")->raw();
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
             "empleador.aportes" => "El empleador esta en mora"
@@ -1167,64 +331,25 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
 
     public function test_medico_no_existe()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
+        $user = $this->getSuperUser();
 
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => 0,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
+        $data = SolicitudAtencionExterna::factory([
+            "medico_id" => 0
+        ])->raw();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "medico" => "El medico no existe"
+            "medico" => "El médico no existe"
         ]);
     }
 
     public function test_medico_pertenece_a_otra_regional()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+        $user = $this->getSuperUser();
 
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->create();
+        $medico = Medico::factory()->regionalLaPaz()->create();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
+        $data = SolicitudAtencionExterna::factory()->regionalSantaCruz()->for($medico)->raw();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
@@ -1234,63 +359,25 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
     
     public function test_proveedor_no_existe()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+        $login = $this->getSuperUser();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $data = SolicitudAtencionExterna::factory([
+            "proveedor_id" => 0
+        ])->raw();
 
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => 0,
-            "prestaciones_solicitadas" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
-            "proveedor" => "Este campo es requerido."
+            "proveedor" => "El proveedor no existe"
         ]);
     }
     
     public function test_proveedor_pertenece_a_otra_regional()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
+        $user = $this->getSuperUser();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
+        $proveedor = Proveedor::factory()->regionalLaPaz()->create();
 
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
+        $data = SolicitudAtencionExterna::factory()->regionalSantaCruz()->for($proveedor)->raw();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertJsonValidationErrors([
@@ -1300,264 +387,81 @@ class RegistrarSolicitudAtencionExternaTest extends TestCase
 
     function test_derechohabiente()
     {
-        $empleador = Empleador::factory()->create();
-        $titular = Afiliado::factory()->create();
-        $afiliacionTitular = AfiliacionTitular::factory()
-            ->for($titular)
-            ->for($empleador)
-            ->create();
-        BajaAfiliacion::factory()
-            ->for($afiliacionTitular, "afiliacionTitular")
-            ->create();
-        $beneficiario = Afiliado::factory()->beneficiario()->create();
-        AfiliacionBeneficiario::factory()
-            ->derechohabiente()
-            ->for($beneficiario)
-            ->for($afiliacionTitular, "afiliacionDelTitular")
-            ->create();
+        $user = $this->getSuperUser();
 
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $beneficiario->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = $this->createSuperUser();
+        $derechohabiente = AfiliacionBeneficiario::factory()->derechohabiente()->create()->afiliado;
+        BajaAfiliacion::factory()->for($derechohabiente->titular->afiliacion)->create();
+        $data = SolicitudAtencionExterna::factory()->for($derechohabiente, "paciente")->raw();
 
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
+        $this->assertSuccess($response, $data);
     }
     
-    public function test_usuario_con_permiso_para_registrar()
+    public function test_usuario_puede_registrar()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
         $user = User::factory()
+        ->regionalLaPaz()
         ->withPermissions([
             Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA
         ])
         ->create();
 
+        $paciente = AfiliacionBeneficiario::factory()->noExtinguible()->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->regionalLaPaz()->for($paciente, "paciente")->raw();
+
         $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
-    }    
-    
-    public function test_usuario_con_permiso_para_registrar_por_regional()
+        $this->assertSuccess($response, $data);
+        
+        $data = SolicitudAtencionExterna::factory()->regionalSantaCruz()->for($paciente, "paciente")->raw();
+
+        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $this->assertSuccess($response, $data);
+    }   
+
+    public function test_usuario_puede_registrar_solo_dentro_de_su_regional()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = User::factory()
-        ->regionalSantaCruz()
+        $login = User::factory()
+        ->regionalLaPaz()
         ->withPermissions([
             Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL
         ])
         ->create();
 
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
-        $response->assertOk();
-        $this->assertSolicitudRegistrada();
-    }    
-    
-    public function test_usuario_con_permiso_para_registrar_por_regional_registrando_en_otra_regional()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = User::factory()
-        ->withPermissions([
-            Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL
-        ])
-        ->create();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $paciente = AfiliacionBeneficiario::factory()->noExtinguible()->create()->afiliado;
+        $data = SolicitudAtencionExterna::factory()->regionalLaPaz()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $this->assertSuccess($response, $data);
+        
+        $data = SolicitudAtencionExterna::factory()->regionalSantaCruz()->for($paciente, "paciente")->raw();
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertForbidden();
-    }
 
-    
-    public function test_usuario_con_permiso_para_registrar_por_regional_y_global()
-    {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalSantaCruz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalSantaCruz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 3,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = User::factory()
+        $login = User::factory()
+        ->regionalLaPaz()
         ->withPermissions([
+            Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA,
             Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL
         ])
-        ->withPermissions([
-            Permisos::REGISTRAR_SOLICITUDES_DE_ATENCION_EXTERNA
-        ])
         ->create();
-
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertForbidden();
     }
     
     public function test_usuario_sin_permisos()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $user = User::factory()
-            ->regionalSantaCruz()
+        $login = User::factory()
             ->withPermissions([])
             ->create();
 
-        $response = $this->actingAs($user, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
+        $data = SolicitudAtencionExterna::factory()->raw();
+
+        $response = $this->actingAs($login, "sanctum")->postJson('/api/solicitudes-atencion-externa', $data);
         $response->assertForbidden();
     }
     
-    
     public function test_usuario_no_autenticado()
     {
-        $this->travelTo(Carbon::create(2020));
-        $empleador = Empleador::factory()
-            ->create();
-        $asegurado = Afiliado::factory()->create();
-        AfiliacionTitular::factory()
-            ->for($empleador)
-            ->for($asegurado)
-            ->create();
-
-        $medico = Medico::factory()
-            ->regionalLaPaz()
-            ->create();
-
-        $proveedor = Proveedor::factory()->empresa()
-            ->regionalLaPaz()
-            ->create();
-
-        $data = [
-            "asegurado_id" => $asegurado->id,
-            "regional_id" => 1,
-            "medico_id" => $medico->id,
-            "proveedor_id" => $proveedor->id,
-            "prestacion" => $this->faker->text(25)
-        ];
-
-        $response = $this->postJson('/api/solicitudes-atencion-externa', $data);
+        $response = $this->postJson('/api/solicitudes-atencion-externa', []);
         $response->assertUnauthorized();
     }
 }

@@ -26,7 +26,7 @@ class CreateProveedorTable extends Migration
             $table->tinyInteger("estado")->default(1);
 
             $table->point("ubicacion");
-            $table->string("direccion", 255);
+            $table->string("direccion", 80);
             $table->integer("telefono1");
             $table->integer("telefono2")->nullable();
 
@@ -34,6 +34,7 @@ class CreateProveedorTable extends Migration
             $table->timestamps();
             
             $table->fulltext(["apellido_paterno", "apellido_materno", "nombre"], "full_name");
+            $table->fulltext(["especialidad"]);
             $table->unique(["ci", "ci_complemento", "regional_id"], "ci");
             $table->unique(["nit", "regional_id"], "nit");
         });

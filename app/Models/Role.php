@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Traits\SaveToUpper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Permission\Models\Role as ModelsRole;
 
 class Role extends ModelsRole {
-    use HasFactory;
+    use HasFactory, SaveToUpper;
 
     protected $with = [ "permissions" ];
 

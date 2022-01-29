@@ -48,6 +48,21 @@ class Handler extends ExceptionHandler
 
         return $retval;
     }
+    
+    /**
+     * Convert a validation exception into a JSON response.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Validation\ValidationException  $exception
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function invalidJson($request, $exception)
+    {
+        return response()->json([
+            'message' => "Los datos proporcionados fueron invalidos.",
+            'errors' => $exception->errors(),
+        ], $exception->status);
+    }
 
     private function handleApiException($request, Throwable $exception)
     {
@@ -94,10 +109,10 @@ class Handler extends ExceptionHandler
 
         switch ($statusCode) {
             case 401:
-                $response['message'] = 'Unauthorized';
+                $response['message'] = 'Usuario no autenticado';
                 break;
             case 403:
-                $response['message'] = 'Forbidden';
+                $response['message'] = 'No tiene permiso para acceder a esta función';
                 break;
             case 404:
                 $response['message'] = $exception->getMessage() ?: 'Not Found';
@@ -106,11 +121,11 @@ class Handler extends ExceptionHandler
                 $response['message'] = 'Method Not Allowed';
                 break;
             // case 422:
-            //     $response['message'] = $exception->original['message'];
+            //     $response['message'] = "Los datos proporcionados fueron invalidos.";
             //     $response['errors'] = $exception->original['errors'];
             //     break;
             default:
-                $response['message'] = ($statusCode == 500 && !config('app.debug')) ? 'Whoops, looks like something went wrong' : $exception->getMessage();
+                $response['message'] = ($statusCode == 500 && !config('app.debug')) ? 'A ocurrido un error inesperado en el servidor.' : $exception->getMessage();
                 break;
             // default:
             //     $response['message'] = $exception->getMessage();

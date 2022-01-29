@@ -20,7 +20,7 @@ class ListaMoraController extends Controller
             // $query->whereRaw("MATCH(`numero_patronal`, `nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda."*"]);
             $query->where(function ($query) use($busqueda){
                 $query->whereRaw("MATCH(`nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda."*"])
-                      ->orWhere("numero_patronal", "like", "{$busqueda}%");
+                      ->orWhere("numero_patronal", "like", "$busqueda%");
             });
         }
         else{
@@ -44,7 +44,7 @@ class ListaMoraController extends Controller
 
         $this->authorize("ver", [ListaMoraItem::class, $filter]);
 
-        return $this->buildResponse(ListaMoraItem::query(), $filter, $page);
+        return $this->buildResponse(ListaMoraItem::query()->with(["regional"]), $filter, $page);
     }
 
     function agregar(Request $request): JsonResponse
@@ -59,6 +59,7 @@ class ListaMoraController extends Controller
 
         $this->authorize("agregar", [ListaMoraItem::class, $empleador]);
 
+        /** @var ListaMoraItem $item */
         $item = ListaMoraItem::create([
             "empleador_id" => $payload["empleador_id"],
             "numero_patronal" => $empleador->numero_patronal,
@@ -66,6 +67,7 @@ class ListaMoraController extends Controller
             "regional_id" => Regional::mapGalenoIdToLocalId($empleador->ID_RGL)
         ]);
 
+        $item->loadMissing(["regional"]);
         return response()->json($item);
     }
 

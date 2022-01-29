@@ -19,26 +19,27 @@ class MedicosController extends Controller
         if ($busqueda = Arr::get($filter, "_busqueda")) {
             $query->where(function ($query) use ($busqueda) {
                 $query->whereRaw("MATCH(`apellido_paterno`, `apellido_materno`, `nombre`) AGAINST(? IN BOOLEAN MODE)", [$busqueda . "*"]);
-                $query->orWhere("especialidad", $busqueda);
+                $query->orWhereRaw("MATCH(`especialidad`) AGAINST(? IN BOOLEAN MODE)", [$busqueda . "*"]);
             });
         } else {
-            if (Arr::has($filter, "nombre_completo") && $nombre = $filter["nombre_completo"]) {
-                $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre . "*"]);
+            if ($nombre = Arr::get($filter, "nombre")) {
+                $query->whereRaw("MATCH(`nombre`, `apellido_paterno`, `apellido_materno`) AGAINST(? IN BOOLEAN MODE)", [$nombre]);
             }
-            if (Arr::has($filter, "ci.raiz") && $ci = Arr::get($filter, "ci.raiz")) {
+            if ($ci = Arr::get($filter, "ci.raiz")) {
                 $query->where("ci", $ci);
                 if($ciComplemento = Arr::get($filter, "ci.complemento")) $query->where("ci_complemento", $ciComplemento);
             }
-            if (Arr::has($filter, "especialidad") && $especialidad = $filter["especialidad"]) {
-                $query->where("especialidad", "LIKE", "%".$especialidad."%");
+            if ($especialidad = Arr::get($filter, "especialidad")) {
+                $query->whereRaw("MATCH(`especialidad`) AGAINST(? IN BOOLEAN MODE)", [$especialidad]);
             }
         }
         if (Arr::has($filter, "estado") && $estado = $filter["estado"]) {
             $query->where("estado", $estado);
         }
-        if (Arr::has($filter, "regional_id")) {
-            $query->where("regional_id", $filter["regional_id"]);
-        }        
+        if ($regionalId = Arr::get($filter, "regional_id")) {
+            $query->where("regional_id", $regionalId);
+        }
+        // dd($query->toSql(), $filter);  
     }
     function buscar(Request $request)
     {

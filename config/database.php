@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql_rds'),
+    'default' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -43,28 +43,6 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
-        'mysql_rds' => [
-          'driver' => 'mysql',
-          'url' => env('DATABASE_URL'),
-          'host' => env('RDS_HOSTNAME', 'aa1evdln32x4m64.c1f2mxpktfyt.us-east-2.rds.amazonaws.com'),
-          'port' => env('RDS_PORT', '3306'),
-          'database' => env('RDS_DB_NAME', 'ebdb'),
-          'username' => env('RDS_USERNAME', 'cajasaludcaminos'),
-          'password' => env('RDS_PASSWORD', 'Jtum9PUM(O6ffz7E'),
-          'unix_socket' => env('DB_SOCKET', ''),
-          'charset' => 'utf8mb4',
-          'collation' => 'utf8mb4_unicode_ci',
-          'prefix' => '',
-          'prefix_indexes' => true,
-          'strict' => true,
-          'engine' => null,
-          'timezone' => "America/La_Paz",
-          'options' => extension_loaded('pdo_mysql') ? array_filter([
-              PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
-              PDO::MYSQL_ATTR_LOCAL_INFILE => true
-          ]) : [],
-          ],
-
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
@@ -90,12 +68,11 @@ return [
         'galeno' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
-            'host' => env('GALENO_DB_HOST', 'http://galeno.c1f2mxpktfyt.us-east-2.rds.amazonaws.com
-            '),
+            'host' => env('GALENO_DB_HOST', '127.0.0.1'),
             'port' => env('GALENO_DB_PORT', '5432'),
-            'database' => env('GALENO_DB_NAME', 'galeno'),
-            'username' => env('GALENO_DB_USERNAME', 'postgres'),
-            'password' => env('GALENO_DB_PASSWORD', 'Jtum9PUM(O6ffz7E'),
+            'database' => env('GALENO_DB_NAME', 'foge'),
+            'username' => env('GALENO_DB_USERNAME', 'forge'),
+            'password' => env('GALENO_DB_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
             'prefix_indexes' => true,

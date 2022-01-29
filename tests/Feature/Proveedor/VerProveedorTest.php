@@ -26,7 +26,7 @@ class VerProveedorTest extends TestCase
             ->activo()
             ->create();
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->regionalLaPaz()
             ->create();
 
@@ -34,7 +34,7 @@ class VerProveedorTest extends TestCase
         $response->assertOk();
         $response->assertJson($model->toArray());
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->regionalSantaCruz()
             ->create();
 
@@ -53,7 +53,7 @@ class VerProveedorTest extends TestCase
             ])
             ->create();
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->regionalLaPaz()
             ->create();
 
@@ -61,7 +61,7 @@ class VerProveedorTest extends TestCase
         $response->assertOk();
         $response->assertJson($model->toArray());
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->regionalSantaCruz()
             ->create();
 
@@ -87,7 +87,7 @@ class VerProveedorTest extends TestCase
             ->withPermissions([])
             ->create();
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->create();
 
         $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
@@ -100,7 +100,7 @@ class VerProveedorTest extends TestCase
             ->superUser()
             ->create();
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->create();
 
         $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");
@@ -115,7 +115,7 @@ class VerProveedorTest extends TestCase
             ->withPermissions([Permisos::VER_PROVEEDORES])
             ->create();
 
-        $model = Proveedor::factory()->tipoRandom()
+        $model = Proveedor::factory()
             ->create();
 
         $response = $this->actingAs($user)->getJson("/api/proveedores/{$model->id}");

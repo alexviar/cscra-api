@@ -75,25 +75,35 @@ class BuscarMedicoTest extends TestCase
         ], collect([$medicoLaPaz]));
     }
 
-    public function test_filter_by_nombre_completo()
+    public function test_text_search()
     {
         $login = $this->getSuperUser();
 
         $lorena = Medico::factory()->state([
             "nombre" => "Lorena",
             "apellido_materno" => "Fulanito",
-            "apellido_paterno" => "Fulanito"
+            "apellido_paterno" => "Fulanito",
+            "especialidad" => "Cirujano"
         ])->create();
         $lorem =  Medico::factory()->state([
-            "nombre" => "Cosme",
+            "nombre" => "Fulanito",
             "apellido_materno" => "Lörem",
-            "apellido_paterno" => "Fulanito"
+            "apellido_paterno" => "Fulanito",
+            "especialidad" => "Cirujano"
         ])->create();
         $lord = Medico::factory()->state([
-            "nombre" => "Cosme",
+            "nombre" => "Fulanito",
             "apellido_materno" => "Fulanito",
-            "apellido_paterno" => "Lord"
+            "apellido_paterno" => "Lord",
+            "especialidad" => "Cirujano"
         ])->create();
+        $lorem2 = Medico::factory()->state([
+            "nombre" => "Fulanito",
+            "apellido_materno" => "Fulanito",
+            "apellido_paterno" => "Fulanito",
+            "especialidad" => "Lorem ipsum"
+        ])->create();
+
         Medico::factory()->state([
             "nombre" => "Cosme",
             "apellido_materno" => "Fulanito",
@@ -101,13 +111,18 @@ class BuscarMedicoTest extends TestCase
         ])->create();
 
         DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function(){
+            $this->refreshDatabase();
+            // Medico::truncate();
+        });
 
         $page = [
             "current" => 1,
             "size" => 10
         ];
         $filter = [
-            "nombre_completo" => "lor"
+            "_busqueda" => "lor"
         ];
 
         $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
@@ -115,11 +130,64 @@ class BuscarMedicoTest extends TestCase
             "filter" => $filter
         ]));
         $this->assertSucces($response, [
-            "total" => 3
-        ], collect([$lorena, $lorem, $lord]));
-        
+            "total" => 4
+        ], collect([$lorena, $lorem, $lord, $lorem2]));
+    }
+
+    public function test_filter_by_nombre_completo()
+    {
+        $login = $this->getSuperUser();
+
+        $lorena = Medico::factory()->state([
+            "nombre" => "Lorena",
+            "apellido_materno" => "Gomez",
+            "apellido_paterno" => "Fulanito"
+        ])->create();
+        $lorem =  Medico::factory()->state([
+            "nombre" => "Carla Lorena",
+            "apellido_materno" => "Sanchez",
+            "apellido_paterno" => "Fulanito"
+        ])->create();
+        $lord = Medico::factory()->state([
+            "nombre" => "Juan",
+            "apellido_materno" => "Kelvin",
+            "apellido_paterno" => "Gómez",
+            "especialidad" => "Cirujano"
+        ])->create();
+
+        Medico::factory()->state([
+            "nombre" => "Cosme",
+            "apellido_materno" => "Fulanito",
+            "apellido_paterno" => "Fulanito"
+        ])->create();
+
+        DB::commit();
         RefreshDatabaseState::$migrated = false;
-        $this->refreshDatabase();
+        $this->beforeApplicationDestroyed(function(){
+            $this->refreshDatabase();
+            // Medico::truncate();
+        });
+
+        $page = [
+            "current" => 1,
+            "size" => 10
+        ];
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => ["nombre" => "lorena"]
+        ]));
+        $this->assertSucces($response, [
+            "total" => 2
+        ], collect([$lorena, $lorem]));
+
+        $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
+            "page" => $page,
+            "filter" => ["nombre" => "gomez"]
+        ]));
+        $this->assertSucces($response, [
+            "total" => 2
+        ], collect([$lorena, $lord]));
     }
 
     public function test_filter_by_ci()
@@ -151,19 +219,31 @@ class BuscarMedicoTest extends TestCase
         $login = $this->getSuperUser();
 
         $medico = Medico::factory([
-            "especialidad" => "Esta sí"
+            "especialidad" => "Oncología"
+        ])->create();
+
+        $medico2 = Medico::factory([
+            "especialidad" => "Neuro-oncologia"
         ])->create();
 
         Medico::factory([
-            "especialidad" => "Esta no"
+            "especialidad" => "Nefrología"
         ])->create();
+
+        DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function(){
+            $this->refreshDatabase();
+            // Medico::truncate();
+        });
+
 
         $page = [
             "current" => 1,
             "size" => 10
         ];
         $filter = [
-            "especialidad" => $medico->especialidad
+            "especialidad" => "oncología"
         ];
 
         $response = $this->actingAs($login)->getJson("/api/medicos?".http_build_query([
@@ -171,8 +251,8 @@ class BuscarMedicoTest extends TestCase
             "filter" => $filter
         ]));
         $this->assertSucces($response, [
-            "total" => 1
-        ], collect([$medico]));
+            "total" => 2
+        ], collect([$medico, $medico2]));
     }
 
     public function test_filter_by_estado()

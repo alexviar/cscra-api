@@ -33,9 +33,9 @@ class AuthController extends Controller
       $request->session()->regenerate();
 
       // var_dump(Auth::user());
+      /** @var User $user */
       $user = Auth::user();
-      $user->makeVisible("all_permissions");
-      $user->load("roles");
+      $user->load(["regional", "roles.permissions"]);
       return response()->json(Auth::user());
     }
 

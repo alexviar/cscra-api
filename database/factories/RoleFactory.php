@@ -20,12 +20,12 @@ class RoleFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition($attributes)
     {
         return [
             // "id" => $this->faker->unique()->randomNumber(),
-            "name" => $this->faker->unique()->text(32),
-            "description" => $this->faker->optional()->text(255),
+            "name" =>  $attributes["name"] ?? $this->faker->unique()->text(32),
+            "description" =>  $attributes["description"] ??  $this->faker->optional()->text(255),
             "guard_name" => "sanctum"
         ];
     }

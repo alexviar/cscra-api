@@ -62,7 +62,7 @@ class CambiarEstadoProveedorTest extends TestCase
     {
         $login = $this->getSuperUser();
 
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->create();
 
         $response = $this->actingAs($login)
@@ -76,7 +76,7 @@ class CambiarEstadoProveedorTest extends TestCase
     {
         $login = $this->getSuperUser();
 
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->create();
 
         $response = $this->actingAs($login)
@@ -99,7 +99,7 @@ class CambiarEstadoProveedorTest extends TestCase
             ->create();
 
         //Misma regional
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->regionalLaPaz()
             ->create();
 
@@ -119,7 +119,7 @@ class CambiarEstadoProveedorTest extends TestCase
 
         
         //Distinta regional
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->regionalSantaCruz()
             ->create();
 
@@ -148,7 +148,7 @@ class CambiarEstadoProveedorTest extends TestCase
             ->create();
 
         //Misma regional
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->regionalLaPaz()
             ->create();
 
@@ -168,7 +168,7 @@ class CambiarEstadoProveedorTest extends TestCase
 
         
         //Distinta regional
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->regionalSantaCruz()
             ->create();
 
@@ -201,7 +201,7 @@ class CambiarEstadoProveedorTest extends TestCase
         $login = User::factory()
             ->create();
 
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->baja()
             ->create();
 
@@ -216,7 +216,7 @@ class CambiarEstadoProveedorTest extends TestCase
     {
         $login = User::factory()->superUser()->create();
 
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->create();
 
         $data = [
@@ -235,7 +235,7 @@ class CambiarEstadoProveedorTest extends TestCase
             ->withPermissions([Permisos::REGISTRAR_MEDICOS])
             ->create();
 
-        $proveedor = Proveedor::factory()->tipoRandom()
+        $proveedor = Proveedor::factory()
             ->create();
 
         $data = [

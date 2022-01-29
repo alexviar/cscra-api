@@ -28,11 +28,11 @@ class SolicitudAtencionExternaPolicy
         if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
     }
 
-    public function ver(User $user, SolicitudAtencionExterna $solicitud)
-    {
-        if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)) return $user->regional_id == $solicitud->regional_id;
-        if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
-    }
+    // public function ver(User $user, SolicitudAtencionExterna $solicitud)
+    // {
+    //     if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA_MISMA_REGIONAL)) return $user->regional_id == $solicitud->regional_id;
+    //     if($user->hasPermissionTo(Permisos::VER_SOLICITUDES_DE_ATENCION_EXTERNA)) return true;
+    // }
 
     public function verDm11(User $user, SolicitudAtencionExterna $solicitud)
     {

@@ -5,7 +5,9 @@ namespace Database\Factories;
 use App\Models\Galeno\Empleador;
 use App\Models\ListaMoraItem;
 use App\Models\Regional;
+use Closure;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Arr;
 
 class ListaMoraItemFactory extends Factory
 {
@@ -21,9 +23,16 @@ class ListaMoraItemFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition($attributes)
     {
-        $empleador = Empleador::factory()->create();
+        if(Arr::has($attributes, "empleador_id")){
+            $id = $attributes["empleador_id"];
+            $empleador = Empleador::find($id instanceof Closure ? $id() : $id);
+        }
+        else{
+            $regional_id = $attributes["regional_id"] ?? $this->faker->randomElement([1,2,3,4,5,6,7,8,9,10,11]);
+            $empleador = Empleador::factory(["ID_RGL" => Regional::mapLocalIdToGalenoId($regional_id)])->create();
+        }
         return [
             "empleador_id" => $empleador->id,
             "numero_patronal" => $empleador->numero_patronal,
@@ -33,22 +42,14 @@ class ListaMoraItemFactory extends Factory
     }
 
     public function regionalLaPaz(){
-        $empleador = Empleador::factory()->regionalLaPaz()->create();
         return $this->state([
-            "empleador_id" => $empleador->id,
-            "numero_patronal" => $empleador->numero_patronal,
-            "nombre" => $empleador->nombre,
-            "regional_id" => $empleador->regional_id
+            "regional_id" => 1
         ]);
     }
 
     public function regionalSantaCruz(){
-        $empleador = Empleador::factory()->regionalSantaCruz()->create();
         return $this->state([
-            "empleador_id" => $empleador->id,
-            "numero_patronal" => $empleador->numero_patronal,
-            "nombre" => $empleador->nombre,
-            "regional_id" => $empleador->regional_id
+            "regional_id" => 3
         ]);
     }
 }

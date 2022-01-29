@@ -71,6 +71,8 @@ class BuscarRolTest extends TestCase
         $login = User::factory()
             ->hasAttached($rol)
             ->create();
+
+        $roles = Role::get();
         
         $rol2 = Role::factory()->state([
                 "name" => "Adminìstrâdöres de otra cosa",
@@ -88,6 +90,12 @@ class BuscarRolTest extends TestCase
         ])->create();
 
         DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function() use($roles){
+            $this->refreshDatabase();
+            // Role::truncate();
+            // Role::createMany($roles);
+        });
 
         $response = $this->actingAs($login)
             ->getJson("/api/roles?".http_build_query([
@@ -97,8 +105,5 @@ class BuscarRolTest extends TestCase
         $this->assertSucces($response, [
             "total" => 3
         ], collect([$rol, $rol2, $rol3]));
-
-        RefreshDatabaseState::$migrated = false;
-        $this->refreshDatabase();
     }
 }

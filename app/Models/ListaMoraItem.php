@@ -32,6 +32,10 @@ class ListaMoraItem extends Model
     //   return $this->empleador->nombre;
     // }
 
+    function regional() {
+        return $this->belongsTo(Regional::class, "regional_id", "id");
+    }
+
     function empleador(){
       return $this->belongsTo(Empleador::class, "empleador_id", "ID");
     }

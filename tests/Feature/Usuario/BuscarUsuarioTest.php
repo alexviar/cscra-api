@@ -75,6 +75,12 @@ class BuscarUsuarioTest extends TestCase
         ])->create();
 
         DB::commit();
+        RefreshDatabaseState::$migrated = false;
+        $this->beforeApplicationDestroyed(function() use($login){
+            $this->refreshDatabase();
+            // User::truncate();
+            // User::create($login);
+        });
 
         $page = [
             "current" => 1,
@@ -95,9 +101,6 @@ class BuscarUsuarioTest extends TestCase
             ],
             "records" => collect([$lorena, $lorem, $lord])->toArray()
         ]);
-        
-        RefreshDatabaseState::$migrated = false;
-        $this->refreshDatabase();
     }
 
     public function test_filter_by_ci()

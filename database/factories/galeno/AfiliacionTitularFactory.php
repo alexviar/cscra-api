@@ -3,6 +3,8 @@
 namespace Database\Factories\Galeno;
 
 use App\Models\Galeno\AfiliacionTitular;
+use App\Models\Galeno\Afiliado;
+use App\Models\Galeno\Empleador;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class AfiliacionTitularFactory extends Factory
@@ -19,7 +21,7 @@ class AfiliacionTitularFactory extends Factory
      *
      * @return array
      */
-    public function definition()
+    public function definition($attributes)
     {
         $fechaI = $this->faker->date();
         return [
@@ -27,7 +29,9 @@ class AfiliacionTitularFactory extends Factory
           "FECHA_I_REG_TIT" => $fechaI,
           "REG_LOGIN" => substr($this->faker->username(), 0, 15),
           "REG_DATE" => $this->faker->dateTimeBetween($fechaI, "now"),
-          "ESTADO" => 1
+          "ESTADO" => 1,
+          "ID_EPR" => $attributes["ID_EPR"] ?? Empleador::factory(),
+          "ID_AFO" => $attributes["ID_AFO"] ?? Afiliado::factory(["TIPO_AFI" => 1])
         ];
     }
 }
