@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Reports\Dm11Generador;
 use App\Models\Galeno\Afiliado;
+use App\Models\Galeno\Empleador;
 use App\Models\ListaMoraItem;
 use App\Models\Medico;
 use App\Models\Proveedor;
@@ -11,6 +12,7 @@ use App\Models\SolicitudAtencionExterna;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -28,7 +30,15 @@ class SolicitudAtencionExternaController extends Controller
             $query->where("regional_id", $regionalId);
         }
         if($proveedorId = Arr::get($filter, "proveedor_id")){
-            $query->where("proveedor_id", $proveedorId);
+            if(Str::startsWith($proveedorId, "EMP")){
+                $query->where("proveedor_id", Str::substr($proveedorId, 3)); 
+            }
+            else if(Str::startsWith($proveedorId, "MED")){
+                $query->where("proveedor_id", Str::substr($proveedorId, 3));                
+            }
+            else{
+                $query->where("proveedor_id", $proveedorId);
+            }
         }
         if($medicoId = Arr::get($filter, "medico_id")){
             $query->where("medico_id", $medicoId);
@@ -39,6 +49,10 @@ class SolicitudAtencionExternaController extends Controller
                 $ids = $asegurados->pluck("ID");
                 $query->whereIn("paciente_id", $ids)->orWhereIn("titular_id", $ids);
             });
+        }
+        if (($numeroPatronal = Arr::get($filter, "numero_patronal"))) {
+            $empleador = Empleador::buscarPorPatronal($numeroPatronal);
+            $query->where("empleador_id", $empleador->id);
         }
         if (($regionalId = Arr::get($filter, "regional_id"))) {
             $query->where("regional_id", $regionalId);
