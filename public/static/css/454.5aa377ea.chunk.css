@@ -1,6 +1,0 @@
-/*!
- * Start Bootstrap - Simple Sidebar (https://startbootstrap.com/template/simple-sidebar)
- * Copyright 2013-2020 Start Bootstrap
- * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-simple-sidebar/blob/master/LICENSE)
- */#wrapper{transition:padding .25s ease-out}#sidebar-wrapper{height:100%;padding-top:.5rem;z-index:10000}@media (max-width:768px){#sidebar-wrapper{position:absolute}.collapsed #sidebar-wrapper{position:static}}@media (max-width:576px){.collapsed #sidebar-wrapper{display:none}}.sidebar-heading{font-size:1.2rem;height:140px}.sidebar-heading-content{align-items:center;display:flex;height:100%;justify-content:center;width:100%}.collapsed .sidebar-heading,.collapsed .sidebar-navitem-title{display:none}.sidebar-navitem-icon svg{font-size:1.6rem}.sidebar-navitem-title{margin-left:.5rem;vertical-align:middle}.collapsed .sidebar-menu{width:auto}.sidebar-menu .list-group-item+.list-group-item.active{border-top-width:0;margin-top:0}.sidebar-menu{position:-webkit-sticky;position:sticky;top:1rem;width:15rem}#page-content-wrapper{min-width:100vw}
-/*# sourceMappingURL=454.5aa377ea.chunk.css.map*/
