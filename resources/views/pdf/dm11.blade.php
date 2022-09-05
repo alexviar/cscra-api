@@ -59,7 +59,7 @@
     <table style="width: 100%">
         <tbody>
             <tr>
-                <td style="width: 100px; text-align: center"><img width="100px" height="100px" style="object-fit: cover" src="imgs/csc.png"></td>
+                <td style="width: 100px; text-align: center"><img width="100px" height="100px" style="object-fit: cover" src="{{$logo}}"></td>
                 <td style="padding: 10px" colspan="2" valign="top">
                     <div style="text-align: center; font-size: 14px; font-weight: bold; margin-bottom: 20px">CAJA DE SALUD DE CAMINOS Y R.A.</div>
                     <div style="text-align: center; font-weight: bold; font-size: 18px; margin-top: 20px">SOLICITUD DE ATENCION EXTERNA</div>

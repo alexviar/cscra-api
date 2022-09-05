@@ -40,7 +40,13 @@ class Dm11Generador
 
         $encoded_qr_data = (new SolicitudAtencionExternaQrSigner())->sign($solicitud, config("app.private_ec_key"));
 
+        $image = public_path("imgs/csc.png");
+        $mime = getimagesize($image)["mime"];
+        $data = file_get_contents($image);
+        $dataUri = 'data:image/' . $mime . ';base64,' . base64_encode($data);
+        
         return [
+            "logo" => $dataUri,
             "numero" => $solicitud->numero,
             "qr_data" => $encoded_qr_data,
             "fecha" => $solicitud->fecha->format("d/m/y H:i:s"),

@@ -21,10 +21,11 @@ yarn-error.log
 privateKey.pem
 publicKey.pem
 
+/public/build
+/public/static
 
 # Elastic Beanstalk Files
 .ebextensions/*
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-public/public.zip
